@@ -7,7 +7,7 @@ title: natsuic - Rui Software
 ### <a href="{site.baseurl}}/products/proxy_check">Proxy check</a>
 現在使用しているプロキシサーバーがプロキシサーバーと判断される情報をサーバーに送っているか表示します。
 
-### <a href="{site.baseurl}}/products/file_analyze">ファイル解析</a>
+### <a href="{site.baseurl}}/products/file_analyzer">ファイル解析</a>
 指定したファイルが、どのようなファイルか解析します。
 
 ### <a href="{site.baseurl}}/products/natusic">natusic</a>
