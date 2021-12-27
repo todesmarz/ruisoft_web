@@ -1,3 +1,7 @@
+---
+layout: default
+title: Proxy check - Rui Software
+---
 # Proxy Check
 
 <div id="proxy_result">
