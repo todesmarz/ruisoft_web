@@ -12,7 +12,6 @@
       <script src="//res.primasm.com/js/respond.min.js"></script>
 <![endif]-->
 <link rel="alternate" type="application/rss+xml" title="Rui Software< RSS Feed" href="/feed/" />
-<link rel="pingback" href="//xmlrpc.php" />
 <link rel="shortcut icon" href="//res.primasm.com/favicon.ico" type="image/vnd.microsoft.icon" />
 <link rel="icon" type="image/x-icon" href="//res.primasm.com/favicon.ico" />
 <meta name='robots' content='max-image-preview:large' />
@@ -46,7 +45,7 @@ $(function() {
 <section class="container">
 <header>
 <section class="logo">
-<h1><img src="//res.primasm.com/img/rui/logo.png" alt="Rui Software logo"> <a href="/" class="logo_anchor">Rui Software</a></h1>
+<h1><img src="//res.primasm.com/img/rui/logo.png" alt="Rui Software logo"> <a href="{{site.baseurl}}/" class="logo_anchor">Rui Software</a></h1>
 <h4>黙り虫、壁を破る</h4>
 </section>
 <nav class="clearfix">
@@ -78,7 +77,7 @@ $(function() {
 <section class="autopagerize_insert_before"></section>
 </section>
 <footer class="row">
-<p>© Copyright 2005-2021| <a href="/">Rui Software</a> | All Rights Reserved</p>
+<p>© Copyright 2005-2021| <a href="{{site.baseurl}}/">Rui Software</a> | All Rights Reserved</p>
 <script id="module-mermaid"> (function($) { $(function() { if (typeof mermaid !== "undefined") { if ($(".language-mermaid").length > 0) { $(".language-mermaid").parent("pre").attr("style", "text-align: center; background: none;"); $(".language-mermaid").addClass("mermaid").removeClass("language-mermaid"); mermaid.init(); } } }); })(jQuery); </script> <script id="module-prism-line-number"> (function($) { $(function() { $("code").each(function() { var parent_div = $(this).parent("pre"); var pre_css = $(this).attr("class"); if (typeof pre_css !== "undefined" && -1 !== pre_css.indexOf("language-")) { parent_div.addClass("line-numbers"); } }); }); })(jQuery); </script> <script id="module-clipboard"> (function($) { $(function() { var pre = document.getElementsByTagName("pre"); var pasteContent = document.getElementById("paste-content"); var hasLanguage = false; for (var i = 0; i < pre.length; i++) { var codeClass = pre[i].children[0].className; var isLanguage = codeClass.indexOf("language-"); var excludedCodeClassNames = [ "language-katex", "language-seq", "language-sequence", "language-flow", "language-flowchart", "language-mermaid", ]; var isExcluded = excludedCodeClassNames.indexOf(codeClass); if (isExcluded !== -1) { isLanguage = -1; } if (isLanguage !== -1) { var button = document.createElement("button"); button.className = "copy-button"; button.textContent = "Copy"; pre[i].appendChild(button); hasLanguage = true; } }; if (hasLanguage) { var copyCode = new ClipboardJS(".copy-button", { target: function(trigger) { return trigger.previousElementSibling; } }); copyCode.on("success", function(event) { event.clearSelection(); event.trigger.textContent = "Copied"; window.setTimeout(function() { event.trigger.textContent = "Copy"; }, 2000); }); } }); })(jQuery); </script> </p>
 </footer>
 </section>
