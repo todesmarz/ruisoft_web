@@ -2,6 +2,7 @@
 layout: default
 title: Rui Software
 ---
+![]({{site.baseurl}}/images/top_page_image.png)
 このサイトは、プログラマ初心者を対象とした内容となっています。
 
 一部、メンバー向けの内容があり、閲覧できないようになっているところもあります。
