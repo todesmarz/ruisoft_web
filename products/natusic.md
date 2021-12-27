@@ -1,6 +1,6 @@
 ---
 layout: default
-title: natsuic - Rui Software
+title: natusic - Rui Software
 ---
 ## natusic
 自然音と自動生成し毎回違う音声を聞くことができます。</p>
