@@ -82,7 +82,7 @@ CPU	800MHz 以上のプロセッサ
 #### フォルダ内情報取得ツール
 
 Ver 1.20.01 2010/11/22 安定版  
-[download]({{site.baseurl}}/download/files/folderwatcher10201.zip)  
+[download]({{site.baseurl}}/downloads/files/folderwatcher10201.zip)  
 [mirror site download](https://www.vector.co.jp/soft/winnt/util/se473653.html)
 
 #### フォルダ内情報取得ツール ソースコード(git)
