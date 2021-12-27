@@ -7,7 +7,7 @@ title: フォルダ内情報取得ツール - Rui Software
 
 ### フォルダ一覧表示
 
-フォルダ一覧表示
+![フォルダ一覧表示]({{site.baseurl}}/images/folder_watcher/screenshot_01.png)  
 
 フォルダの一覧をエクスプローラで見るときには、フォルダーツリーに表示されすぎて
 親のフォルダやこのフォルダがどこにいるか分からなくなることはありませんか？
@@ -19,7 +19,7 @@ title: フォルダ内情報取得ツール - Rui Software
 
 ### 検索
 
-ファイル検索
+![ファイル検索]({{site.baseurl}}/images/folder_watcher/screenshot_02.png)  
 
 特定のファイルまたは、フォルダの情報が知りたいときはありませんか？
 たとえば、あるフォルダのjpegファイルの総容量を把握したい時には、検索機能を使えば可能です。
@@ -32,7 +32,8 @@ title: フォルダ内情報取得ツール - Rui Software
 
 ### プロパティ
 
-フォルダ一覧表示
+![フォルダ一覧表示]({{site.baseurl}}/images/folder_watcher/screenshot_03.png)  
+
 
 ファイルなどの情報を見ていると、読み取り専用にしていたつもりのファイルが
 読み取り専用に設定されていないときなど、プロパティ表示をして設定することで、
@@ -55,7 +56,8 @@ title: フォルダ内情報取得ツール - Rui Software
 
 ### 単体での実行
 
-フォルダ一覧表示
+![フォルダ一覧表示]({{site.baseurl}}/images/folder_watcher/screenshot_04.png) 
+
 
 exe単体で実行が可能なため、ダウンロード後すぐに使用可能です。
 また、ファイルをドラッグ&ドロップするだけで、そのファイルの情報を表示するため
@@ -77,13 +79,12 @@ CPU	800MHz 以上のプロセッサ
 
 ### ダウンロード
 
-フォルダ内情報取得ツール
+#### フォルダ内情報取得ツール
 
 Ver 1.20.01 2010/11/22 安定版
-download
-mirror site download
-リリースノート
+[download]({{site.baseurl}}/download/files/folderwatcher10201.zip)
+[mirror site download](https://www.vector.co.jp/soft/winnt/util/se473653.html)
 
-フォルダ内情報取得ツール ソースコード(git)
+#### フォルダ内情報取得ツール ソースコード(git)
 Ver 1.20.00 2010/11/02 安定版
-download
+[download](https://github.com/todesmarz/folder_wacher)
