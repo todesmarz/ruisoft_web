@@ -1,6 +1,6 @@
 ---
 layout: default
-title: natsuic - Rui Software
+title: ファイル解析 - Rui Software
 ---
 <script type="text/javascript">function _arrayBufferToBase64( buffer, size ) {
     var binary = '';
