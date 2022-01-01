@@ -7,7 +7,7 @@ title: natsuic - Rui Software
 
 <div id="note" />
 
-<script>
+<script type="text/javascript">
 let viewXML = (xmlDocument) => {
     //XML形式に変換
     const parser = new DOMParser();
