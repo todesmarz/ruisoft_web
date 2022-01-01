@@ -1,9 +1,11 @@
 ---
 layout: default
-title: natsuic - Rui Software
+title: 記事一覧 - Rui Software
 ---
 
 ## 記事一覧
+
+### noteに寄稿している記事一覧
 
 <div id="note" />
 
