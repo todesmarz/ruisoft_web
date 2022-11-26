@@ -21,7 +21,7 @@ function refreshClock()
 }
 
 $(function(){
-    $("#time")on("click", datemode = !datemode; );
+    $("#time").on("click", function() { datemode = !datemode;} );
     refreshClock();
 });
 </script>
