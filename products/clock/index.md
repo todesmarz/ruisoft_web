@@ -3,7 +3,7 @@ layout: default
 title: clock - Rui Software
 ---
 
-<article id="time" style="font-size: 12vmax;text-align:center;" />
+<article id="time" style="font-size: 10vmax;text-align:center;" />
 
 <script type="text/javascript">
 var datemode = false;
@@ -12,10 +12,10 @@ function refreshClock()
     var nowTime = new Date();
     var value = "";
     if (datemode) {
-        value = nowTime.toLocaleDateString() + " ";
+        value = nowTime.toLocaleDateString() + "<br>";
     }
     value = value + nowTime.toLocaleTimeString();
-    $("#time").text(value);
+    $("#time").html(value);
 
     setInterval('refreshClock()',1000);
 }
