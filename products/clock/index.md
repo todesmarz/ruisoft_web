@@ -17,7 +17,7 @@ function refreshClock()
     value = value + nowTime.toLocaleTimeString();
     $("#time").html(value);
 
-    setInterval('refreshClock()',1000);
+    setTimeout(refreshClock,300);
 }
 
 $(function(){
