@@ -5,50 +5,71 @@ title: 記事一覧 - Rui Software
 
 ## 記事一覧
 
-### noteに寄稿している記事一覧
+### amebloの記事
 
 <div id="note" />
 
 <div id="scripts">
-    <script type="text/javascript">
-    let viewXML = (xmlDocument) => {
-        //XML形式に変換
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(xmlDocument, "text/xml");
-        let rss = doc.documentElement.getElementsByTagName("item");
+<script>
+/**
+ * AmebaブログのRSSを取得して一覧表示する処理
+ */
+async function fetchAmebaRSS() {
+    const amebaId = 'todesmarz'; // ブログID
+    const rssUrl = `https://rssblog.ameba.jp/${amebaId}/rss20.xml`;
     
-        //HTMLタグの作成
-        for(let i = 0;i < rss.length;i++){
-            //RSSから取得したタイトルとリンク情報を格納
-            let rssTitle = rss[i].getElementsByTagName("title")[0].textContent;
-            let rssLink   = rss[i].getElementsByTagName("link")[0].textContent;
-    
-            //テンプレート文字列を使ってアンカータグを作成
-            const tagString = `<a href="${rssLink}">${rssTitle}</a><br/>`;
-    
-            //body以下にアンカータグを挿入
-            document.getElelemntbyId("note").insertAdjacentHTML('beforeend',tagString );
-        }
-    };
-    const URL = 'https://note.com/todesmarz/rss';
-    fetch(URL)
-      .then(response => {
-        // ステータスが正常かチェック
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.text(); // XMLデータを文字列として取得
-      })
-      .then(xmlText => {
-        const parser = new DOMParser();
-        // DOMParserを使用して文字列をXMLDocumentオブジェクトにパース（解析）
-        const xmlDoc = parser.parseFromString(xmlText, "text/xml"); 
+    // ブラウザのCORS制限を回避するためのプロキシURL
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
+
+    const listElement = document.getElementById('blog-list-ul');
+
+    try {
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error('ネットワークエラーが発生しました');
         
-        // xmlDocはXMLDocument（DOM構造）になったデータ
-        viewXML(xmlDoc);
-      })
-      .catch(error => {
-        console.error('FetchまたはXMLパース中にエラーが発生しました:', error);
-      });
-    </script>
+        const data = await response.json();
+        
+        // 文字列のXMLをDOMオブジェクトに変換
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+        const items = xmlDoc.querySelectorAll("item");
+
+        // リストをクリア
+        listElement.innerHTML = '';
+
+        if (items.length === 0) {
+            listElement.innerHTML = '<li>記事が見つかりませんでした。</li>';
+            return;
+        }
+
+        // 記事をループしてHTMLを生成
+        items.forEach(item => {
+            const title = item.querySelector("title").textContent;
+            const link = item.querySelector("link").textContent;
+            const pubDateStr = item.querySelector("pubDate").textContent;
+            
+            // 日付のフォーマット (例: 2023/10/25)
+            const pubDate = new Date(pubDateStr);
+            const dateDisplay = `${pubDate.getFullYear()}/${(pubDate.getMonth() + 1).toString().padStart(2, '0')}/${pubDate.getDate().toString().padStart(2, '0')}`;
+
+            const li = document.createElement('li');
+            li.className = 'blog-item';
+            li.innerHTML = `
+                <a href="${link}" target="_blank" rel="noopener noreferrer">
+                    <div class="blog-date">${dateDisplay}</div>
+                    <div class="blog-title">${title}</div>
+                </a>
+            `;
+            listElement.appendChild(li);
+        });
+
+    } catch (error) {
+        console.error('Error:', error);
+        listElement.innerHTML = '<div class="loading">記事の取得に失敗しました。</div>';
+    }
+}
+
+// 実行
+fetchAmebaRSS();
+</script>
 </div>
