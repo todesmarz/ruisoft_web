@@ -1,4 +1,8 @@
-CSS
+---
+layout: default
+title: 数独 - Rui Software
+---
+
 <style>
     .sudoku-container {
         text-align: center;
