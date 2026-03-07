@@ -7,9 +7,41 @@ title: 記事一覧 - Rui Software
 
 ### amebloの記事
 
-<div id="note" />
+<div id="ameblo-container">
+    <ul id="blog-list-ul">
+        <li class="loading">記事を読み込んでいます...</li>
+    </ul>
+</div>
 
-<div id="scripts">
+<style>
+/* 簡易的なスタイリング（お好みで調整してください） */
+#blog-list-ul {
+    list-style: none;
+    padding: 0;
+}
+.blog-item {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+.blog-item a {
+    text-decoration: none;
+    color: #333;
+    display: block;
+}
+.blog-item a:hover {
+    background-color: #f9f9f9;
+}
+.blog-date {
+    font-size: 0.85em;
+    color: #888;
+}
+.blog-title {
+    font-weight: bold;
+    margin-top: 5px;
+}
+</style>
+
 <script>
 /**
  * AmebaブログのRSSを取得して一覧表示する処理
@@ -18,8 +50,8 @@ async function fetchAmebaRSS() {
     const amebaId = 'todesmarz'; // ブログID
     const rssUrl = `https://rssblog.ameba.jp/${amebaId}/rss20.xml`;
     
-    // ブラウザのCORS制限を回避するためのプロキシURL
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
+    // AllOriginsプロキシを使用（cachebustingのためにランダムな値を付与すると最新を取得しやすくなります）
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}&_=${Date.now()}`;
 
     const listElement = document.getElementById('blog-list-ul');
 
@@ -32,6 +64,11 @@ async function fetchAmebaRSS() {
         // 文字列のXMLをDOMオブジェクトに変換
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+        
+        // パースエラーのチェック
+        const parserError = xmlDoc.getElementsByTagName("parsererror");
+        if (parserError.length > 0) throw new Error("XMLのパースに失敗しました");
+
         const items = xmlDoc.querySelectorAll("item");
 
         // リストをクリア
@@ -44,13 +81,17 @@ async function fetchAmebaRSS() {
 
         // 記事をループしてHTMLを生成
         items.forEach(item => {
-            const title = item.querySelector("title").textContent;
-            const link = item.querySelector("link").textContent;
-            const pubDateStr = item.querySelector("pubDate").textContent;
+            // querySelectorでうまく取れない場合があるため、getElementsByTagNameを併用
+            const title = item.getElementsByTagName("title")[0]?.textContent || "無題";
+            const link = item.getElementsByTagName("link")[0]?.textContent || "#";
+            const pubDateStr = item.getElementsByTagName("pubDate")[0]?.textContent || "";
             
-            // 日付のフォーマット (例: 2023/10/25)
-            const pubDate = new Date(pubDateStr);
-            const dateDisplay = `${pubDate.getFullYear()}/${(pubDate.getMonth() + 1).toString().padStart(2, '0')}/${pubDate.getDate().toString().padStart(2, '0')}`;
+            // 日付のフォーマット (例: 2026/03/07)
+            let dateDisplay = "";
+            if (pubDateStr) {
+                const pubDate = new Date(pubDateStr);
+                dateDisplay = `${pubDate.getFullYear()}/${(pubDate.getMonth() + 1).toString().padStart(2, '0')}/${pubDate.getDate().toString().padStart(2, '0')}`;
+            }
 
             const li = document.createElement('li');
             li.className = 'blog-item';
@@ -65,11 +106,10 @@ async function fetchAmebaRSS() {
 
     } catch (error) {
         console.error('Error:', error);
-        listElement.innerHTML = '<div class="loading">記事の取得に失敗しました。</div>';
+        listElement.innerHTML = '<li class="error">記事の取得に失敗しました。時間をおいて再度お試しください。</li>';
     }
 }
 
-// 実行
-fetchAmebaRSS();
+// ページ読み込み完了後に実行
+document.addEventListener('DOMContentLoaded', fetchAmebaRSS);
 </script>
-</div>
