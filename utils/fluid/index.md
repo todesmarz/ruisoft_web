@@ -76,6 +76,59 @@ title: 流体シミュレーション - Rui Software
   <p class="note">※ パフォーマンスはデバイスにより異なります</p>
 </div>
 
+<style>
+.prompt-section {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px dotted #ccc;
+}
+.prompt-title {
+  font-size: 1.1em;
+  font-weight: 400;
+  border-left: 6px solid #2e8b57;
+  padding-left: 10px;
+  margin-bottom: 8px;
+}
+.prompt-desc {
+  font-size: .85em;
+  color: #666;
+  margin-bottom: 12px;
+}
+.prompt-box {
+  position: relative;
+  background: #f7faf8;
+  border: 1px solid #dde8e2;
+  border-radius: 4px;
+  padding: 12px 12px 12px 12px;
+}
+.prompt-text {
+  font-family: Ricty, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+  font-size: .82em;
+  line-height: 1.7;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+  padding-right: 70px;
+  background: transparent;
+  border: none;
+}
+.prompt-copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 12px;
+  font-size: .78em;
+  background: #2e8b57;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.prompt-copy-btn:hover { background: #236b43; }
+</style>
+
 <script>
 (function () {
 'use strict';
@@ -277,4 +330,56 @@ function loop() {
 }
 loop();
 })();
+</script>
+
+---
+
+<div class="prompt-section">
+  <h3 class="prompt-title">📋 このツールを作ったプロンプト</h3>
+  <p class="prompt-desc">以下のプロンプトをClaude・ChatGPT・GeminiなどのAIに貼り付けると、同じようなツールを作ることができます。</p>
+  <div class="prompt-box">
+    <button class="prompt-copy-btn" onclick="copyPrompt(this)">コピー</button>
+    <pre class="prompt-text">ブラウザで動く流体シミュレーションをHTML単一ファイル（HTML/CSS/JS完結）で実装してください。
+
+【アルゴリズム】
+Jos Stam の「Stable Fluids」論文に基づくグリッドベースの流体シミュレーションを実装する。
+- グリッドサイズ N=100（(N+2)×(N+2) の配列で境界を含む）
+- 各セルに速度場 (vx, vy) と密度場 (r, g, b) を持つ
+- 1ステップの処理: diffuse（ガウス=ザイデル反復）→ project（非圧縮性の保証）→ advect（バックワード移流）
+- 境界条件: 速度は壁で反転（setBound）、密度は壁と同値
+
+【インタラクション】
+- マウス/タッチのドラッグ操作で、グリッド座標に変換した位置に速度と密度を加算する
+- 前フレームとの差分を力として使用（差分×force定数）
+- 半径1セルの周囲3×3に力・密度を分散して加える
+
+【カラー】
+- レインボーモード: フレームごとに hue を加算し HSL→RGB 変換でカラーを決定
+- 単色モード: 赤・橙・緑・青・紫・白の6色スウォッチから選択可能
+- モード切替ボタンと色スウォッチを横並びで表示する
+
+【スライダー】
+- 粘度（viscosity）と拡散（diffusion）をスライダーで 0〜99 の範囲で調整できる
+- 値は Math.pow(10, -6 + v*0.04) でスケーリングし、0のときは正確に0とする
+
+【描画】
+- canvas に createImageData で直接ピクセル書き込みを行い requestAnimationFrame でループ
+- グリッドセルをピクセルにマッピングして描画する
+- canvas サイズは親要素幅に合わせてリサイズ対応する
+
+【制約】
+- 外部ライブラリ不使用
+- グローバル汚染防止のため即時関数（IIFE）で全体を囲む
+- HTML/CSS/JS をすべて1ファイルに収める</pre>
+  </div>
+</div>
+
+<script>
+function copyPrompt(btn) {
+  var text = btn.closest('.prompt-box').querySelector('.prompt-text').textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'コピー'; }, 2000);
+  });
+}
 </script>

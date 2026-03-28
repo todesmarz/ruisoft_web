@@ -314,7 +314,7 @@ title: 画像編集ツール - Rui Software
 
     <!-- 明るさ・コントラスト -->
     <div class="panel-block">
-      <h4>明るさ / コントラスト</h4>
+      <h4>ライトルーム調整</h4>
       <div class="slider-row">
         <label>明るさ</label>
         <input type="range" id="sl-brightness" min="-100" max="100" value="0">
@@ -330,7 +330,44 @@ title: 画像編集ツール - Rui Software
         <input type="range" id="sl-saturation" min="-100" max="100" value="0">
         <span id="val-saturation">0</span>
       </div>
-      <button class="export-btn" id="apply-adjust-btn" style="width:100%;margin-top:4px">適用</button>
+      <div class="slider-row">
+        <label>ハイライト</label>
+        <input type="range" id="sl-highlight" min="-100" max="100" value="0">
+        <span id="val-highlight">0</span>
+      </div>
+      <div class="slider-row">
+        <label>シャドウ</label>
+        <input type="range" id="sl-shadow" min="-100" max="100" value="0">
+        <span id="val-shadow">0</span>
+      </div>
+      <div class="slider-row">
+        <label>色温度</label>
+        <input type="range" id="sl-temp" min="-100" max="100" value="0">
+        <span id="val-temp">0</span>
+      </div>
+      <div class="slider-row">
+        <label>色かびり</label>
+        <input type="range" id="sl-tint" min="-100" max="100" value="0">
+        <span id="val-tint">0</span>
+      </div>
+      <div class="slider-row">
+        <label>シャープネス</label>
+        <input type="range" id="sl-sharpness" min="0" max="100" value="0">
+        <span id="val-sharpness">0</span>
+      </div>
+      <div class="slider-row">
+        <label>ノイズ軽減</label>
+        <input type="range" id="sl-denoise" min="0" max="100" value="0">
+        <span id="val-denoise">0</span>
+      </div>
+      <div class="slider-row">
+        <label>ビネット</label>
+        <input type="range" id="sl-vignette" min="-100" max="0" value="0">
+        <span id="val-vignette">0</span>
+      </div>
+      <button class="export-btn secondary" id="preview-adjust-btn" style="width:100%;margin-top:4px">👁 プレビュー</button>
+      <button class="export-btn" id="apply-adjust-btn" style="width:100%;margin-top:4px">✔ 適用</button>
+      <button class="export-btn secondary" id="reset-adjust-btn" style="width:100%;margin-top:4px">リセット</button>
     </div>
 
     <!-- フィルタ -->
@@ -695,14 +732,18 @@ document.getElementById('undo-btn').addEventListener('click', () => {
 document.getElementById('reset-btn').addEventListener('click', () => {
   if (!state.originalImage) return;
   pushHistory();
-  const w = mainCanvas.width, h = mainCanvas.height;
-  const base = makeLayerCanvas(w, h);
+  // 元画像のサイズで canvas を復元
+  const ow = state.originalImage.width, oh = state.originalImage.height;
+  mainCanvas.width = ow; mainCanvas.height = oh;
+  overlayCanvas.width = ow; overlayCanvas.height = oh;
+  const base = makeLayerCanvas(ow, oh);
   base.getContext('2d').putImageData(state.originalImage, 0, 0);
   state.layers = [{ id: Date.now(), name: '背景', canvas: base, visible: true, opacity: 1 }];
   state.activeLayerIdx = 0;
   renderComposite();
   renderLayerList();
-  setStatus('リセットしました');
+  updateSizeInfo();
+  setStatus('リセットしました: ' + ow + ' × ' + oh + ' px');
 });
 
 /* ===================================================
@@ -856,45 +897,191 @@ document.getElementById('apply-bg-btn').addEventListener('click', () => {
 });
 
 /* ===================================================
-   明るさ・コントラスト・彩度
+   ライトルーム調整（非破壊プレビュー + 適用）
 =================================================== */
-['brightness','contrast','saturation'].forEach(key => {
+const ADJUST_KEYS = ['brightness','contrast','saturation','highlight','shadow','temp','tint','sharpness','denoise','vignette'];
+ADJUST_KEYS.forEach(key => {
   const sl = document.getElementById('sl-'+key);
   const vl = document.getElementById('val-'+key);
-  sl.addEventListener('input', () => { vl.textContent = sl.value; });
+  if (sl && vl) sl.addEventListener('input', () => { vl.textContent = sl.value; });
 });
-document.getElementById('apply-adjust-btn').addEventListener('click', () => {
-  pushHistory();
-  const brightness = parseInt(document.getElementById('sl-brightness').value);
-  const contrast   = parseInt(document.getElementById('sl-contrast').value);
-  const saturation = parseInt(document.getElementById('sl-saturation').value);
-  const ly = activeLayer();
-  const lctx = ly.canvas.getContext('2d');
-  const w = ly.canvas.width, h = ly.canvas.height;
-  const imgData = lctx.getImageData(0, 0, w, h);
-  const d = imgData.data;
-  const cf = (259*(contrast+255))/(255*(259-contrast));
+
+function getAdjustParams() {
+  return {
+    brightness : parseInt(document.getElementById('sl-brightness').value),
+    contrast   : parseInt(document.getElementById('sl-contrast').value),
+    saturation : parseInt(document.getElementById('sl-saturation').value),
+    highlight  : parseInt(document.getElementById('sl-highlight').value),
+    shadow     : parseInt(document.getElementById('sl-shadow').value),
+    temp       : parseInt(document.getElementById('sl-temp').value),
+    tint       : parseInt(document.getElementById('sl-tint').value),
+    sharpness  : parseInt(document.getElementById('sl-sharpness').value),
+    denoise    : parseInt(document.getElementById('sl-denoise').value),
+    vignette   : parseInt(document.getElementById('sl-vignette').value),
+  };
+}
+
+// ピクセルごと調整を適用（元データに累積しない）
+function applyAdjustToImageData(src, params) {
+  const d = new Uint8ClampedArray(src.data);
+  const w = src.width, h = src.height;
+
+  const cf = (259*(params.contrast+255))/(255*(259-params.contrast));
+
   for (let i = 0; i < d.length; i += 4) {
     let r = d[i], g = d[i+1], b = d[i+2];
-    r += brightness; g += brightness; b += brightness;
+
+    // 明るさ
+    r += params.brightness; g += params.brightness; b += params.brightness;
+
+    // コントラスト
     r = cf*(r-128)+128; g = cf*(g-128)+128; b = cf*(b-128)+128;
-    if (saturation !== 0) {
-      const s = saturation / 100;
+
+    // 彩度
+    if (params.saturation !== 0) {
+      const s = params.saturation / 100;
       const gray = 0.299*r + 0.587*g + 0.114*b;
-      if (s > 0) {
-        r = gray+(r-gray)*(1+s); g = gray+(g-gray)*(1+s); b = gray+(b-gray)*(1+s);
-      } else {
-        r = r+(gray-r)*(-s); g = g+(gray-g)*(-s); b = b+(gray-b)*(-s);
+      r = gray+(r-gray)*(1+s); g = gray+(g-gray)*(1+s); b = gray+(b-gray)*(1+s);
+    }
+
+    // 色温度（ウォーム→赤+黄 / クール→青）
+    if (params.temp !== 0) {
+      const t = params.temp / 100;
+      r += t * 40; g += t * 10; b -= t * 40;
+    }
+
+    // 色かびり（ディーセント→緑 / マゼンタ→赤+青）
+    if (params.tint !== 0) {
+      const t = params.tint / 100;
+      r += t * 20; g -= t * 20; b += t * 10;
+    }
+
+    // 輝度でハイライト / シャドウ分割
+    if (params.highlight !== 0 || params.shadow !== 0) {
+      const lum = (r + g + b) / 3 / 255;
+      if (params.highlight !== 0 && lum > 0.5) {
+        const strength = (lum - 0.5) * 2 * params.highlight;
+        r += strength; g += strength; b += strength;
+      }
+      if (params.shadow !== 0 && lum < 0.5) {
+        const strength = (0.5 - lum) * 2 * params.shadow;
+        r += strength; g += strength; b += strength;
       }
     }
+
     d[i]   = Math.max(0,Math.min(255,r));
     d[i+1] = Math.max(0,Math.min(255,g));
     d[i+2] = Math.max(0,Math.min(255,b));
   }
-  lctx.putImageData(imgData, 0, 0);
+
+  // シャープネス（界面に近いアンシャーパーネスカーネル）
+  if (params.sharpness > 0) {
+    const sharp = params.sharpness / 100;
+    const k = [0,-sharp,0,-sharp,1+4*sharp,-sharp,0,-sharp,0];
+    const tmp = new Uint8ClampedArray(d);
+    for (let y = 1; y < h-1; y++) {
+      for (let x = 1; x < w-1; x++) {
+        const pi = (y*w+x)*4;
+        for (let c = 0; c < 3; c++) {
+          let v = 0;
+          for (let ky=-1;ky<=1;ky++) for (let kx=-1;kx<=1;kx++) {
+            v += tmp[((y+ky)*w+(x+kx))*4+c] * k[(ky+1)*3+(kx+1)];
+          }
+          d[pi+c] = Math.max(0,Math.min(255,v));
+        }
+      }
+    }
+  }
+
+  // ノイズ軽減（ボックスブラー）
+  if (params.denoise > 0) {
+    const radius = Math.round(params.denoise / 40);
+    if (radius > 0) {
+      const tmp2 = new Uint8ClampedArray(d);
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const pi = (y*w+x)*4;
+          let rr=0,gg=0,bb=0,cnt=0;
+          for (let ky=-radius;ky<=radius;ky++) {
+            for (let kx=-radius;kx<=radius;kx++) {
+              const ny=Math.max(0,Math.min(h-1,y+ky));
+              const nx=Math.max(0,Math.min(w-1,x+kx));
+              const qi=(ny*w+nx)*4;
+              rr+=tmp2[qi]; gg+=tmp2[qi+1]; bb+=tmp2[qi+2]; cnt++;
+            }
+          }
+          d[pi]=rr/cnt; d[pi+1]=gg/cnt; d[pi+2]=bb/cnt;
+        }
+      }
+    }
+  }
+
+  return new ImageData(d, w, h);
+}
+
+// ビネットを canvas に振る虎ぞ出しで描画
+function drawVignette(targetCtx, w, h, strength) {
+  if (strength >= 0) return;
+  const alpha = Math.abs(strength) / 100 * 0.85;
+  const grad = targetCtx.createRadialGradient(w/2, h/2, Math.min(w,h)*0.25, w/2, h/2, Math.max(w,h)*0.75);
+  grad.addColorStop(0, 'rgba(0,0,0,0)');
+  grad.addColorStop(1, 'rgba(0,0,0,' + alpha + ')');
+  targetCtx.fillStyle = grad;
+  targetCtx.fillRect(0, 0, w, h);
+}
+
+// プレビュー: 元レイヤーは変えず main canvas に一時展開
+function previewAdjust() {
+  const params = getAdjustParams();
+  const ly = activeLayer();
+  const w = ly.canvas.width, h = ly.canvas.height;
+  const srcData = ly.canvas.getContext('2d').getImageData(0, 0, w, h);
+  const adjusted = applyAdjustToImageData(srcData, params);
+
+  // 一時キャンバスで調整後レイヤーを作成
+  const tmpC = makeLayerCanvas(w, h);
+  tmpC.getContext('2d').putImageData(adjusted, 0, 0);
+  if (params.vignette < 0) drawVignette(tmpC.getContext('2d'), w, h, params.vignette);
+
+  // main canvas にプレビュー描画（他レイヤーも結合）
+  const cw = mainCanvas.width, ch = mainCanvas.height;
+  ctx.clearRect(0, 0, cw, ch);
+  state.layers.forEach((lyr, idx) => {
+    if (!lyr.visible) return;
+    ctx.globalAlpha = lyr.opacity;
+    ctx.drawImage(idx === state.activeLayerIdx ? tmpC : lyr.canvas, 0, 0);
+  });
+  ctx.globalAlpha = 1;
+  setStatus('プレビュー中（「適用」で確定）');
+}
+
+document.getElementById('preview-adjust-btn').addEventListener('click', previewAdjust);
+
+document.getElementById('apply-adjust-btn').addEventListener('click', () => {
+  pushHistory();
+  const params = getAdjustParams();
+  const ly = activeLayer();
+  const lctx = ly.canvas.getContext('2d');
+  const w = ly.canvas.width, h = ly.canvas.height;
+  const srcData = lctx.getImageData(0, 0, w, h);
+  const adjusted = applyAdjustToImageData(srcData, params);
+  lctx.putImageData(adjusted, 0, 0);
+  if (params.vignette < 0) drawVignette(lctx, w, h, params.vignette);
   renderComposite();
   renderLayerList();
   setStatus('調整を適用しました');
+});
+
+document.getElementById('reset-adjust-btn').addEventListener('click', () => {
+  ADJUST_KEYS.forEach(key => {
+    const sl = document.getElementById('sl-'+key);
+    const vl = document.getElementById('val-'+key);
+    const def = sl ? (sl.min === '0' ? '0' : '0') : '0';
+    if (sl) { sl.value = 0; }
+    if (vl) { vl.textContent = 0; }
+  });
+  renderComposite();
+  setStatus('スライダーをリセットしました');
 });
 
 /* ===================================================
@@ -1016,8 +1203,9 @@ document.getElementById('split-layers-btn').addEventListener('click', () => {
       return;
     }
 
+    // 分割元のレイヤー情報を保持したままレイヤーを増設する（canvasサイズはそのまま）
     const topRegions = regions.sort((a,b) => b.length-a.length).slice(0, 8);
-    state.layers = topRegions.map((pixels, ri) => {
+    const newLayers = topRegions.map((pixels, ri) => {
       const nc = makeLayerCanvas(w, h);
       const nctx = nc.getContext('2d');
       const nd = nctx.createImageData(w, h);
@@ -1030,10 +1218,12 @@ document.getElementById('split-layers-btn').addEventListener('click', () => {
       nctx.putImageData(nd, 0, 0);
       return { id: Date.now()+ri, name: '領域 '+(ri+1), canvas: nc, visible: true, opacity: 1 };
     });
-    state.activeLayerIdx = 0;
+    // 分割元レイヤーを残して新レイヤーを追加
+    newLayers.forEach(nl => state.layers.push(nl));
+    state.activeLayerIdx = state.layers.length - newLayers.length;
     renderComposite();
     renderLayerList();
-    setStatus(state.layers.length + ' 個のレイヤーに分割しました');
+    setStatus(newLayers.length + ' 個のレイヤーに分割しました（分割元は保持）');
   }, 10);
 });
 

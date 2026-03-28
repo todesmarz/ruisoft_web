@@ -157,7 +157,9 @@ title: clock - Rui Software
   z-index: 1;
 }
 .flip-top span {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 200%; /* カード全体分の高さ */
   font-family: 'Orbitron', monospace;
@@ -165,7 +167,6 @@ title: clock - Rui Software
   font-weight: 700;
   color: #fff;
   text-align: center;
-  line-height: 130px; /* カード高さ分 */
   text-shadow: 0 2px 8px rgba(0,0,0,0.5);
 }
 
@@ -181,7 +182,9 @@ title: clock - Rui Software
   z-index: 1;
 }
 .flip-bottom span {
-  display: block;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
   width: 100%;
   height: 200%; /* カード全体分の高さ */
   font-family: 'Orbitron', monospace;
@@ -189,8 +192,6 @@ title: clock - Rui Software
   font-weight: 700;
   color: #fff;
   text-align: center;
-  line-height: 130px; /* カード高さ分 */
-  margin-top: -100%; /* 上半分を隠して下半分だけ見せる */
   text-shadow: 0 2px 8px rgba(0,0,0,0.5);
 }
 
@@ -207,7 +208,9 @@ title: clock - Rui Software
   backface-visibility: hidden;
 }
 .flip-flap-top span {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 200%;
   font-family: 'Orbitron', monospace;
@@ -215,7 +218,6 @@ title: clock - Rui Software
   font-weight: 700;
   color: #fff;
   text-align: center;
-  line-height: 130px;
   text-shadow: 0 2px 8px rgba(0,0,0,0.5);
 }
 
@@ -233,7 +235,9 @@ title: clock - Rui Software
   transform: rotateX(90deg);
 }
 .flip-flap-bottom span {
-  display: block;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
   width: 100%;
   height: 200%;
   font-family: 'Orbitron', monospace;
@@ -241,8 +245,6 @@ title: clock - Rui Software
   font-weight: 700;
   color: #fff;
   text-align: center;
-  line-height: 130px;
-  margin-top: -100%;
   text-shadow: 0 2px 8px rgba(0,0,0,0.5);
 }
 
@@ -314,15 +316,12 @@ title: clock - Rui Software
   perspective: 600px;
 }
 #clock-overlay .flip-card .flip-top span,
-#clock-overlay .flip-card .flip-bottom span,
-#clock-overlay .flip-card .flip-flap-top span,
-#clock-overlay .flip-card .flip-flap-bottom span {
+#clock-overlay .flip-card .flip-flap-top span {
   font-size: 9.5vw;
-  line-height: 18vw;
 }
 #clock-overlay .flip-card .flip-bottom span,
 #clock-overlay .flip-card .flip-flap-bottom span {
-  margin-top: -100%;
+  font-size: 9.5vw;
 }
 #clock-overlay .flip-sep { font-size: 6vw; }
 
@@ -488,6 +487,12 @@ function applyBgColor() {
   clockWrap.style.backgroundColor = state.bgColor;
   clockWrap.style.borderRadius = '6px';
   clockWrap.style.transition = 'background-color 0.3s';
+  // 全画面オーバーレイにも背景色を適用（テーマ色より優先）
+  if (state.bgColor && state.bgColor !== 'transparent') {
+    overlay.style.backgroundColor = state.bgColor;
+  } else {
+    overlay.style.backgroundColor = '';
+  }
 }
 
 /* ========== フリップカード生成 ========== */

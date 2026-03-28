@@ -23,6 +23,9 @@ title: ユーティリティ - Rui Software
 ### [画像編集ツール]({{site.baseurl}}/utils/image-editor/)
 背景透過・ぼかし・トリミング・フィルタ・レイヤー分割など、ブラウザ上で動作する画像編集ツール。
 
+### [デジタル時計]({{site.baseurl}}/utils/clock/)
+Classic・Matrix・Neon・Amber・Minimal・Flipの6テーマを切り替えられるデジタル時計。全画面表示・背景色変更にも対応。
+
 ---
 
 ## 遊べるシミュレーション

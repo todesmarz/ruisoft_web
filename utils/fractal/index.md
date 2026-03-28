@@ -349,3 +349,110 @@ document.getElementById('sel-color').addEventListener('change', drawFractal);
 resizeCanvas();
 })();
 </script>
+
+---
+
+<style>
+.prompt-section {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px dotted #ccc;
+}
+.prompt-title {
+  font-size: 1.1em;
+  font-weight: 400;
+  border-left: 6px solid #2e8b57;
+  padding-left: 10px;
+  margin-bottom: 8px;
+}
+.prompt-desc {
+  font-size: .85em;
+  color: #666;
+  margin-bottom: 12px;
+}
+.prompt-box {
+  position: relative;
+  background: #f7faf8;
+  border: 1px solid #dde8e2;
+  border-radius: 4px;
+  padding: 12px;
+}
+.prompt-text {
+  font-family: Ricty, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+  font-size: .82em;
+  line-height: 1.7;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+  padding-right: 70px;
+  background: transparent;
+  border: none;
+}
+.prompt-copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 12px;
+  font-size: .78em;
+  background: #2e8b57;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.prompt-copy-btn:hover { background: #236b43; }
+</style>
+
+<div class="prompt-section">
+  <h3 class="prompt-title">📋 このツールを作ったプロンプト</h3>
+  <p class="prompt-desc">以下のプロンプトをClaude・ChatGPT・GeminiなどのAIに貼り付けると、同じようなツールを作ることができます。</p>
+  <div class="prompt-box">
+    <button class="prompt-copy-btn" onclick="copyPromptFr(this)">コピー</button>
+    <pre class="prompt-text">ブラウザで動くフラクタル描画ツールをHTML単一ファイル（HTML/CSS/JS完結）で実装してください。
+
+【描画対象】
+以下3種類をセレクトボックスで切り替えられる。
+- マンデルブロ集合: z(n+1) = z(n)^2 + c、初期値 z=0、c が描画点の複素座標
+- ジュリア集合: 同じ式だが c を固定（例: c = -0.7269 + 0.1889i）、描画点を z の初期値にする
+- バーニングシップ: マンデルブロと同様だが zy の算出しに Math.abs を使用する
+
+【カラーマップ】
+以下5種類をセレクトボックスで切り替えられる。
+- Classic: 繰り返し数をベースに黑→青→白のグラデーション
+- Fire: 0−1 の t を 3 分割して赤→橙→白のグラデーション
+- Ocean: t に応じた青系グラデーション
+- Mono: t*255 のグレースケール
+- Rainbow: t*360 を hue にした HSL→RGB 変換
+集合内部（収束しない点）は黑にする。
+
+【操作】
+- クリック/タップ: その点を中心にズームイン（倍率 0.5 倍）
+- ドラッグ: 移動に応じて視野をパン
+- ホイール: スクロール方向に応じたズーム（マウス位置を中心に）
+- ピンチ（タッチ）: 2指の距離比でズーム備率を変更
+- ズームイン/アウトボタンとリセットボタンを表示する
+
+【描画方式】
+- canvas に createImageData で直接ピクセル書き込みを行う
+- 描画は setTimeout の遅延実行にし　1忍ローディング表示を出す
+- カンバス左下に現在の中心座標と倍率を表示する
+- リサイズ時に再描画する
+
+【制約】
+- 外部ライブラリ不使用
+- グローバル汚染防止のため即時関数（IIFE）で全体を囲む
+- HTML/CSS/JS をすべて1ファイルに収める</pre>
+  </div>
+</div>
+
+<script>
+function copyPromptFr(btn) {
+  var text = btn.closest('.prompt-box').querySelector('.prompt-text').textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'コピー'; }, 2000);
+  });
+}
+</script>

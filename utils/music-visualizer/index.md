@@ -179,3 +179,109 @@ function loop(){
 }
 })();
 </script>
+
+---
+
+<style>
+.prompt-section {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px dotted #ccc;
+}
+.prompt-title {
+  font-size: 1.1em;
+  font-weight: 400;
+  border-left: 6px solid #2e8b57;
+  padding-left: 10px;
+  margin-bottom: 8px;
+}
+.prompt-desc {
+  font-size: .85em;
+  color: #666;
+  margin-bottom: 12px;
+}
+.prompt-box {
+  position: relative;
+  background: #f7faf8;
+  border: 1px solid #dde8e2;
+  border-radius: 4px;
+  padding: 12px;
+}
+.prompt-text {
+  font-family: Ricty, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+  font-size: .82em;
+  line-height: 1.7;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+  padding-right: 70px;
+  background: transparent;
+  border: none;
+}
+.prompt-copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 12px;
+  font-size: .78em;
+  background: #2e8b57;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.prompt-copy-btn:hover { background: #236b43; }
+</style>
+
+<div class="prompt-section">
+  <h3 class="prompt-title">📋 このツールを作ったプロンプト</h3>
+  <p class="prompt-desc">以下のプロンプトをClaude・ChatGPT・GeminiなどのAIに貼り付けると、同じようなツールを作ることができます。</p>
+  <div class="prompt-box">
+    <button class="prompt-copy-btn" onclick="copyPromptMv(this)">コピー</button>
+    <pre class="prompt-text">ブラウザで動く音楽ビジュアライザーをHTML単一ファイル（HTML/CSS/JS完結）で実装してください。
+
+【音声入力】
+- ファイルのみ対応（マイク入力は不要）
+- ドラッグアンドドロップとクリック選択の両方に対応する
+- MP3 / WAV / OGG / AAC の音楽ファイルを読み込む
+- 読み込み後にプレイヤーエリアを表示する
+
+【Web Audio】
+- AudioContext と AnalyserNode を使用する
+- analyser.fftSize = 2048
+- createMediaElementSource ではなく、decodeAudioData でバッファから再生する
+  （再生・一時停止・シークに対応するため）
+- GainNode で音量調整を実装する
+
+【ビジュアルスタイル】
+ボタンで以下4種類を切り替えられる。
+- バー: 周波数データを横棒グラフで表示。HSL色相で周波数ごとに色変えする
+- 波形: 時間領域データを折れ線で描画。グリーン主体に半透明の影を付ける
+- サークル: 中心から放射状に周波数データを線分で描画。全周で 360 本。HSL沿い色
+- パーティクル: 音山に応じてパーティクルを発生させ、重力で下に落ちる
+
+【プレイヤー】
+- 再生/一時停止ボタン、停止ボタンを表示する
+- シークバーで任意の位置に移動できる（操作中は指を離したのちにシーク実行）
+- 音量スライダーを表示する
+- 現在時刻と全体尺度を mm:ss 形式で表示する
+- 別のファイルを読み込むボタンも表示する
+
+【制約】
+- 外部ライブラリ不使用
+- グローバル汚染防止のため即時関数（IIFE）で全体を囲む
+- HTML/CSS/JS をすべて1ファイルに収める</pre>
+  </div>
+</div>
+
+<script>
+function copyPromptMv(btn) {
+  var text = btn.closest('.prompt-box').querySelector('.prompt-text').textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'コピー'; }, 2000);
+  });
+}
+</script>
