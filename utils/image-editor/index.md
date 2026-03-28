@@ -395,6 +395,128 @@ title: 画像編集ツール - Rui Software
 </div><!-- /ie-main -->
 </div><!-- /ie-wrap -->
 
+---
+
+<div class="prompt-section">
+  <h3 class="prompt-title">📋 このツールを作ったプロンプト</h3>
+  <p class="prompt-desc">以下のプロンプトをClaude・ChatGPT・GeminiなどのAIに貼り付けると、同じようなツールを作ることができます。</p>
+  <div class="prompt-box">
+    <button class="prompt-copy-btn" onclick="copyPrompt(this)">コピー</button>
+    <pre class="prompt-text">ブラウザで動く画像編集ツールをHTML単一ファイル（HTML/CSS/JS完結）で実装してください。
+
+【画像読み込み】
+- ドラッグ＆ドロップと input[type=file] の両方に対応する（PNG/JPEG/GIF/WebP）
+- FileReader.readAsDataURL() で読み込み、Image オブジェクト経由で Canvas に描画する
+
+【レイヤー構造】
+- layers[] : { id, name, canvas(OffscreenCanvasと同等のdocument.createElement('canvas')), visible, opacity } の配列で管理する
+- 合成描画: layers を順に ctx.drawImage() で重ね描きして mainCanvas に反映する
+- レイヤー操作: 追加・複製・削除・表示切替・統合をサポートする
+
+【ツール（ドラッグ選択）】
+- mainCanvas の mousedown/mousemove/mouseup イベントで選択矩形を取得する
+- getBoundingClientRect() + canvas の実解像度比でピクセル座標に変換する
+- overlayCanvas（position:absolute で重ねた透明 canvas）に選択枠を描画する
+- トリミング: 選択矩形で全レイヤーを切り抜き canvas サイズを変更する
+- ぼかし: ctx.filter = 'blur(6px)' を一時 canvas に適用して元レイヤーに合成する
+
+【背景透過】
+- getImageData() でピクセルデータを取得する
+- 指定色との距離を sqrt(dr²+dg²+db²) で計算し、許容範囲以内なら alpha=0 にする
+- putImageData() で反映する
+
+【色調整（明るさ・コントラスト・彩度）】
+- コントラスト係数: cf = (259 * (c+255)) / (255 * (259-c))
+- 彩度: グレー値 = 0.299R + 0.587G + 0.114B を基準に線形補間する
+- getImageData → ピクセルループ処理 → putImageData の流れで実装する
+
+【畳み込みフィルタ】
+- 3×3 カーネルで sharpen / edge / emboss を実装する
+- グレースケール・セピア・ネガポジはピクセル単位の演算で実装する
+
+【レイヤー自動分割（BFS フラッドフィル）】
+- visited[w*h] の Uint8Array でアクセス済み管理する
+- 始点ピクセルと色差が tolerance 以内のピクセルをキューで探索し連結領域を収集する
+- minArea 未満の領域は除外し、面積上位8領域を独立レイヤーとして生成する
+
+【Undo】
+- 操作前に layers の各 canvas を cloneCanvas() でディープコピーしてスタックに積む
+- 最大20件保持し、超えたら先頭を削除する
+
+【出力】
+- PNG: mainCanvas.toDataURL('image/png') でダウンロードする
+- JPEG: 白背景の一時 canvas に合成後 toDataURL('image/jpeg', quality) でダウンロードする
+
+【制約】
+- 外部ライブラリ不使用
+- HTML/CSS/JS をすべて1ファイルに収める
+- グローバル汚染防止のため即時関数（IIFE）で全体を囲む</pre>
+  </div>
+</div>
+
+<style>
+.prompt-section {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px dotted #ccc;
+}
+.prompt-title {
+  font-size: 1.1em;
+  font-weight: 400;
+  border-left: 6px solid #2e8b57;
+  padding-left: 10px;
+  margin-bottom: 8px;
+}
+.prompt-desc {
+  font-size: .85em;
+  color: #666;
+  margin-bottom: 12px;
+}
+.prompt-box {
+  position: relative;
+  background: #f7faf8;
+  border: 1px solid #dde8e2;
+  border-radius: 4px;
+  padding: 12px 12px 12px 12px;
+}
+.prompt-text {
+  font-family: Ricty, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+  font-size: .82em;
+  line-height: 1.7;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+  padding-right: 70px;
+  background: transparent;
+  border: none;
+}
+.prompt-copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 12px;
+  font-size: .78em;
+  background: #2e8b57;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.prompt-copy-btn:hover { background: #236b43; }
+</style>
+
+<script>
+function copyPrompt(btn) {
+  var text = btn.closest('.prompt-box').querySelector('.prompt-text').textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'コピー'; }, 2000);
+  });
+}
+</script>
+
 <script>
 (function(){
 'use strict';
