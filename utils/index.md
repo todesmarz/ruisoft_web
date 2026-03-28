@@ -23,5 +23,11 @@ title: ユーティリティ - Rui Software
 
 ## 🖼️ ツール一覧
 
+### [時計]({{site.baseurl}}/utils/clock/)
+デジタル時計。Classic・Matrix・Neon・Amber・Minimal・Flipなどのテーマ切替、全画面表示、背景色プリセットに対応。
+
+### [数独]({{site.baseurl}}/utils/suudoku/)
+ブラウザで動作する数独ゲーム。難易度選択・メモ機能・ヒント・正解チェック・タイマーつき。
+
 ### [画像編集ツール]({{site.baseurl}}/utils/image-editor/)
 背景透過・ぼかし・トリミング・フィルタ・レイヤー分割など、ブラウザ上で動作する画像編集ツール。
