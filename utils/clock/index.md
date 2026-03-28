@@ -425,7 +425,7 @@ title: clock - Rui Software
 
 /* ========== 背景色プリセット定義 ========== */
 var BG_PRESETS = [
-  { label: 'デフォルト', color: '#eeeeee' },
+  { label: 'デフォルト', color: 'transparent' },
   { label: 'ホワイト',   color: '#ffffff' },
   { label: 'ライトグレー', color: '#f0f0f0' },
   { label: 'ダークグレー', color: '#333333' },
@@ -447,7 +447,7 @@ var state = {
   showMin:  true,
   showSec:  false,
   showDate: false,
-  bgColor:  '#eeeeee',
+  bgColor:  'transparent',
 };
 
 /* ========== DOM ========== */
@@ -467,7 +467,12 @@ BG_PRESETS.forEach(function(preset) {
   var swatch = document.createElement('div');
   swatch.className = 'bg-swatch';
   swatch.title = preset.label;
-  swatch.style.backgroundColor = preset.color;
+  if (preset.color === 'transparent') {
+    // 透明はチェッカー柄で表示
+    swatch.style.background = 'repeating-conic-gradient(#ccc 0% 25%, #fff 0% 50%) 0 0 / 8px 8px';
+  } else {
+    swatch.style.backgroundColor = preset.color;
+  }
   swatch.style.boxShadow = '0 1px 3px rgba(0,0,0,0.25)';
   if (preset.color === state.bgColor) swatch.classList.add('active');
   swatch.addEventListener('click', function() {
@@ -480,8 +485,9 @@ BG_PRESETS.forEach(function(preset) {
 });
 
 function applyBgColor() {
-  document.body.style.backgroundColor = state.bgColor;
-  // overlayが出ていないときだけページ背景を変更
+  clockWrap.style.backgroundColor = state.bgColor;
+  clockWrap.style.borderRadius = '6px';
+  clockWrap.style.transition = 'background-color 0.3s';
 }
 
 /* ========== フリップカード生成 ========== */
