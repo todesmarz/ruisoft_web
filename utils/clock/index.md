@@ -688,3 +688,126 @@ tick();
 
 })();
 </script>
+
+---
+
+<div class="prompt-section">
+  <h3 class="prompt-title">📋 このツールを作ったプロンプト</h3>
+  <p class="prompt-desc">以下のプロンプトをClaude・ChatGPT・GeminiなどのAIに貼り付けると、同じようなツールを作ることができます。</p>
+  <div class="prompt-box">
+    <button class="prompt-copy-btn" onclick="copyPrompt(this)">コピー</button>
+    <pre class="prompt-text">ブラウザで動くデジタル時計をHTML単一ファイル（HTML/CSS/JS完結）で実装してください。
+
+【表示・更新】
+- setTimeout 200ms間隔で new Date() を取得し時刻を更新する
+- 表示項目（時・分・秒・日付）をそれぞれ独立したトグルボタンでON/OFF切替できる
+- 時刻は String(n).padStart(2, '0') で2桁ゼロ埋め表示する
+
+【テーマ】
+以下5テーマをボタンで切り替える。切替時はCSSクラスを #clock-wrap に付け外しして適用する。
+- Classic : Orbitron / 赤 #ff2200 / text-shadow でグロー
+- Matrix  : Share Tech Mono / 緑 #00ff41 / text-shadow でグロー
+- Neon    : Rajdhani / シアン #00e5ff / text-shadow でグロー
+- Amber   : Orbitron / オレンジ #ffaa00 / text-shadow でグロー
+- Minimal : Rajdhani / #111 / text-shadow なし
+フォントは Google Fonts から読み込む。
+
+【フリップ時計モード】
+- 通常表示と切り替えるモードとして実装する
+- カード構造:
+  .flip-top（上半分・旧値表示）
+  .flip-bottom（下半分・新値表示）
+  .flip-flap-top（上フラップ・旧値・rotateX(0→-90deg)でめくれる）
+  .flip-flap-bottom（下フラップ・新値・rotateX(90→0deg)で現れる）
+  の4要素で構成する
+- 値が変化したときのみアニメーション発火。
+  card.classList.remove('flipping'); void card.offsetWidth; card.classList.add('flipping');
+  のようにreflowを挟んで再発火させる
+- アニメーション時間: 上フラップ 0.25s ease-in、下フラップ 0.25s ease-out（0.25s delay）
+- perspective を設定し3D奥行きを出す
+
+【全画面表示】
+- document.documentElement.requestFullscreen() で全画面化
+- 固定オーバーレイ（position: fixed; inset: 0; z-index: 9999）でUIを描画
+- ESCキー（keydownイベント）またはオーバーレイクリックで閉じる
+- fullscreenchange イベントで外部操作（ブラウザのESC）にも対応する
+
+【背景色プリセット】
+- 透明（チェッカー柄で表現）・白・グレー系・黒・ダーク系・ライト系など12色程度の
+  スウォッチを横並びで表示する
+- 選択時は #clock-wrap の backgroundColor のみを変更し document.body は変更しない
+- アクティブなスウォッチにはボーダーでハイライトを表示する
+
+【状態管理】
+すべての状態（theme / overlay / showHour / showMin / showSec / showDate / bgColor）を
+単一の state オブジェクトで管理する。
+
+【制約】
+- 外部ライブラリ不使用（Google Fonts CDNは可）
+- HTML/CSS/JS をすべて1ファイルに収める
+- グローバル汚染防止のため即時関数（IIFE）で全体を囲む</pre>
+  </div>
+</div>
+
+<style>
+.prompt-section {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px dotted #ccc;
+}
+.prompt-title {
+  font-size: 1.1em;
+  font-weight: 400;
+  border-left: 6px solid #2e8b57;
+  padding-left: 10px;
+  margin-bottom: 8px;
+}
+.prompt-desc {
+  font-size: .85em;
+  color: #666;
+  margin-bottom: 12px;
+}
+.prompt-box {
+  position: relative;
+  background: #f7faf8;
+  border: 1px solid #dde8e2;
+  border-radius: 4px;
+  padding: 12px 12px 12px 12px;
+}
+.prompt-text {
+  font-family: Ricty, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+  font-size: .82em;
+  line-height: 1.7;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+  padding-right: 70px;
+  background: transparent;
+  border: none;
+}
+.prompt-copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 12px;
+  font-size: .78em;
+  background: #2e8b57;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.prompt-copy-btn:hover { background: #236b43; }
+</style>
+
+<script>
+function copyPrompt(btn) {
+  var text = btn.closest('.prompt-box').querySelector('.prompt-text').textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'コピー'; }, 2000);
+  });
+}
+</script>
