@@ -623,3 +623,122 @@ startGame();
 
 })();
 </script>
+
+---
+
+<div class="prompt-section">
+  <h3 class="prompt-title">📋 このツールを作ったプロンプト</h3>
+  <p class="prompt-desc">以下のプロンプトをClaude・ChatGPT・GeminiなどのAIに貼り付けると、同じようなツールを作ることができます。</p>
+  <div class="prompt-box">
+    <button class="prompt-copy-btn" onclick="copyPrompt(this)">コピー</button>
+    <pre class="prompt-text">ブラウザで動く数独ゲームをHTML単一ファイル（HTML/CSS/JS完結）で実装してください。
+
+【パズル生成】
+- バックトラッキングで完成盤面（solution）を生成する
+- 難易度に応じて穴の数を変える（易:35 / 普通:47 / 難:56）
+- 穴を開ける際は countSolutions() で唯一解チェックを行い、2解以上になるマスは戻す
+
+【盤面データ構造】
+- puzzle[81]    : 初期配置（0=空白）
+- solution[81]  : 正解盤面
+- fixed[81]     : 初期配置マスの固定フラグ（Boolean）
+- userInput[81] : ユーザー入力値（null or 1-9）
+- memoData[81]  : Set オブジェクトの配列（候補メモ）
+
+【入力・操作】
+- マスクリックで selected インデックスを更新し再描画する
+- 数字パレットボタンとキーボード（1-9 / Backspace / Delete / 矢印キー）で入力できる
+- メモモード ON 時は userInput ではなく memoData[idx] の Set を更新する
+- 数値確定時は同行・同列・同3×3ブロックの memoData から該当数字を削除する
+
+【バリデーション】
+- isValid(board, idx, num) : 行・列・3×3ブロックに同じ数字がないか確認する
+- 誤入力マスは .wrong クラスを付与して赤色表示する
+- 選択中マスと同じ数字のマスは .highlight クラスでハイライトする
+
+【ヒント】
+- solution と異なる未入力・誤入力マスから1つランダムに選び正解値を入れる
+- 対象マスに .hint-flash アニメーション（CSS @keyframes）を適用する
+
+【クリア判定・演出】
+- 全81マスが solution と一致したらクリアと判定しタイマーを停止する
+- 各マスに setTimeout(fn, i * 8ms) で順次 .clear-anim クラスを付与し波状アニメーションを表示する
+
+【タイマー】
+- setInterval 1000ms で timerSec をインクリメントし MM:SS 形式で表示する
+- 新しいゲーム開始時にリセット・再開する
+
+【スタイル】
+- display:grid / grid-template-columns: repeat(9, 1fr) で盤面を構成する
+- nth-child セレクタで3×3ブロック境界の border を太くする
+- スマートフォン対応のため数字パレット（1-9 + 消去ボタン）を盤面下に配置する
+
+【制約】
+- 外部ライブラリ不使用
+- HTML/CSS/JS をすべて1ファイルに収める
+- グローバル汚染防止のため即時関数（IIFE）で全体を囲む</pre>
+  </div>
+</div>
+
+<style>
+.prompt-section {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px dotted #ccc;
+}
+.prompt-title {
+  font-size: 1.1em;
+  font-weight: 400;
+  border-left: 6px solid #2e8b57;
+  padding-left: 10px;
+  margin-bottom: 8px;
+}
+.prompt-desc {
+  font-size: .85em;
+  color: #666;
+  margin-bottom: 12px;
+}
+.prompt-box {
+  position: relative;
+  background: #f7faf8;
+  border: 1px solid #dde8e2;
+  border-radius: 4px;
+  padding: 12px 12px 12px 12px;
+}
+.prompt-text {
+  font-family: Ricty, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+  font-size: .82em;
+  line-height: 1.7;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+  padding-right: 70px;
+  background: transparent;
+  border: none;
+}
+.prompt-copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 12px;
+  font-size: .78em;
+  background: #2e8b57;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.prompt-copy-btn:hover { background: #236b43; }
+</style>
+
+<script>
+function copyPrompt(btn) {
+  var text = btn.closest('.prompt-box').querySelector('.prompt-text').textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'コピーしました';
+    setTimeout(function() { btn.textContent = 'コピー'; }, 2000);
+  });
+}
+</script>
