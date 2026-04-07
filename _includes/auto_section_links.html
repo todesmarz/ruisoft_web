@@ -1,0 +1,13 @@
+{% assign section_path = include.section_path %}
+{% assign section_url = '/' | append: section_path | append: '/' %}
+{% assign pages = site.pages | where_exp: 'item', "item.url != section_url and item.url contains section_url and item.name == 'index.md'" | sort: 'url' %}
+{% if pages.size > 0 %}
+<ul>
+{% for item in pages %}
+  {% assign clean_title = item.title | default: item.url | replace: ' - Rui Software', '' %}
+  <li><a href="{{ site.baseurl }}{{ item.url }}" title="{{ clean_title }}">{{ clean_title }}</a></li>
+{% endfor %}
+</ul>
+{% else %}
+<p>まだコンテンツがありません。</p>
+{% endif %}
