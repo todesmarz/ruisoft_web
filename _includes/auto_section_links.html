@@ -1,12 +1,18 @@
 {% assign section_path = include.section_path %}
 {% assign section_url = '/' | append: section_path | append: '/' %}
-{% assign pages = site.pages | where_exp: 'item', "item.url != section_url and item.url contains section_url and item.name == 'index.md'" | sort: 'url' %}
-{% if pages.size > 0 %}
+{% assign sorted_pages = site.pages | sort: 'url' %}
+{% assign has_pages = false %}
+{% for item in sorted_pages %}
+  {% if item.url != section_url and item.url contains section_url and item.name == 'index.md' %}
+    {% unless has_pages %}
 <ul>
-{% for item in pages %}
-  {% assign clean_title = item.title | default: item.url | replace: ' - Rui Software', '' %}
+    {% assign has_pages = true %}
+    {% endunless %}
+    {% assign clean_title = item.title | default: item.url | replace: ' - Rui Software', '' %}
   <li><a href="{{ site.baseurl }}{{ item.url }}" title="{{ clean_title }}">{{ clean_title }}</a></li>
+  {% endif %}
 {% endfor %}
+{% if has_pages %}
 </ul>
 {% else %}
 <p>まだコンテンツがありません。</p>
