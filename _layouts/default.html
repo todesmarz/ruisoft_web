@@ -52,28 +52,27 @@ $(function() {
 <ul>
   <li><a href="{{site.baseurl}}/products/" title="製品情報">製品情報</a>
    {% assign product_index_url = '/products/' %}
-   {% assign product_pages = site.pages | where_exp: 'item', "item.url != product_index_url and item.url contains '/products/' and item.name == 'index.md'" | sort: 'url' %}
-   {% if product_pages.size > 0 %}
+   {% assign sorted_pages = site.pages | sort: 'url' %}
    <ul>
-    {% for item in product_pages %}
+    {% for item in sorted_pages %}
+    {% if item.url != product_index_url and item.url contains '/products/' and item.name == 'index.md' %}
     {% assign clean_title = item.title | replace: ' - Rui Software', '' %}
     <li><a href="{{ site.baseurl }}{{ item.url }}" title="{{ clean_title }}">{{ clean_title }}</a></li>
+    {% endif %}
     {% endfor %}
    </ul>
-   {% endif %}
   </li>
   <li><a href="{{site.baseurl}}/downloads/" title="ダウンロード">ダウンロード</a></li>
   <li class="last"><a href="{{site.baseurl}}/utils/" title="ユーティリティ">ユーティリティ</a>
    {% assign utility_index_url = '/utils/' %}
-   {% assign utility_pages = site.pages | where_exp: 'item', "item.url != utility_index_url and item.url contains '/utils/' and item.name == 'index.md'" | sort: 'url' %}
-   {% if utility_pages.size > 0 %}
    <ul>
-    {% for item in utility_pages %}
+    {% for item in sorted_pages %}
+    {% if item.url != utility_index_url and item.url contains '/utils/' and item.name == 'index.md' %}
     {% assign clean_title = item.title | replace: ' - Rui Software', '' %}
     <li><a href="{{ site.baseurl }}{{ item.url }}" title="{{ clean_title }}">{{ clean_title }}</a></li>
+    {% endif %}
     {% endfor %}
    </ul>
-   {% endif %}
   </li>
 </ul>
 </nav>
