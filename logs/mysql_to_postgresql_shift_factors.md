@@ -1,3 +1,7 @@
+---
+layout: default
+title: MySQLからPostgreSQLへ移行判断を最適化する：2026年時点の選定要因を構造化する - Rui Software
+---
 # MySQLからPostgreSQLへ移行判断を最適化する：2026年時点の選定要因を構造化する
 
 > 移行判断を「雰囲気」ではなく、評価基準と検証結果で進めるための実務ガイドです。
