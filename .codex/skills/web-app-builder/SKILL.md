@@ -101,7 +101,7 @@ Phase 5: 再生成プロンプト出力
 - 実装形式：HTML/CSS/JS 単一ファイル
 - 外部ライブラリ：{使用する場合はCDN URLも記載}
 - ブラウザ対応：Chrome/Firefox/Safari 最新版
-- GitHub Pages対応：index.htmlとして出力
+- GitHub Pages対応：/utils/(ローマ字のアプリ名)/index.mdとして出力
 
 ## 8. 制約・除外事項
 - {スコープ外の機能や制限事項}
@@ -127,7 +127,7 @@ Phase 5: 再生成プロンプト出力
 
 ### 実装ルール
 
-1. **単一HTMLファイル**で完結させる（`index.html`）
+1. **単一HTMLファイル**で完結させる（`index.md`）
 2. CSS は `<style>` タグ内に記述
 3. JS は `<script>` タグ内に記述（末尾推奨）
 4. 外部リソースはCDNのみ使用（ローカルファイル参照禁止）
@@ -151,7 +151,7 @@ font-family: 'Segoe UI', system-ui, sans-serif;
 
 ### GitHub Pages対応チェックリスト
 
-- [ ] ファイル名が `index.html`
+- [ ] ファイル名が `index.md`
 - [ ] 相対パスのみ使用（絶対パス禁止）
 - [ ] 外部リソースはHTTPS CDNのみ
 - [ ] `<meta charset="UTF-8">` 記載あり
@@ -159,7 +159,7 @@ font-family: 'Segoe UI', system-ui, sans-serif;
 
 ### 実装完了後
 
-ファイルを `/mnt/user-data/outputs/index.html` に保存し、`present_files` で提示する。
+ファイルを `/utils/(アプリ名)/index.md` に保存する。
 
 ---
 
