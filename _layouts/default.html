@@ -74,6 +74,18 @@ $(function() {
     {% endfor %}
    </ul>
   </li>
+
+  <li class="last"><a href="{{site.baseurl}}/utils/" title="記事">記事</a>
+   {% assign utility_index_url = '/logs/' %}
+   <ul>
+    {% for item in sorted_pages %}
+    {% if item.url != utility_index_url and item.url contains '/logs/' and item.name == 'index.md' %}
+    {% assign clean_title = item.title | replace: ' - Rui Software', '' %}
+    <li><a href="{{ site.baseurl }}{{ item.url }}" title="{{ clean_title }}">{{ clean_title }}</a></li>
+    {% endif %}
+    {% endfor %}
+   </ul>
+  </li>
 </ul>
 </nav>
 </header>
