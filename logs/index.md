@@ -5,6 +5,11 @@ title: 記事一覧 - Rui Software
 
 ## 記事一覧
 
+### AIニュース（日次）
+
+- [AI・テックニュース 2026-04-07](./ai-news-2026-04-07.html)
+
+
 ### amebloの記事
 
 <div id="ameblo-container">
