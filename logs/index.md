@@ -5,4 +5,7 @@ title: 記事一覧 - Rui Software
 
 ## 記事一覧
 
-{% include auto_section_links.html section_path='logs' %}
+生成AIを活用して作成した記事です。
+確認はしてますが、各自内容の精査はお願い致します
+
+{% include logs_files_list.html section_path='logs' %}
