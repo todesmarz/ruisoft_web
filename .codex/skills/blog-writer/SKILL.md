@@ -467,6 +467,7 @@ SVGの注意事項：
 ---
 layout: default
 title: [タイトル] - Rui Software
+date: [作成日 yyyy-mm-dd]
 ---
 ```
 
