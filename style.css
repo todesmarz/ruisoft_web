@@ -785,8 +785,7 @@ footer a:hover {
     text-align: center !important;
     color: inherit !important;
     background-color: #eae2cf !important;
-    border: thin solid #a2b658;
-    !important
+    border: thin solid #a2b658 !important;
 }
 
 .pukiwiki_content .style_td {
