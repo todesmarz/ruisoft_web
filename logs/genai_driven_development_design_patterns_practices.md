@@ -1,5 +1,6 @@
 ---
 layout: default
+date: 2026-04-10
 title: 生成AI駆動開発のデザインパターンと実践プラクティス - Rui Software
 ---
 

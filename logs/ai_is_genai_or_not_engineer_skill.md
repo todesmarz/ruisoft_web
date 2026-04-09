@@ -1,5 +1,6 @@
 ---
 layout: default
+date: 2026-04-09
 title: 「AI=生成AI」時代をどう捉えるか - Rui Software
 ---
 

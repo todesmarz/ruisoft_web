@@ -1,5 +1,6 @@
 ---
 layout: default
+date: 2026-04-09
 title: 記事一覧 - Rui Software
 ---
 

@@ -1,5 +1,6 @@
 ---
 layout: default
+date: 2026-04-09
 title: Browser-Useを“丸投げ不能”から“安全な戦力”へ - Rui Software
 ---
 
