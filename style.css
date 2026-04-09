@@ -65,7 +65,12 @@ hr {
 
 header {
     margin: 0;
-    padding-bottom:10px
+    padding-bottom: 10px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap
 }
 
 header .logo {
@@ -192,7 +197,7 @@ header nav ul li:hover > ul {
     border-right: 1px dotted #ccc;
     min-height: 420px;
     background-color: #fff;
-    box-shadow:0 0 20px -5px rgba(0, 0, 0, .8)
+    box-shadow: 0 0 20px -5px rgba(0, 0, 0, .8)
 }
 
 .contents .post:not(:first-child) {
@@ -217,8 +222,21 @@ header nav ul li:hover > ul {
     max-height:100%
 }
 
+.contents .post img {
+    max-width: 100%;
+    height: auto
+}
+
 .contents .post p {
     margin:14px 0
+}
+
+.contents .post,
+.contents .post p,
+.contents .post li,
+.contents .post a {
+    overflow-wrap: anywhere;
+    word-break: break-word
 }
 
 .contents .post em {
@@ -418,6 +436,67 @@ header nav ul li:hover > ul {
     box-shadow: 0 0 20px -5px rgba(0, 0, 0, .8);
     padding-top: 5px;
     padding-bottom:10px
+}
+
+@media (max-width: 991px) {
+    body {
+        overflow-x: hidden
+    }
+
+    header .logo {
+        float: none;
+        width: 100%
+    }
+
+    header nav {
+        width: 100%
+    }
+
+    header nav ul {
+        float: none
+    }
+
+    header nav > ul {
+        margin-top: 8px;
+        display: block
+    }
+
+    header nav > ul > li {
+        float: none;
+        display: block;
+        width: 100%;
+        background-color: #2e8b57;
+        margin-bottom: 6px;
+        white-space: normal
+    }
+
+    header nav > ul > li > a {
+        color: #fff;
+        background-color: #2e8b57
+    }
+
+    header nav > ul > li > a:hover {
+        color: #fff;
+        background-color: #256f46
+    }
+
+    header nav ul ul {
+        position: absolute;
+        display: none;
+        box-shadow: 0 0 20px -5px rgba(0, 0, 0, .8)
+    }
+
+    .contents {
+        border-right: none
+    }
+
+    .contents .post {
+        padding-right: 0
+    }
+
+    .sidebar {
+        margin-top: 15px
+    }
 }
 
 .sidebar .block > ul {
@@ -762,4 +841,3 @@ a.spritemachine_social_twitter-32:hover, a.spritemachine_social_hatena-32:hover,
 #doc_contents {
     display: none
 }
-
