@@ -1,40 +1,67 @@
 {% assign logs_path = '/logs/' %}
-{% comment %} タイトルでソートし、先にフィルタリングを済ませた配列を作成 {% endcomment %}
-{% assign all_pages = site.pages | sort: 'title' %}
+
+{% comment %} 1. まず対象となるログページだけを抽出したリストを作成 {% endcomment %}
+{% assign logs = "" | split: "," %}
+{% for p in site.pages %}
+  {% if p.url contains logs_path and p.url != logs_path and p.url != '/logs/index.html' %}
+    {% assign logs = logs | push: p %}
+  {% endif %}
+{% endfor %}
+
+{% comment %} 2. 年月（YYYY-MM）でグループ化し、新しい月が上に来るようソート {% endcomment %}
+{% assign grouped_logs = logs | group_by_exp: "item", "item.date | date: '%Y-%m'" | sort: "name" | reverse %}
 
 <div class="log-container">
-  {% comment %} フィルタ入力欄 {% endcomment %}
-  <input type="text" id="logFilter" placeholder="名前で検索..." 
-         style="width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;">
+  <input type="text" id="logFilter" placeholder="名前や日付で検索..." 
+         style="width: 100%; padding: 8px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px;">
 
-  <ul id="logList">
-    {% assign has_pages = false %}
-    {% for item in all_pages %}
-      {% if item.url contains logs_path and item.url != logs_path and item.url != '/logs/index.html' %}
-        {% assign has_pages = true %}
-        {% assign clean_title = item.title | default: item.url | replace: ' - Rui Software', '' %}
-        
-        <li class="log-item">
-          <a href="{{ site.baseurl }}{{ item.url }}" title="{{ clean_title }}">{{ clean_title }}</a>
-        </li>
+  <div id="logGroups">
+    {% for group in grouped_logs %}
+      {% if group.name != "" and group.name != "1970-01" %}
+        <section class="log-group" style="margin-bottom: 25px;">
+          <h3 style="border-bottom: 1px solid #eee; padding-bottom: 5px; color: #333;">{{ group.name }}</h3>
+          <ul style="list-style: none; padding: 0;">
+            {% comment %} 3. グループ内をタイトルでソート {% endcomment %}
+            {% assign sorted_items = group.items | sort: "title" %}
+            {% for item in sorted_items %}
+              {% assign clean_title = item.title | default: item.url | replace: ' - Rui Software', '' %}
+              <li class="log-item" style="margin-bottom: 8px; display: flex; gap: 15px;">
+                <span class="log-date" style="color: #888; font-family: monospace; flex-shrink: 0;">[{{ item.date | date: "%m-%d" }}]</span>
+                <a href="{{ site.baseurl }}{{ item.url }}">{{ clean_title }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </section>
       {% endif %}
     {% endfor %}
-  </ul>
+  </div>
 
-  {% unless has_pages %}
+  {% if logs.size == 0 %}
     <p>まだコンテンツがありません。</p>
-  {% endunless %}
+  {% endif %}
 </div>
 
-{% comment %} フィルタリング用スクリプト {% endcomment %}
 <script>
 document.getElementById('logFilter').addEventListener('keyup', function() {
   const query = this.value.toLowerCase();
-  const items = document.querySelectorAll('#logList .log-item');
+  const groups = document.querySelectorAll('.log-group');
 
-  items.forEach(item => {
-    const text = item.textContent.toLowerCase();
-    item.style.display = text.includes(query) ? '' : 'none';
+  groups.forEach(group => {
+    const items = group.querySelectorAll('.log-item');
+    let hasVisibleItem = false;
+
+    items.forEach(item => {
+      const text = item.textContent.toLowerCase();
+      if (text.includes(query)) {
+        item.style.display = '';
+        hasVisibleItem = true;
+      } else {
+        item.style.display = 'none';
+      }
+    });
+
+    // グループ内に表示対象が一つもなければ、グループ見出しごと隠す
+    group.style.display = hasVisibleItem ? '' : 'none';
   });
 });
 </script>
