@@ -1,6 +1,7 @@
 body {
     font-family: Ricty, hiragino kaku gothic pron, tahoma, Meiryo, ms pgothic, Sans-serif;
-    background-color:#eee
+    background-color:#eee;
+    overflow-x: hidden
 }
 
 a {
@@ -120,6 +121,11 @@ header nav > ul {
     margin-top:20px
 }
 
+.container > .row {
+    display: flex;
+    flex-wrap: wrap
+}
+
 header nav li {
     text-align: center;
     float: left;
@@ -197,7 +203,9 @@ header nav ul li:hover > ul {
     border-right: 1px dotted #ccc;
     min-height: 420px;
     background-color: #fff;
-    box-shadow: 0 0 20px -5px rgba(0, 0, 0, .8)
+    box-shadow: 0 0 20px -5px rgba(0, 0, 0, .8);
+    display: flex;
+    flex-direction: column
 }
 
 .contents .post:not(:first-child) {
@@ -439,16 +447,16 @@ header nav ul li:hover > ul {
 }
 
 @media (max-width: 991px) {
-    body {
-        overflow-x: hidden
+    .container {
+        width: auto;
+        margin-left: 0;
+        margin-right: 0;
+        padding-left: 10px;
+        padding-right: 10px
     }
 
     header .logo {
         float: none;
-        width: 100%
-    }
-
-    header nav {
         width: 100%
     }
 
@@ -496,6 +504,55 @@ header nav ul li:hover > ul {
 
     .sidebar {
         margin-top: 15px
+    }
+}
+
+@media (max-width: 767px) {
+    header {
+        gap: 10px
+    }
+
+    header .logo h1 {
+        font-size: 34px;
+        line-height: 1.2
+    }
+
+    header .logo h4 {
+        padding-top: 4px
+    }
+
+    .row {
+        margin-left: 0;
+        margin-right: 0
+    }
+
+    .contents,
+    .sidebar {
+        box-shadow: none
+    }
+
+    .contents .post {
+        padding-right: 0
+    }
+
+    .contents .post img,
+    .contents .post iframe,
+    .contents .post video,
+    .contents .post canvas,
+    .contents .post table {
+        max-width: 100%;
+        height: auto
+    }
+
+    .contents .post pre {
+        margin-left: 0;
+        margin-right: 0;
+        overflow-x: auto
+    }
+
+    footer {
+        padding-left: 10px;
+        padding-right: 10px
     }
 }
 

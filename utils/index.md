@@ -20,21 +20,4 @@ title: ユーティリティ - Rui Software
 
 ## ツール一覧
 
-### [画像編集ツール]({{site.baseurl}}/utils/image-editor/)
-背景透過・ぼかし・トリミング・フィルタ・レイヤー分割など、ブラウザ上で動作する画像編集ツール。
-
-### [デジタル時計]({{site.baseurl}}/utils/clock/)
-Classic・Matrix・Neon・Amber・Minimal・Flipの6テーマを切り替えられるデジタル時計。全画面表示・背景色変更にも対応。
-
----
-
-## 遊べるシミュレーション
-
-### [流体シミュレーション]({{site.baseurl}}/utils/fluid/)
-マウスや指でドラッグして流体を動かすインタラクティブなシミュレーション。粘度・拡散・カラーを変えながら楽しめる。
-
-### [フラクタル描画]({{site.baseurl}}/utils/fractal/)
-マンデルブロ集合・ジュリア集合・バーニングシップをブラウザ上で描画。クリックやドラッグで自由にズーム・移動できる。
-
-### [音楽ビジュアライザー]({{site.baseurl}}/utils/music-visualizer/)
-音楽ファイルを読み込んでリアルタイムにビジュアライズ。バー・波形・サークル・パーティクルの4スタイルに対応。
+{% include auto_section_links.html section_path='utils' %}

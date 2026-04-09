@@ -1,6 +1,6 @@
 ---
 layout: default
-title: clock - Rui Software
+title: 時計 - Rui Software
 ---
 
 <link rel="preconnect" href="https://fonts.googleapis.com">

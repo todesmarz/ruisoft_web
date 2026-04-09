@@ -1,0 +1,20 @@
+{% assign logs_path = '/logs/' %}
+{% assign sorted_pages = site.pages | sort: 'url' %}
+{% assign has_pages = false %}
+
+{% for item in sorted_pages %}
+  {% if item.url contains logs_path and item.url != logs_path and item.url != logs_path | append: 'index.md' %}
+    {% unless has_pages %}
+<ul>
+    {% assign has_pages = true %}
+    {% endunless %}
+    {% assign clean_title = item.title | default: item.url | replace: ' - Rui Software', '' %}
+  <li><a href="{{ site.baseurl }}{{ item.url }}" title="{{ clean_title }}">{{ clean_title }}</a></li>
+  {% endif %}
+{% endfor %}
+
+{% if has_pages %}
+</ul>
+{% else %}
+<p>まだコンテンツがありません。</p>
+{% endif %}
