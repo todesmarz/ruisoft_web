@@ -1,5 +1,6 @@
 ---
 layout: default
+date: 2026-04-09
 title: 生成AIを使ったハラスメント教育の再設計 - Rui Software
 ---
 

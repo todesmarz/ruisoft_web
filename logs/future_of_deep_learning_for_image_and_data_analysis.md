@@ -1,5 +1,6 @@
 ---
 layout: default
+date: 2026-04-09
 title: 画像解析・データ分析のディープラーニングAIはこれからどうなる？学習モチベーションが上がる未来地図 - Rui Software
 ---
 

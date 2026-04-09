@@ -1,5 +1,6 @@
 ---
 layout: default
+date: 2026-04-09
 title: 学生・趣味プログラマー・職業プログラマーの違いを構造化して理解する - Rui Software
 ---
 

@@ -1,5 +1,6 @@
 ---
 layout: default
+date: 2026-04-09
 title: レガシーコード保守は生成AIでどう変わるのか？COBOL変換の現在地と「ローカルLLM時代」の実務設計 - Rui Software
 ---
 # レガシーコード保守は生成AIでどう変わるのか？COBOL変換の現在地と「ローカルLLM時代」の実務設計

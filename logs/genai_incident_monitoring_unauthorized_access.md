@@ -1,5 +1,6 @@
 ---
 layout: default
+date: 2026-04-09
 title: 生成AIを活用した不正アクセス監視の実践ガイド：Prompt Injectionから横展開を止める設計 - Rui Software
 ---
 # 生成AIを活用した不正アクセス監視の実践ガイド：Prompt Injectionから横展開を止める設計

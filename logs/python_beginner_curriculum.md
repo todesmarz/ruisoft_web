@@ -1,5 +1,6 @@
 ---
 layout: default
+date: 2026-04-09
 title: ゲーム制作でPython初学者を育成する：8週間カリキュラムの実装設計 - Rui Software
 ---
 # ゲーム制作でPython初学者を育成する：8週間カリキュラムの実装設計

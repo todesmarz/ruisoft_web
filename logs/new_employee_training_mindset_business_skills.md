@@ -1,5 +1,6 @@
 ---
 layout: default
+date: 2026-04-09
 title: 新人研修で差がつく心構えと、配属前に身につけるべきビジネススキル - Rui Software
 ---
 

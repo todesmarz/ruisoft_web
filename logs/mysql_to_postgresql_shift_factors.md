@@ -1,5 +1,6 @@
 ---
 layout: default
+date: 2026-04-09
 title: MySQLからPostgreSQLへ移行判断を最適化する：歴史から読む2026年の選定要因 - Rui Software
 ---
 # MySQLからPostgreSQLへ移行判断を最適化する：歴史から読む2026年の選定要因

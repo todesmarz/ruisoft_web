@@ -1,5 +1,6 @@
 ---
 layout: default
+date: 2026-04-09
 title: Slack定着後にTelegram / Discordをどう使い分けるか - Rui Software
 ---
 

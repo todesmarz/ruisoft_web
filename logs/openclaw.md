@@ -1,5 +1,6 @@
 ---
 layout: default
+date: 2026-04-09
 title: OpenClawを業務利用へつなげる：PoC止まりを防ぐ実装ロードマップ（2026年版） - Rui Software
 ---
 # OpenClawを業務利用へつなげる：PoC止まりを防ぐ実装ロードマップ（2026年版）
