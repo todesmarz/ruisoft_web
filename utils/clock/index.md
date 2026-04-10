@@ -78,16 +78,22 @@ title: 時計 - Rui Software
   margin-right: 2px;
 }
 .bg-swatch {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 4px;
   border: 2px solid transparent;
   cursor: pointer;
   transition: border-color 0.15s, transform 0.15s;
   display: inline-block;
 }
-.bg-swatch:hover { transform: scale(1.15); }
-.bg-swatch.active { border-color: #2e8b57; }
+.bg-swatch:hover { transform: scale(1.2); }
+.bg-swatch.active { border-color: #2e8b57; box-shadow: 0 0 0 1px #2e8b57; }
+#bg-color-label {
+  font-size: 11px;
+  color: #888;
+  min-width: 72px;
+  text-align: left;
+}
 
 /* ========== テーマ定義（非Flip） ========== */
 .theme-classic #time-display, .theme-classic #date-display {
@@ -408,6 +414,9 @@ title: 時計 - Rui Software
   <div id="bg-preset-row">
     <span>背景色：</span>
   </div>
+  <div style="text-align:center;margin-top:4px;">
+    <span id="bg-color-label">デフォルト</span>
+  </div>
 </div>
 
 <!-- 全画面オーバーレイ -->
@@ -424,18 +433,18 @@ title: 時計 - Rui Software
 
 /* ========== 背景色プリセット定義 ========== */
 var BG_PRESETS = [
-  { label: 'デフォルト', color: 'transparent' },
-  { label: 'ホワイト',   color: '#ffffff' },
-  { label: 'ライトグレー', color: '#f0f0f0' },
-  { label: 'ダークグレー', color: '#333333' },
-  { label: 'ブラック',   color: '#000000' },
-  { label: 'ネイビー',   color: '#0d1b2a' },
-  { label: 'ダークグリーン', color: '#0a1f0e' },
-  { label: 'ダークレッド',  color: '#1a0000' },
-  { label: 'ミッドナイト', color: '#1a1a2e' },
-  { label: 'クリーム',   color: '#fdf6e3' },
-  { label: 'ライトブルー', color: '#e8f4fd' },
-  { label: 'ライトグリーン', color: '#f0f7f0' },
+  { label: 'デフォルト',     color: 'transparent' },
+  { label: 'ホワイト',       color: '#ffffff' },
+  { label: 'シルバー',       color: '#c8c8c8' },
+  { label: 'チャコール',     color: '#444444' },
+  { label: 'ブラック',       color: '#000000' },
+  { label: 'ネイビー',       color: '#061428' },
+  { label: 'フォレスト',     color: '#002200' },
+  { label: 'ダークレッド',   color: '#220000' },
+  { label: 'パープル',       color: '#1a0033' },
+  { label: 'クリーム',       color: '#fef3c7' },
+  { label: 'スカイ',         color: '#bfdbfe' },
+  { label: 'ミント',         color: '#bbf7d0' },
 ];
 
 /* ========== 状態 ========== */
@@ -460,6 +469,7 @@ var fsFlipWrap     = document.getElementById('fs-flip-wrap');
 var btnFullscreen  = document.getElementById('btn-fullscreen');
 var clockWrap      = document.getElementById('clock-wrap');
 var bgPresetRow    = document.getElementById('bg-preset-row');
+var bgColorLabel   = document.getElementById('bg-color-label');
 
 /* ========== 背景色プリセット構築 ========== */
 BG_PRESETS.forEach(function(preset) {
@@ -474,14 +484,26 @@ BG_PRESETS.forEach(function(preset) {
   }
   swatch.style.boxShadow = '0 1px 3px rgba(0,0,0,0.25)';
   if (preset.color === state.bgColor) swatch.classList.add('active');
+  swatch.addEventListener('mouseenter', function() {
+    bgColorLabel.textContent = preset.label;
+  });
+  swatch.addEventListener('mouseleave', function() {
+    bgColorLabel.textContent = getCurrentPresetLabel();
+  });
   swatch.addEventListener('click', function() {
     state.bgColor = preset.color;
     applyBgColor();
     document.querySelectorAll('.bg-swatch').forEach(function(s) { s.classList.remove('active'); });
     swatch.classList.add('active');
+    bgColorLabel.textContent = preset.label;
   });
   bgPresetRow.appendChild(swatch);
 });
+
+function getCurrentPresetLabel() {
+  var found = BG_PRESETS.filter(function(p) { return p.color === state.bgColor; })[0];
+  return found ? found.label : '';
+}
 
 function applyBgColor() {
   clockWrap.style.backgroundColor = state.bgColor;
