@@ -135,7 +135,7 @@ header nav li {
 }
 
 header nav > ul > li {
-    background: linear-gradient(180deg, #2e8b57 0%, #1a5c38 100%)
+    background: linear-gradient(180deg, #2e8b57 0%, #236f48 100%)
 }
 
 header nav ul.children li {
@@ -476,7 +476,7 @@ header nav ul li:hover > ul {
         display: block;
         width: auto;
         flex: 1 1 auto;
-        background: linear-gradient(180deg, #2e8b57 0%, #1a5c38 100%);
+        background: linear-gradient(180deg, #2e8b57 0%, #236f48 100%);
         margin-bottom: 0;
         white-space: normal;
         text-align: center
@@ -688,7 +688,7 @@ footer a:hover {
 }
 
 .post_article h2 {
-    border-bottom: 2px dotted #4a6830;
+    border-bottom: 2px solid #4a6830;
     border-left: 10px solid #4a6830;
     padding-left:3px
 }
