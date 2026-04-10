@@ -18,7 +18,7 @@ a {
 a:hover {
     color: #2e8b57;
     text-decoration: none;
-    background-color: #eae2cf;
+    background-color: #eeeeee;
     border-bottom:1px dashed #2e8b57
 }
 
@@ -324,7 +324,7 @@ header nav ul li:hover > ul {
 }
 
 .contents .post .wp-caption {
-    background: #eae2cf;
+    background: #eeeeee;
     border: 1px solid #ccc;
     margin: 10px;
     text-align: center;
@@ -587,7 +587,7 @@ header nav ul li:hover > ul {
 }
 
 .sidebar .block li a:hover {
-    background:#eae2cf url(images/bullet_green.gif) no-repeat scroll 6px 52%
+    background:#eeeeee url(images/bullet_green.gif) no-repeat scroll 6px 52%
 }
 
 .sidebar .widget_search label {
@@ -613,7 +613,7 @@ header nav ul li:hover > ul {
 .sidebar .widget_recent_comments li a:hover {
     color: #867ba9;
     border-bottom: 1px dashed #2e8b57;
-    background-color:#eae2cf
+    background-color:#eeeeee
 }
 
 .sidebar .widget_tag_cloud h3 {
@@ -672,8 +672,8 @@ footer a {
 }
 
 footer a:hover {
-    color: #eae2cf;
-    border-bottom: 1px dashed #eae2cf;
+    color: #eeeeee;
+    border-bottom: 1px dashed #eeeeee;
     background-color:#2e8b57
 }
 
@@ -720,7 +720,7 @@ footer a:hover {
     margin: auto;
     text-align: left;
     color: inherit;
-    background-color:#ccd5dd
+    background-color:#eeeeee;
 }
 
 .post_article th {
@@ -728,8 +728,9 @@ footer a:hover {
     margin: 1px;
     text-align: center;
     color: inherit;
-    background-color: #eae2cf;
-    border:thin solid #4a6830
+    background-color: #2e8b57;
+    color: #eeeeee;
+    border:thin solid #4a6830;
 }
 
 .post_article td {
@@ -749,7 +750,7 @@ footer a:hover {
     margin-right: 2em;
     white-space: pre !important;
     color: #000;
-    background-color:#eae2cf
+    background-color:#eeeeee
 }
 
 .pukiwiki_content h2 {
@@ -790,7 +791,7 @@ footer a:hover {
     margin: 1px !important;
     text-align: center !important;
     color: inherit !important;
-    background-color: #eae2cf !important;
+    background-color: #eeeeee !important;
     border: thin solid #4a6830 !important;
 }
 
@@ -812,7 +813,7 @@ footer a:hover {
     margin-right: 2em !important;
     white-space: pre !important;
     color: #000 !important;
-    background-color:#eae2cf !important
+    background-color:#eeeeee !important
 }
 
 .pagination span, .pagination a {
