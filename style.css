@@ -79,7 +79,7 @@ header .logo {
 }
 
 header .logo a {
-    color: #2e8b57;
+    color: #1a5c38;
     text-decoration: none;
     border-bottom: none;
     letter-spacing:-4px
@@ -135,7 +135,7 @@ header nav li {
 }
 
 header nav > ul > li {
-    background-color:#2e8b57
+    background: linear-gradient(180deg, #2e8b57 0%, #1a5c38 100%)
 }
 
 header nav ul.children li {
@@ -169,7 +169,7 @@ header nav ul ul {
 }
 
 header nav li a:hover {
-    color:#2e8b57
+    color:#a8d4b8
 }
 
 header nav ul ul li a:hover {
@@ -202,7 +202,7 @@ header nav ul li:hover > ul {
     padding-top: 5px;
     border-right: 1px dotted #ccc;
     min-height: 420px;
-    background-color: #fff;
+    background: linear-gradient(180deg, #fff 0%, #f4f7f4 100%);
     box-shadow: 0 0 20px -5px rgba(0, 0, 0, .8);
     display: flex;
     flex-direction: column
@@ -466,26 +466,30 @@ header nav ul li:hover > ul {
 
     header nav > ul {
         margin-top: 8px;
-        display: block
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px
     }
 
     header nav > ul > li {
         float: none;
         display: block;
-        width: 100%;
-        background-color: #2e8b57;
-        margin-bottom: 6px;
-        white-space: normal
+        width: auto;
+        flex: 1 1 auto;
+        background: linear-gradient(180deg, #2e8b57 0%, #1a5c38 100%);
+        margin-bottom: 0;
+        white-space: normal;
+        text-align: center
     }
 
     header nav > ul > li > a {
         color: #fff;
-        background-color: #2e8b57
+        background: transparent
     }
 
     header nav > ul > li > a:hover {
-        color: #fff;
-        background-color: #256f46
+        color: #c8e8d4;
+        background: transparent
     }
 
     header nav ul ul {
@@ -654,9 +658,11 @@ footer {
     border-top: 1px dotted #ccc;
     text-align: center;
     color: #eee;
-    background-color: #2e8b57;
+    background: linear-gradient(180deg, #1a5c38 0%, #0f3d25 100%);
     padding-top: 15px;
-    padding-bottom:10px
+    padding-bottom: 10px;
+    margin-left: 0;
+    margin-right: 0
 }
 
 footer a {
@@ -676,14 +682,14 @@ footer a:hover {
 }
 
 .post_article h1 {
-    border-bottom: 2px solid #a2b658;
-    border-left: 15px solid #a2b658;
+    border-bottom: 2px solid #4a6830;
+    border-left: 15px solid #4a6830;
     padding-left:3px
 }
 
 .post_article h2 {
-    border-bottom: 2px dotted #a2b658;
-    border-left: 10px solid #a2b658;
+    border-bottom: 2px dotted #4a6830;
+    border-left: 10px solid #4a6830;
     padding-left:3px
 }
 
@@ -692,18 +698,18 @@ footer a:hover {
 }
 
 .post_article h3 {
-    border-left: 10px solid #a2b658;
+    border-left: 10px solid #4a6830;
     padding-left:3px
 }
 
 .post_article h4 {
-    border-left: 10px solid #a2b658;
+    border-left: 10px solid #4a6830;
     margin-left: 9px;
     padding-left:3px
 }
 
 .post_article h5 {
-    border-left: 10px solid #a2b658;
+    border-left: 10px solid #4a6830;
     margin-left: 18px;
     padding-left:3px
 }
@@ -723,14 +729,14 @@ footer a:hover {
     text-align: center;
     color: inherit;
     background-color: #eae2cf;
-    border:thin solid #a2b658
+    border:thin solid #4a6830
 }
 
 .post_article td {
     padding: 5px;
     margin: 1px;
     color: inherit;
-    border:thin solid #a2b658
+    border:thin solid #4a6830
 }
 
 .post_article pre {
@@ -754,17 +760,17 @@ footer a:hover {
 }
 
 .pukiwiki_content h3 {
-    border-bottom: 3px solid #a2b658 !important;
-    border-top: 1px solid #a2b658 !important;
-    border-left: 10px solid #a2b658 !important;
-    border-right: 5px solid #a2b658 !important;
+    border-bottom: 3px solid #4a6830 !important;
+    border-top: 1px solid #4a6830 !important;
+    border-left: 10px solid #4a6830 !important;
+    border-right: 5px solid #4a6830 !important;
     color: inherit !important;
     padding: .3em !important;
     margin:0 0 .5em !important
 }
 
 .pukiwiki_content h4 {
-    border-left: 18px solid #a2b658 !important;
+    border-left: 18px solid #4a6830 !important;
     color: inherit !important;
     padding: .3em !important;
     margin:0 0 .5em !important
@@ -785,7 +791,7 @@ footer a:hover {
     text-align: center !important;
     color: inherit !important;
     background-color: #eae2cf !important;
-    border: thin solid #a2b658 !important;
+    border: thin solid #4a6830 !important;
 }
 
 .pukiwiki_content .style_td {
@@ -793,7 +799,7 @@ footer a:hover {
     margin: 1px !important;
     color: inherit !important;
     background-color: #eee !important;
-    border:thin solid #a2b658 !important
+    border:thin solid #4a6830 !important
 }
 
 .pukiwiki_content pre {
