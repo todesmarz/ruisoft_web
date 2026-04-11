@@ -749,10 +749,6 @@ footer a:hover {
 }
 
 .post_article pre {
-    border-top: #dde 1px solid;
-    border-bottom: #889 1px solid;
-    border-left: #dde 1px solid;
-    border-right: #889 1px solid;
     padding: .5em;
     margin-left: 1em;
     margin-right: 2em;
