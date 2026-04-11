@@ -2,3 +2,9 @@ theme: minima
 title: Rui Software
 description: 黙り虫、壁を破る
 url: http://rui.primasm.com/
+kramdown:
+  hard_wrap: true        # 改行をそのまま反映
+  input: GFM             # GitHub風Markdown
+exclude:
+  - AGENTS.md
+  - .codex
