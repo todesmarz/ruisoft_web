@@ -254,6 +254,7 @@ header nav ul li:hover > ul {
 .contents .post h1,.contents .post h1 a {
     font-size: 200%;
     margin: 40px 0 10px;
+    padding-left: 10px;
     font-weight: 400;
     line-height:32px
 }
@@ -261,17 +262,22 @@ header nav ul li:hover > ul {
 .contents .post h2 {
     font-size: 160%;
     margin: 35px 0 10px;
+    padding-left: 10px;
     font-weight:400
 }
 
-.contents .post h3, .contents .post h4 {
+.contents .post h3 {
     font-size: 140%;
     margin: 25px 0 10px;
+    padding-left: 10px;
     font-weight:400
 }
 
 .contents .post h4 {
     font-size:120%
+    margin: 25px 0 10px;
+    padding-left: 10px;
+    font-weight:400
 }
 
 .contents .post h1:hover, .post h2:hover, .post h3:hover, .post h4:hover {
@@ -721,6 +727,7 @@ footer a:hover {
     text-align: left;
     color: inherit;
     background-color:#eeeeee;
+    box-shadow: 0 0 20px -5px rgba(0, 0, 0, .8);
 }
 
 .post_article th {
@@ -750,7 +757,8 @@ footer a:hover {
     margin-right: 2em;
     white-space: pre !important;
     color: #000;
-    background-color:#eeeeee
+    background-color:#eeeeee;
+    box-shadow: 0 0 20px -5px rgba(0, 0, 0, .8);
 }
 
 .pukiwiki_content h2 {
