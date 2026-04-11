@@ -8,3 +8,7 @@ kramdown:
 exclude:
   - AGENTS.md
   - .codex
+plugins:
+  - jekyll-sitemap
+  - jekyll-feed
+timezone: Asia/Tokyo
