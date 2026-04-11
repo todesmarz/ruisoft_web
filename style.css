@@ -454,7 +454,8 @@ header nav ul li:hover > ul {
 
 @media (max-width: 991px) {
     .container {
-        width: auto;
+        width: 100%;
+        max-width: 100%;
         margin-left: 0;
         margin-right: 0;
         padding-left: 10px;
