@@ -8,8 +8,8 @@
   {% endif %}
 {% endfor %}
 
-{% comment %} 2. 年月（YYYY-MM）でグループ化し、新しい月が上に来るようソート {% endcomment %}
-{% assign grouped_logs = logs | group_by_exp: "item", "item.date | date: '%Y-%m'" | sort: "name" | reverse %}
+{% comment %} 2. 日付（YYYY-MM-DD）でグループ化し、新しい日付が上に来るようソート {% endcomment %}
+{% assign grouped_logs = logs | group_by_exp: "item", "item.date | date: '%Y-%m-%d'" | sort: "name" | reverse %}
 
 <div class="log-container">
   <input type="text" id="logFilter" placeholder="名前や日付で検索..." 
