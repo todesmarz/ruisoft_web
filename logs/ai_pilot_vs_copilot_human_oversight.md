@@ -96,7 +96,7 @@ AI導入でも同じで、「監視官」を置いただけでは足りない。
 
 ## 🔥 ハマりポイント：人を監視官にしたのに事故る3パターン
 
-ここは本当に詰まりやすい。筆者も似た設計で2回痛い目を見た。
+ここは本当に詰まりやすい。実際の導入事例でもこうした失敗が繰り返し報告されている。
 
 1つ目は、**監視者に停止権限がない**ケース。症状は「怪しいのに止められない」。原因は組織設計で、対処は権限移譲とエスカレーションSLAの明文化。
 
@@ -195,4 +195,4 @@ AIにはPilotになってもらってよい。ただし、すべての空を任�
 3. FAA, *AC 120-71B: Standard Operating Procedures and Pilot Monitoring Duties*. https://www.faa.gov/regulations_policies/advisory_circulars/index.cfm/go/document.information/documentid/1030486  
 4. Amershi et al., *Guidelines for Human-AI Interaction* (CHI 2019). https://www.microsoft.com/en-us/research/wp-content/uploads/2019/01/Guidelines-for-Human-AI-Interaction-camera-ready.pdf  
 5. Parasuraman, Sheridan, Wickens, *A Model for Types and Levels of Human Interaction with Automation* (2000). https://www.cs.uml.edu/~holly/91.550/papers/sheridan-autonomy.pdf  
-6. Si et al., *The Rise of the AI Co-Pilot: Lessons for Design from Aviation and Beyond* (arXiv:2311.14713). https://arxiv.org/abs/2311.14713
+6. Sellen, A. and Horvitz, E., *The Rise of the AI Co-Pilot: Lessons for Design from Aviation and Beyond* (arXiv:2311.14713; Communications of the ACM, 2024). https://arxiv.org/abs/2311.14713
