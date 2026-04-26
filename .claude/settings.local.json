@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:addyo.substack.com)",
+      "WebFetch(domain:developers.cyberagent.co.jp)",
+      "WebFetch(domain:docs.bswen.com)",
+      "WebFetch(domain:atmarkit.itmedia.co.jp)",
+      "WebFetch(domain:pm-rasinban.com)",
+      "WebFetch(domain:www.ecomottblog.com)",
+      "WebFetch(domain:oboegakit.blog)",
+      "WebFetch(domain:arxiv.org)",
+      "WebFetch(domain:type.jp)",
+      "WebFetch(domain:www.researchgate.net)",
+      "WebFetch(domain:www.atlassian.com)",
+      "WebFetch(domain:asana.com)",
+      "WebFetch(domain:www.oceanc.jp)",
+      "WebFetch(domain:visioncon-global.com)",
+      "WebFetch(domain:www.accidentalpm.online)",
+      "WebFetch(domain:note.com)",
+      "WebFetch(domain:www.thestreet.com)",
+      "WebFetch(domain:247wallst.com)",
+      "WebFetch(domain:stock.f-frontier.com)",
+      "WebFetch(domain:www.infoq.com)",
+      "WebFetch(domain:x.com)"
+    ]
+  }
+}
