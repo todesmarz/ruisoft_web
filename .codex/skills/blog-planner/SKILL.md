@@ -1,5 +1,5 @@
 ---
-name: blog-planner
+name: blog-planning
 description: |
   ブログ企画の業務フロースキル。フォルダ読み取り→分析→企画案生成→優先度評価→出力までを実行する。
   以下のようなリクエストで必ず使用すること：
