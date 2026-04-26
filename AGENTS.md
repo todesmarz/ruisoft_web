@@ -44,7 +44,46 @@ ruisoft_web/
 | `products/` | 製品紹介・情報ページ |
 | `utils/` | JavaScript、Python等のユーティリティスクリプト |
 
-## 4. File Creation Guidelines
+## 4. Blog Multi-Agent System
+
+このリポジトリにはブログ制作のマルチエージェント構成が実装されています。
+
+### エージェント一覧（`.codex/agents/`）
+
+| エージェント | 役割 | 参照ファイル |
+|---|---|---|
+| blog-director | 編集長。企画・執筆を指揮するオーケストレーター | `.codex/agents/blog-director.md` |
+| blog-planner | コンテンツ戦略家。フォルダを分析しSEO企画案を生成 | `.codex/agents/blog-planner.md` |
+| blog-writer | テクニカルライター。調査・執筆・品質管理を担当 | `.codex/agents/blog-writer.md` |
+
+### スキル一覧（`.codex/skills/`）
+
+| スキル | 内容 |
+|---|---|
+| blog-director | 全体フロー（前日ニュース確認→企画→選定→執筆→納品） |
+| blog-planner | 企画フロー（フォルダ読み取り→分析→企画案生成→優先度評価） |
+| blog-writer | 執筆フロー（調査→タイトル設計→構成→執筆→保存） |
+| daily-news | 前日のAI・テック・経済ニュース収集とMarkdown生成 |
+| blog-mapper | logsフォルダのブログ記事をmarkmap形式でマッピング |
+| web-app-builder | GitHub Pages向け単一HTMLファイルのWebアプリ生成 |
+
+### エージェント×スキルの関係
+
+- **エージェント** = 職種定義（誰か・何を判断するか・価値観）
+- **スキル** = 業務フロー（何をどう実行するか・出力形式）
+- エージェントは実行をスキルに委譲し、スキルは判断基準をエージェントに参照する
+
+### 使用例
+
+```
+「blog-directorにlogsフォルダから記事を企画・執筆させて」
+「blog-plannerでlogsフォルダの企画案を出して」
+「blog-writerにClaudeのMCPについてブログを書かせて」
+```
+
+---
+
+## 5. File Creation Guidelines
 
 新規ファイルを作成する際の指針：
 
