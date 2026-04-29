@@ -6,6 +6,33 @@ date: 2026-04-12
 
 # 要件定義で行うことは？目的把握・業務理解・技術選定を「漏れなく膨らませすぎず」進める実践ガイド
 
+
+## 図解サマリー
+
+<svg id="article-summary-diagram" viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="diagramTitle diagramDesc" style="max-width:100%;height:auto;display:block;margin:1rem auto;">
+  <title id="diagramTitle">記事の読み方サマリー</title>
+  <desc id="diagramDesc">結論、要点、アクションの順に読むことで内容を短時間で把握する流れを示す図。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb" />
+    </marker>
+  </defs>
+  <rect x="20" y="60" width="210" height="100" rx="14" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="125" y="95" text-anchor="middle" font-size="18" fill="#1e3a8a">結論を先に読む</text>
+  <text x="125" y="122" text-anchor="middle" font-size="14" fill="#1e3a8a">何が重要かを30秒で把握</text>
+
+  <rect x="275" y="60" width="210" height="100" rx="14" fill="#ecfeff" stroke="#0891b2"/>
+  <text x="380" y="95" text-anchor="middle" font-size="18" fill="#0e7490">要点を3つ確認</text>
+  <text x="380" y="122" text-anchor="middle" font-size="14" fill="#0e7490">見出しと箇条書きを優先</text>
+
+  <rect x="530" y="60" width="210" height="100" rx="14" fill="#f0fdf4" stroke="#16a34a"/>
+  <text x="635" y="95" text-anchor="middle" font-size="18" fill="#166534">次のアクション</text>
+  <text x="635" y="122" text-anchor="middle" font-size="14" fill="#166534">1つだけ試して理解を定着</text>
+
+  <line x1="232" y1="110" x2="272" y2="110" stroke="#2563eb" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="487" y1="110" x2="527" y2="110" stroke="#2563eb" stroke-width="3" marker-end="url(#arrow)"/>
+</svg>
+
 > リード文：要件定義で本当にやるべきことを、**目的の明確化→業務理解→要件化→モック検証→優先順位化→合意形成**の順で整理し、スコープ肥大と業務漏れを同時に抑える実践手順としてまとめます。
 
 ## 🧭 テーマの主役：要件定義とは何か（30秒で説明）
