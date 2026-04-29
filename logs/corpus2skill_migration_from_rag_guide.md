@@ -1,3 +1,8 @@
+---
+layout: default
+title: Corpus2Skillへ移行するには？RAG運用チーム向け実践ガイド - Rui Software
+---
+
 # Corpus2Skillへ移行するには？RAG運用チーム向け実践ガイド
 
 > このガイドを読めば、既存RAG（ベクトル検索中心）を止めずに、段階的にCorpus2Skill型の「ナビゲーション可能な知識基盤」へ移行する設計と実装手順がわかります。
