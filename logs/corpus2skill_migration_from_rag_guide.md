@@ -113,6 +113,297 @@ RAGを長く運用していると、こんな悩みが出ます。
   </tbody>
 </table>
 
+## 実装コード（最小構成で動かすための具体例）
+
+以下は、**既存RAGを残したままCorpus2Skill経路を追加する**ための最小実装例です。  
+実運用に入れる前のPoCとして、そのまま分割実装しやすいようにしています。
+
+### A. ID正規化テーブル（canonical_doc_id中心）
+
+```python
+# utils/c2s/id_registry.py
+from __future__ import annotations
+
+import hashlib
+from dataclasses import dataclass
+from typing import Iterable
+
+
+@dataclass(frozen=True)
+class ChunkRecord:
+    canonical_doc_id: str
+    chunk_id: str
+    version: int
+    source_path: str
+    start_char: int
+    end_char: int
+
+
+def make_canonical_doc_id(source_path: str) -> str:
+    # パス由来で固定IDを作る（実運用では文書管理DBの主キー利用を推奨）
+    digest = hashlib.sha1(source_path.encode("utf-8")).hexdigest()[:16]
+    return f"doc_{digest}"
+
+
+def make_chunk_id(canonical_doc_id: str, chunk_text: str, idx: int, version: int) -> str:
+    digest = hashlib.sha1(chunk_text.encode("utf-8")).hexdigest()[:10]
+    return f"{canonical_doc_id}_v{version}_c{idx}_{digest}"
+
+
+def build_chunk_records(source_path: str, chunks: Iterable[str], version: int) -> list[ChunkRecord]:
+    canonical_doc_id = make_canonical_doc_id(source_path)
+    records: list[ChunkRecord] = []
+    cursor = 0
+    for idx, text in enumerate(chunks):
+        start_char = cursor
+        end_char = cursor + len(text)
+        records.append(
+            ChunkRecord(
+                canonical_doc_id=canonical_doc_id,
+                chunk_id=make_chunk_id(canonical_doc_id, text, idx, version),
+                version=version,
+                source_path=source_path,
+                start_char=start_char,
+                end_char=end_char,
+            )
+        )
+        cursor = end_char
+    return records
+```
+
+### B. Skillツリー生成（オフラインバッチ）
+
+```python
+# utils/c2s/compile_skill_tree.py
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass, asdict
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+
+@dataclass
+class SkillNode:
+    node_id: str
+    title: str
+    summary: str
+    include_keywords: list[str]
+    exclude_keywords: list[str]
+    children: list[str]
+    evidence_chunk_ids: list[str]
+
+
+def summarize_title_and_scope(chunks: list[dict[str, Any]]) -> tuple[str, str]:
+    # ここはLLM要約器に置換可能。PoCでは先頭チャンクを単純利用
+    first = chunks[0]["text"][:120].replace("\n", " ")
+    return f"Topic::{chunks[0]['source_path'].split('/')[-1]}", first
+
+
+def compile_skill_tree(domain_chunks: list[dict[str, Any]], output_path: Path) -> None:
+    # 実運用ではクラスタリングして階層化する。PoCでは1ドキュメント=1ノード。
+    by_doc: dict[str, list[dict[str, Any]]] = {}
+    for row in domain_chunks:
+        by_doc.setdefault(row["canonical_doc_id"], []).append(row)
+
+    root_children: list[str] = []
+    nodes: dict[str, SkillNode] = {}
+    for i, (doc_id, chunks) in enumerate(by_doc.items()):
+        node_id = f"skill_node_{i:04d}"
+        title, summary = summarize_title_and_scope(chunks)
+        node = SkillNode(
+            node_id=node_id,
+            title=title,
+            summary=summary,
+            include_keywords=[],
+            exclude_keywords=[],
+            children=[],
+            evidence_chunk_ids=[c["chunk_id"] for c in chunks],
+        )
+        nodes[node_id] = node
+        root_children.append(node_id)
+
+    root = SkillNode(
+        node_id="root",
+        title="Enterprise Knowledge Root",
+        summary="Top-level entry point for navigable corpus.",
+        include_keywords=["policy", "pricing", "procedure", "ui"],
+        exclude_keywords=["outdated", "draft-only"],
+        children=root_children,
+        evidence_chunk_ids=[],
+    )
+    nodes[root.node_id] = root
+
+    payload = {
+        "compiled_at": datetime.now(timezone.utc).isoformat(),
+        "root_node_id": "root",
+        "nodes": {k: asdict(v) for k, v in nodes.items()},
+    }
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+```
+
+### C. 併走ルーター（RAG / Skill / Hybrid）
+
+```python
+# utils/c2s/router.py
+from __future__ import annotations
+
+from dataclasses import dataclass
+from enum import Enum
+
+
+class Route(str, Enum):
+    RAG = "rag"
+    SKILL = "skill"
+    HYBRID = "hybrid"
+
+
+@dataclass
+class QueryFeatures:
+    text: str
+    has_comparison_intent: bool
+    has_procedure_intent: bool
+    needs_multi_hop: bool
+
+
+def detect_query_features(question: str) -> QueryFeatures:
+    lowered = question.lower()
+    comparison = any(k in lowered for k in ["違い", "比較", "difference", "versus", "vs"])
+    procedure = any(k in lowered for k in ["手順", "どうやって", "how to", "steps"])
+    multi_hop = any(k in lowered for k in ["かつ", "and", "さらに", "plus", "with"])
+    return QueryFeatures(
+        text=question,
+        has_comparison_intent=comparison,
+        has_procedure_intent=procedure,
+        needs_multi_hop=multi_hop,
+    )
+
+
+def choose_route(features: QueryFeatures) -> Route:
+    if features.has_comparison_intent or features.has_procedure_intent:
+        return Route.SKILL
+    if features.needs_multi_hop:
+        return Route.HYBRID
+    return Route.RAG
+```
+
+### D. Skillナビゲーション（バックトラック付き）
+
+```python
+# utils/c2s/navigator.py
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+
+def load_tree(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def score_node(query: str, node: dict[str, Any]) -> int:
+    q = query.lower()
+    score = 0
+    for k in node.get("include_keywords", []):
+        if k.lower() in q:
+            score += 2
+    for k in node.get("exclude_keywords", []):
+        if k.lower() in q:
+            score -= 3
+    if node.get("title", "").lower() in q:
+        score += 1
+    return score
+
+
+def navigate(query: str, tree: dict[str, Any], max_depth: int = 4, beam_width: int = 3) -> list[str]:
+    nodes = tree["nodes"]
+    frontier = [tree["root_node_id"]]
+    visited: set[str] = set()
+    selected_evidence: list[str] = []
+
+    for _depth in range(max_depth):
+        candidates: list[tuple[int, str]] = []
+        for node_id in frontier:
+            if node_id in visited:
+                continue
+            visited.add(node_id)
+            node = nodes[node_id]
+            candidates.append((score_node(query, node), node_id))
+
+        # バックトラック相当: スコアが低い枝は捨て、次善枝へ切り替える
+        candidates.sort(reverse=True, key=lambda x: x[0])
+        next_frontier: list[str] = []
+        for _score, node_id in candidates[:beam_width]:
+            node = nodes[node_id]
+            selected_evidence.extend(node.get("evidence_chunk_ids", []))
+            next_frontier.extend(node.get("children", []))
+
+        if not next_frontier:
+            break
+        frontier = next_frontier
+
+    # 重複除去しつつ順序保持
+    seen = set()
+    uniq = []
+    for cid in selected_evidence:
+        if cid not in seen:
+            uniq.append(cid)
+            seen.add(cid)
+    return uniq
+```
+
+### E. 夜間バッチ（GitHub Actions、冪等実行）
+
+```yaml
+# .github/workflows/compile-skill-tree.yml
+name: Compile Skill Tree
+
+on:
+  schedule:
+    - cron: "0 18 * * *" # UTC 18:00 = JST 03:00
+  workflow_dispatch:
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Compile corpus to skill tree
+        run: |
+          python utils/c2s/job_compile.py \
+            --input data/normalized_chunks.jsonl \
+            --output data/skill_tree.json
+
+      - name: Verify idempotency checksum
+        run: |
+          sha256sum data/skill_tree.json > data/skill_tree.sha256
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: skill-tree
+          path: |
+            data/skill_tree.json
+            data/skill_tree.sha256
+```
+
+> 実務では、`job_compile.py` 内で **入力スナップショット固定 / 乱数seed固定 / ソート順固定** を徹底し、同一入力で同一出力になること（冪等性）をCIで検証してください。
+
 ## 結果（移行時に起きやすい実務上の変化）
 
 先行研究の報告では、Corpus2Skillは企業QAベンチマークで複数ベースライン（dense retrieval、RAPTOR、agentic RAG）より高い品質指標を示しています。  
