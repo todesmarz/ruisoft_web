@@ -268,3 +268,39 @@ NN/Gの調査によれば、ペルソナにはユーザーが製品とどのよ�
 4. Maze, "Five-Second Testing: Step-by-Step Guide + Example", https://maze.co/collections/user-research/five-second-test/
 5. Smashing Magazine, "Five-Second Testing: Taking A Closer Look At First Impressions (Case Study)", https://www.smashingmagazine.com/2023/12/five-second-testing-case-study/
 6. DSCL Blog, "UI設計におけるペルソナ活用法", https://dscl.jp/blog/persona-UI/
+
+---
+
+## 5秒テストの実施テンプレート（属性別）
+
+属性定義を作ったら、必ず5秒テストで「意図どおり伝わるか」を確認する。
+
+### 手順
+1. 属性A（例：現場担当/スマホ中心/IT中）を3〜5名集める
+2. 画面を5秒だけ見せる
+3. すぐに次の3問を聞く
+
+```text
+Q1. この画面は何をする画面だと思いましたか？
+Q2. 最初に押すボタンはどれだと思いましたか？
+Q3. 迷った場所はどこですか？
+```
+
+### 判定基準（最低ライン）
+- Q1の正答率：80%以上
+- Q2で意図した導線を選んだ割合：70%以上
+- 「迷った場所」が同一箇所に集中した場合は優先修正
+
+---
+
+## レビュー会議での説明フォーマット
+
+デザインレビューで根拠を短く説明するため、以下の順番を固定すると議論が散らばりにくい。
+
+1. **対象属性**: 誰向けか（4項目）
+2. **設計意図**: 何を最短で達成させたいか
+3. **具体設計**: どのUI要素に反映したか
+4. **検証結果**: 5秒テストで何が確認できたか
+5. **次アクション**: どこを改善するか
+
+このフォーマットを使うと、「見た目の好み」ではなく「目的達成の妥当性」で合意しやすくなる。
