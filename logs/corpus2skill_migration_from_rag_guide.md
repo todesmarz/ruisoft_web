@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Corpus2Skillへ移行するには？RAG運用チーム向け実践ガイド - Rui Software
+date: 2026-05-04
 ---
 
 # Corpus2Skillへ移行するには？RAG運用チーム向け実践ガイド
