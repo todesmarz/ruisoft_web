@@ -235,3 +235,27 @@ UX研究の蓄積においても、この考え方は裏付けられている。
 6. Improvado, "Dashboard Design Guide: Build High-Impact Marketing Dashboards", [https://improvado.io/blog/dashboard-design-guide](https://improvado.io/blog/dashboard-design-guide)
 7. Hashbyt, "Enterprise UI Design in 2026: Principles, Trends & Best Practices", [https://hashbyt.com/blog/enterprise-ui-design](https://hashbyt.com/blog/enterprise-ui-design)
 8. Interaction Design Foundation, "What are Personas?", [https://ixdf.org/literature/topics/personas](https://ixdf.org/literature/topics/personas)
+
+---
+
+## 実装前レビューで使う合意チェック（5項目）
+
+役割別UIは、実装に入る前の合意が曖昧だと破綻しやすい。以下をレビューで必ず確認する。
+
+- [ ] 各役割の「主目的」が1文で定義されている
+- [ ] 役割ごとの最上位情報（左上）に置く要素が決まっている
+- [ ] 役割ごとの主要導線（1クリック目）が固定されている
+- [ ] 共通コンポーネントと役割別コンポーネントの境界が定義されている
+- [ ] 計測指標（完了率/滞在時間/再訪率など）が役割ごとに設定されている
+
+この5点が埋まっていれば、デザイン議論が「好み」ではなく「目的」に接続される。
+
+---
+
+## 運用フェーズの見直しサイクル
+
+- **週次**: 役割別の離脱ポイントを確認（ヒートマップ・クリックログ）
+- **隔週**: 役割別に導線を1つだけ改善（同時に複数変更しない）
+- **月次**: 役割定義そのものを更新（職務変化・業務フロー変更に対応）
+
+UIは公開して終わりではなく、役割変化に追従して更新する前提で設計すると長期運用が安定する。

@@ -254,3 +254,29 @@ Windowsが互換性を守り続けたのは、それが事業上の合理的選�
 5. [Python 3が後方互換性を捨ててでも求めたもの — ＠IT](https://atmarkit.itmedia.co.jp/ait/articles/0901/31/news017.html)
 6. [ABI 互換性解説 — Cybertrust](https://www.cybertrust.co.jp/blog/linux-learning/abi-compatibility.html)
 7. [Beyond API Compatibility: Understanding the Full Impact of Breaking Changes — InfoQ](https://www.infoq.com/articles/breaking-changes-are-broken-semver/)
+
+---
+
+## 互換性判断の会議テンプレート
+
+議論が感情論にならないよう、次の順番で確認する。
+
+1. **対象利用者**: 何人が影響を受けるか
+2. **互換維持コスト**: 維持する場合の開発/運用負担
+3. **破壊変更コスト**: 移行ガイド/改修コスト
+4. **安全策**: 変換層・非推奨期間・ロールバック手段
+5. **期限**: いつまで互換層を維持するか
+
+この5項目を埋めると、「守るか捨てるか」を二択でなく設計論として扱える。
+
+---
+
+## リリース前の最低ルール
+
+- [ ] 破壊的変更はリリースノートで明示
+- [ ] 最低1バージョン分の移行猶予を設定
+- [ ] 自動変換ツールまたは移行スクリプトを提供
+- [ ] 主要利用者への事前通知を完了
+- [ ] ロールバック手順を検証済み
+
+互換性の議論は「思想」より「移行の実務」を整えるほど失敗しにくくなる。

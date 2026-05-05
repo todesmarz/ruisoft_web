@@ -208,3 +208,41 @@ CCLのSBI（Situation-Behavior-Impact）型は、人格ではなく行動に焦�
    https://www.ucalgary.ca/hr/training-development/connect-perform/one-one-meetings/sbi-model
 6. PubMed, *Effectiveness of behavioural interventions with motivational interviewing on physical activity outcomes in adults: systematic review and meta-analysis* (2024)  
    https://pubmed.ncbi.nlm.nih.gov/38986547/
+
+---
+
+## 実務テンプレート（そのまま使える最小セット）
+
+### 1) 面談前ヒアリング（3問）
+
+```text
+1. 今週うまく進んだことは？（事実1つ）
+2. 詰まった場面は？（状況と行動）
+3. 次回までに試したいことは？（1つ）
+```
+
+### 2) 当日クロージング文
+
+```text
+今日は「次回までに試す行動」を1つ決めます。
+観測指標は1つだけにして、次回に一緒に振り返りましょう。
+```
+
+### 3) フォローアップ文（Slack想定）
+
+```text
+本日の合意：◯◯を次回までに実施
+観測：△△（数値or回数）
+困ったら：48時間以内にこのスレで相談
+```
+
+---
+
+## 運用ルール（チーム導入時）
+
+- 1on1の記録は「長文議事録」ではなく**次アクション中心**にする
+- 毎回のテーマは1つだけ（複数論点は翌週へ）
+- 問題提起は人格ではなくSBIで行動ベースに限定する
+- 2週間ごとに「続ける/やめる/調整する」を見直す
+
+この4点だけ守れば、固くなりすぎず、かつ改善が曖昧に終わりにくくなります。

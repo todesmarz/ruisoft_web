@@ -293,3 +293,33 @@ OpenTelemetryを導入し、主要なリクエストフローのトレースを�
 - [Monitoring API Usage Across Versions: From Chaos to Control | Zuplo](https://zuplo.com/learning-center/monitoring-api-usage-across-versions)
 - [Distributed Systems Observability: The Ultimate Guide (2025)](https://edgedelta.com/company/knowledge-center/distributed-systems-observability)
 - [Enhanced code reviews using pull request based change impact analysis | Springer](https://link.springer.com/article/10.1007/s10664-024-10600-2)
+
+---
+
+## 変更前チェックリスト（PR作成前）
+
+影響範囲調査を属人化しないため、PR前に最低限これだけ確認する。
+
+- [ ] 変更対象の実行パスをトレーシングで確認した
+- [ ] 主要APIのConsumer契約（CDC）を通した
+- [ ] アクセスログで利用頻度上位の利用者を把握した
+- [ ] 破壊的変更の有無を明記した
+- [ ] ロールバック手順をPR本文に記載した
+
+---
+
+## 影響度の簡易スコアリング
+
+変更の優先レビュー対象を決めるため、次の4項目を1〜3点で採点する。
+
+1. 利用者数（少1〜多3）
+2. 可逆性（高1〜低3）
+3. ドメイン重要度（低1〜高3）
+4. 監視の成熟度（高1〜低3）
+
+合計点の目安:
+- 4〜6点: 通常レビュー
+- 7〜9点: 追加レビュー1名
+- 10〜12点: リリースゲート必須
+
+このスコアをPRに載せるだけで、レビュアー間の危険認識のズレを減らせる。

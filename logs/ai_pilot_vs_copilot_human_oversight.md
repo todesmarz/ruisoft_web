@@ -196,3 +196,33 @@ AIにはPilotになってもらってよい。ただし、すべての空を任�
 4. Amershi et al., *Guidelines for Human-AI Interaction* (CHI 2019). https://www.microsoft.com/en-us/research/wp-content/uploads/2019/01/Guidelines-for-Human-AI-Interaction-camera-ready.pdf  
 5. Parasuraman, Sheridan, Wickens, *A Model for Types and Levels of Human Interaction with Automation* (2000). https://www.cs.uml.edu/~holly/91.550/papers/sheridan-autonomy.pdf  
 6. Sellen, A. and Horvitz, E., *The Rise of the AI Co-Pilot: Lessons for Design from Aviation and Beyond* (arXiv:2311.14713; Communications of the ACM, 2024). https://arxiv.org/abs/2311.14713
+
+---
+
+## 導入判定テンプレート（10分版）
+
+チームでPilot/Copilotの切り分けを議論するときは、次の5問にYes/Noで答えるだけでも初期判断が揃う。
+
+1. 失敗時に顧客影響が発生するか
+2. ロールバックが1営業日以内に可能か
+3. 監査・法務説明が必要な処理か
+4. 入力データの品質が安定しているか
+5. 担当者が停止権限を持っているか
+
+- Yesが1〜2個: Pilot候補
+- Yesが3個: 条件付きCopilot
+- Yesが4〜5個: Copilot固定（Human-in-command）
+
+---
+
+## 監視官を機能させる運用チェック
+
+「人を置いた」だけで安心しないために、最低限以下を定例点検する。
+
+- [ ] 停止ボタンの実行権限が現場にある
+- [ ] 異常検知時の連絡経路が30分以内に回る
+- [ ] 監視ログ（入力/出力/承認者）が追跡可能
+- [ ] 月1回のエラー注入訓練を実施
+- [ ] 監視結果を次のルール改定に反映している
+
+この5項目が回ると、監視官が「名ばかり役割」ではなく安全装置として機能しやすくなる。
