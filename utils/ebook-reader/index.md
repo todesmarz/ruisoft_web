@@ -77,7 +77,7 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.mjs';
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.mjs';
 
-const state = { fileType:null, pdfDoc:null, epubBook:null, epubRendition:null, pageNum:1, pageCount:0, textCache:new Map(), isNarrating:false, isPaused:false, watchdogId:null, keepAliveId:null };
+const state = { fileType:null, pdfDoc:null, epubBook:null, epubRendition:null, pageNum:1, pageCount:0, textCache:new Map(), isNarrating:false, isPaused:false, watchdogId:null, keepAliveId:null, epubLocationsReady:false };
 const STORAGE_KEYS = { fileName:'ebookReader.fileName', fileType:'ebookReader.fileType', lastPage:'ebookReader.lastPage', rate:'ebookReader.rate', voice:'ebookReader.voice' };
 const $ = id => document.getElementById(id);
 
@@ -104,28 +104,49 @@ async function extractPageText(n){ const k=pageTextKey(n); if(state.textCache.ha
 async function renderPdfPage(n){ const page=await state.pdfDoc.getPage(n); const viewport=page.getViewport({scale:1.4}); const canvas=$('pdfCanvas'); canvas.width=viewport.width; canvas.height=viewport.height; await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise; canvas.style.display='block'; $('epubViewer').style.display='none'; }
 
 async function loadEpubBytes(bytes, name='saved.epub', options={ restore:false }){
-  state.fileType='epub'; state.pdfDoc=null; state.textCache.clear();
+  state.fileType='epub'; state.pdfDoc=null; state.textCache.clear(); state.epubLocationsReady = false;
   if (state.epubRendition) { try { state.epubRendition.destroy(); } catch {} }
   state.epubBook = window.ePub(bytes.buffer);
   await state.epubBook.ready;
-  state.pageCount = state.epubBook.spine.items.length || 1;
-  state.pageNum = options.restore ? Math.min(Math.max(Number(localStorage.getItem(STORAGE_KEYS.lastPage)||'1'),1), state.pageCount) : 1;
   $('epubViewer').innerHTML='';
   state.epubRendition = state.epubBook.renderTo('epubViewer', { width:'100%', height:'420px' });
+
+  try {
+    await state.epubBook.locations.generate(1400);
+    state.pageCount = state.epubBook.locations.total || state.epubBook.spine.items.length || 1;
+    state.epubLocationsReady = state.pageCount > 0;
+  } catch {
+    state.pageCount = state.epubBook.spine.items.length || 1;
+    state.epubLocationsReady = false;
+  }
+
+  state.pageNum = options.restore ? Math.min(Math.max(Number(localStorage.getItem(STORAGE_KEYS.lastPage)||'1'),1), state.pageCount) : 1;
   await renderEpubPage(state.pageNum);
   setStatus(`読込完了: ${name}`);
 }
 
 async function renderEpubPage(n){
-  const section = state.epubBook.spine.get(n-1);
-  if (!section) return;
-  await state.epubRendition.display(section.href);
+  if (state.epubLocationsReady) {
+    const cfi = state.epubBook.locations.cfiFromLocation(Math.max(0, n-1));
+    await state.epubRendition.display(cfi);
+  } else {
+    const section = state.epubBook.spine.get(n-1);
+    if (!section) return;
+    await state.epubRendition.display(section.href);
+  }
   $('epubViewer').style.display='block';
   $('pdfCanvas').style.display='none';
 }
 
 async function extractEpubText(n){
   const k=pageTextKey(n); if(state.textCache.has(k)) return state.textCache.get(k);
+  if (state.epubLocationsReady) {
+    const cfi = state.epubBook.locations.cfiFromLocation(Math.max(0, n-1));
+    const range = await state.epubBook.getRange(cfi);
+    const t = (range?.toString() || '').replace(/\s+/g,' ').trim();
+    state.textCache.set(k,t);
+    return t;
+  }
   const section = state.epubBook.spine.get(n-1); if(!section) return '';
   await section.load(state.epubBook.load.bind(state.epubBook));
   const t = (section.document?.body?.innerText || '').replace(/\s+/g,' ').trim();
@@ -167,16 +188,18 @@ function stopSpeech(){
 function startSpeechWatchdog(){
   if (state.watchdogId) clearInterval(state.watchdogId);
   state.watchdogId = setInterval(() => {
-    if (!state.isNarrating) return;
+    if (!state.isNarrating || state.isPaused) return;
+    if (state.isPaused) return;
+    if (state.isPaused) return;
     // 一部ブラウザで別タブ中にpause状態へ遷移するため自動復帰
     if (speechSynthesis.paused) {
       try { speechSynthesis.resume(); state.isPaused = false; const t=$('btnPauseResume'); if(t) t.textContent='一時停止'; } catch {}
     }
-  }, 1200);
+  }, 700);
 
   if (state.keepAliveId) clearInterval(state.keepAliveId);
   state.keepAliveId = setInterval(() => {
-    if (!state.isNarrating) return;
+    if (!state.isNarrating || state.isPaused) return;
     // キュー維持用: 長時間バックグラウンドで停止しにくくする
     try {
       speechSynthesis.pause();
@@ -203,7 +226,7 @@ $('navLeft').addEventListener('click', goPrev);
 $('navRight').addEventListener('click', goNext);
 $('btnSpeak').addEventListener('click', startNarration);
 $('btnPauseResume').addEventListener('click', ()=>{
-  if (!state.isNarrating) return;
+  if (!state.isNarrating || state.isPaused) return;
   if (state.isPaused) {
     speechSynthesis.resume();
     state.isPaused = false;
@@ -218,7 +241,7 @@ $('btnPauseResume').addEventListener('click', ()=>{
 });
 $('btnStop').addEventListener('click', stopSpeech);
 document.addEventListener('visibilitychange', ()=>{
-  if (!state.isNarrating) return;
+  if (!state.isNarrating || state.isPaused) return;
   if (document.hidden) {
     setStatus('バックグラウンド再生を維持中...');
   } else {
@@ -228,11 +251,13 @@ document.addEventListener('visibilitychange', ()=>{
     setStatus('読み上げを継続中');
   }
 });
+window.addEventListener('focus', ()=>{ if(state.isNarrating && !state.isPaused){ try{ speechSynthesis.resume(); }catch{} } });
+window.addEventListener('pageshow', ()=>{ if(state.isNarrating && !state.isPaused){ try{ speechSynthesis.resume(); }catch{} } });
 $('rate').addEventListener('change', persistSettings);
 $('voiceSelect').addEventListener('change', persistSettings);
 
 speechSynthesis.onvoiceschanged = setupVoices;
 setupVoices(); restoreSettings();
-$('runtimeInfo').textContent = `Media Session: ${'mediaSession' in navigator ? '可':'不可'}`;
+$('runtimeInfo').textContent = `Media Session: ${'mediaSession' in navigator ? '可':'不可'} / バックグラウンド継続はブラウザ依存`; 
 setStatus('待機中'); restoreSavedFile();
 </script>
