@@ -18,8 +18,8 @@ title: ebook/PDF Reader - Rui Software
     #docViewer { width:100%; min-height: 420px; border:1px solid #ccc; border-radius:6px; background:#fff; }
     #pdfCanvas { width:100%; height:auto; display:none; }
     #epubViewer { width:100%; min-height:420px; display:none; }
-    .is-loading { opacity: .65; pointer-events: none; }
-    .loading-indicator { display:none; margin-left:8px; font-size: .9rem; color:#1a5c38; }
+    .is-loading { opacity: .85; }
+    .loading-indicator { display:none; margin-left:8px; font-size: .9rem; color:#1a5c38; font-weight:600; }
     .loading-indicator.active { display:inline-block; }
     button[disabled] { opacity:.55; cursor:not-allowed; }
   </style>
@@ -76,7 +76,14 @@ const STORAGE_KEYS = { fileName:'ebookReader.fileName', fileType:'ebookReader.fi
 const $ = id => document.getElementById(id);
 
 function setStatus(msg){ $('status').textContent = msg; }
-function setBusy(b,msg=''){ ['btnLoad','btnRestore','btnClearSaved','btnPrev','btnNext','btnSpeak'].forEach(id=>$(id).disabled=b); $('loadingIndicator').classList.toggle('active',b); document.body.classList.toggle('is-loading',b); if(msg) setStatus(msg); }
+function setBusy(b,msg=''){
+  ['btnLoad','btnRestore','btnClearSaved','btnPrev','btnNext','btnSpeak'].forEach(id=>$(id).disabled=b);
+  $('loadingIndicator').classList.toggle('active',b);
+  // 画面全体はロックせず、操作が重複しやすいボタンのみ無効化する
+  const app = document.querySelector('.ebook-reader-app');
+  if (app) app.classList.toggle('is-loading', b);
+  if(msg) setStatus(msg);
+}
 function pageTextKey(n){ return `p${n}`; }
 
 function openDb(){ return new Promise((res,rej)=>{ const r=indexedDB.open('ebookReaderDB',1); r.onupgradeneeded=()=>{const db=r.result; if(!db.objectStoreNames.contains('files')) db.createObjectStore('files')}; r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error);}); }
@@ -135,9 +142,9 @@ function setupVoices(){ const sel=$('voiceSelect'); sel.innerHTML=''; speechSynt
 
 async function loadPdfBytes(bytes, name='saved.pdf'){ state.fileType='pdf'; state.epubBook=null; state.textCache.clear(); state.pdfDoc=await pdfjsLib.getDocument({data:bytes}).promise; state.pageCount=state.pdfDoc.numPages; state.pageNum=Math.min(Math.max(Number(localStorage.getItem(STORAGE_KEYS.lastPage)||'1'),1), state.pageCount); await renderCurrentPage(); setStatus(`読込完了: ${name}`); }
 
-async function restoreSavedFile(){ setBusy(true,'保存済みファイルを確認中...'); try { const saved=await idbGet('uploadedFile'); if(!saved){ setStatus('保存済みファイルがありません'); return; } const bytes=new Uint8Array(saved); const t=localStorage.getItem(STORAGE_KEYS.fileType)||'pdf'; const n=localStorage.getItem(STORAGE_KEYS.fileName)||'saved.file'; if(t==='epub') await loadEpubBytes(bytes,n+' (saved)'); else await loadPdfBytes(bytes,n+' (saved)'); } catch(e){ setStatus(`復元失敗: ${e.message}`); } finally { setBusy(false);} }
+async function restoreSavedFile(){ setBusy(true,'保存済みファイルを復元中...'); try { const saved=await idbGet('uploadedFile'); if(!saved){ setStatus('保存済みファイルがありません'); return; } const bytes=new Uint8Array(saved); const t=localStorage.getItem(STORAGE_KEYS.fileType)||'pdf'; const n=localStorage.getItem(STORAGE_KEYS.fileName)||'saved.file'; if(t==='epub') await loadEpubBytes(bytes,n+' (saved)'); else await loadPdfBytes(bytes,n+' (saved)'); } catch(e){ setStatus(`復元失敗: ${e.message}`); } finally { setBusy(false);} }
 
-$('btnLoad').addEventListener('click', async ()=>{ setBusy(true,'ファイル読み込み中...'); const file=$('fileInput').files?.[0]; if(!file){ setStatus('PDF/ePubファイルを選択してください'); setBusy(false); return; } try { const bytes=new Uint8Array(await file.arrayBuffer()); await idbSet('uploadedFile', bytes.buffer); localStorage.setItem(STORAGE_KEYS.fileName,file.name); const isEpub=/\.epub$/i.test(file.name)||file.type.includes('epub'); localStorage.setItem(STORAGE_KEYS.fileType,isEpub?'epub':'pdf'); if(isEpub) await loadEpubBytes(bytes,file.name); else await loadPdfBytes(bytes,file.name); persistSettings(); } catch(e){ setStatus(`読込失敗: ${e.message}`); } finally { setBusy(false);} });
+$('btnLoad').addEventListener('click', async ()=>{ setBusy(true,'ファイル読み込み中... しばらくお待ちください'); const file=$('fileInput').files?.[0]; if(!file){ setStatus('PDF/ePubファイルを選択してください'); setBusy(false); return; } try { const bytes=new Uint8Array(await file.arrayBuffer()); await idbSet('uploadedFile', bytes.buffer); localStorage.setItem(STORAGE_KEYS.fileName,file.name); const isEpub=/\.epub$/i.test(file.name)||file.type.includes('epub'); localStorage.setItem(STORAGE_KEYS.fileType,isEpub?'epub':'pdf'); if(isEpub) await loadEpubBytes(bytes,file.name); else await loadPdfBytes(bytes,file.name); persistSettings(); } catch(e){ setStatus(`読込失敗: ${e.message}`); } finally { setBusy(false);} });
 $('btnRestore').addEventListener('click', restoreSavedFile);
 $('btnClearSaved').addEventListener('click', async ()=>{ await idbDelete('uploadedFile'); localStorage.removeItem(STORAGE_KEYS.fileName); localStorage.removeItem(STORAGE_KEYS.fileType); localStorage.removeItem(STORAGE_KEYS.lastPage); setStatus('保存済みファイルを削除しました'); });
 $('btnPrev').addEventListener('click', async ()=>{ if(state.pageNum>1){ state.pageNum--; await renderCurrentPage(); persistSettings(); }});
