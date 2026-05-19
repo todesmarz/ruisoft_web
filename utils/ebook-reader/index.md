@@ -21,11 +21,11 @@ title: ebook/PDF Reader MVP2 - Rui Software
 
   <div class="ebook-panel">
     <div class="ebook-row">
-      <input id="fileInput" type="file" accept="application/pdf" />
-      <button id="btnLoad">PDFを読み込む</button>
+      <input id="fileInput" type="file" accept="application/pdf,.epub,application/epub+zip" />
+      <button id="btnLoad">ファイルを読み込む (PDF/ePub)</button>
       <span id="status">未読込</span>
-      <button id="btnRestore">保存PDFを復元</button>
-      <button id="btnClearSaved">保存PDFを削除</button>
+      <button id="btnRestore">保存ファイルを復元</button>
+      <button id="btnClearSaved">保存ファイルを削除</button>
     </div>
     <div class="ebook-row">
       <button id="btnPrev">前ページ</button>
@@ -51,11 +51,12 @@ title: ebook/PDF Reader MVP2 - Rui Software
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
 <script type="module">
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.mjs';
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.mjs';
 
-const state = { pdfDoc:null, pageNum:1, pageCount:0, textCache:new Map(), currentUtterance:null, speaking:false };
+const state = { fileType:null, pdfDoc:null, epubBook:null, epubSections:[], pageNum:1, pageCount:0, textCache:new Map(), currentUtterance:null, speaking:false };
 const STORAGE_KEYS = {
   pdfData: 'ebookReader.pdfData',
   fileName: 'ebookReader.fileName',
@@ -63,7 +64,8 @@ const STORAGE_KEYS = {
   autoAdvance: 'ebookReader.autoAdvance',
   bgMode: 'ebookReader.bgMode',
   rate: 'ebookReader.rate',
-  voice: 'ebookReader.voice'
+  voice: 'ebookReader.voice',
+  fileType: 'ebookReader.fileType'
 };
 const $ = (id)=>document.getElementById(id);
 const dispatch = (name, detail={}) => document.dispatchEvent(new CustomEvent(name,{detail}));
@@ -83,8 +85,8 @@ async function extractPageText(n){
 }
 
 async function renderCurrentPage(){
-  if(!state.pdfDoc) return;
-  const text = await extractPageText(state.pageNum);
+  if(!state.fileType) return;
+  const text = state.fileType === "epub" ? await extractEpubText(state.pageNum) : await extractPageText(state.pageNum);
   $('textPreview').textContent = text || '（テキスト抽出結果が空です。画像PDFの可能性があります）';
   $('pageLabel').textContent = `Page ${state.pageNum} / ${state.pageCount}`;
 }
@@ -116,9 +118,9 @@ function speakChunks(chunks, idx=0){
 }
 
 async function startNarration(){
-  if(!state.pdfDoc) return;
+  if(!state.fileType) return;
   stopSpeech();
-  const text = await extractPageText(state.pageNum);
+  const text = state.fileType === "epub" ? await extractEpubText(state.pageNum) : await extractPageText(state.pageNum);
   if(!text){ setStatus('テキストが抽出できません。'); return; }
   state.speaking = true;
   dispatch('reader:narration-started',{page:state.pageNum});
@@ -151,12 +153,53 @@ function base64ToUint8Array(base64){
   return bytes;
 }
 
+
+
+function openDb(){
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('ebookReaderDB', 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains('files')) db.createObjectStore('files');
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbSet(key, value){
+  const db = await openDb();
+  await new Promise((resolve, reject)=>{
+    const tx = db.transaction('files','readwrite');
+    tx.objectStore('files').put(value, key);
+    tx.oncomplete = ()=>resolve(); tx.onerror=()=>reject(tx.error);
+  });
+}
+
+async function idbGet(key){
+  const db = await openDb();
+  return await new Promise((resolve, reject)=>{
+    const tx = db.transaction('files','readonly');
+    const req = tx.objectStore('files').get(key);
+    req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error);
+  });
+}
+
+async function idbDelete(key){
+  const db = await openDb();
+  await new Promise((resolve, reject)=>{
+    const tx = db.transaction('files','readwrite');
+    tx.objectStore('files').delete(key);
+    tx.oncomplete=()=>resolve(); tx.onerror=()=>reject(tx.error);
+  });
+}
 function persistSettings(){
   localStorage.setItem(STORAGE_KEYS.lastPage, String(state.pageNum || 1));
   localStorage.setItem(STORAGE_KEYS.autoAdvance, $('autoAdvance').checked ? '1' : '0');
   localStorage.setItem(STORAGE_KEYS.bgMode, $('bgMode').checked ? '1' : '0');
   localStorage.setItem(STORAGE_KEYS.rate, String($('rate').value || '1.0'));
   localStorage.setItem(STORAGE_KEYS.voice, $('voiceSelect').value || '');
+  if (state.fileType) localStorage.setItem(STORAGE_KEYS.fileType, state.fileType);
 }
 
 function restoreSettings(){
@@ -167,6 +210,7 @@ function restoreSettings(){
 }
 
 async function loadPdfBytes(pdfBytes, fileName = 'saved.pdf'){
+  state.fileType = 'pdf';
   state.pdfDoc = await pdfjsLib.getDocument({data:pdfBytes}).promise;
   state.pageCount = state.pdfDoc.numPages;
   const savedPage = Number(localStorage.getItem(STORAGE_KEYS.lastPage) || '1');
@@ -174,18 +218,49 @@ async function loadPdfBytes(pdfBytes, fileName = 'saved.pdf'){
   state.textCache.clear();
   await renderCurrentPage();
   setStatus(`読込完了: ${fileName}`);
-  dispatch('reader:file-loaded',{name:fileName,pages:state.pageCount});
+  dispatch('reader:file-loaded',{name:fileName,pages:state.pageCount,fileType:'pdf'});
 }
 
-async function restoreSavedPdf(){
-  const base64 = localStorage.getItem(STORAGE_KEYS.pdfData);
-  const fileName = localStorage.getItem(STORAGE_KEYS.fileName) || 'saved.pdf';
-  if (!base64) { setStatus('保存済みPDFがありません'); return; }
+async function loadEpubBytes(epubBytes, fileName='saved.epub'){
+  if (!window.ePub) throw new Error('ePubライブラリ未読込');
+  state.fileType = 'epub';
+  state.pdfDoc = null;
+  state.epubBook = window.ePub(epubBytes);
+  const nav = await state.epubBook.loaded.navigation;
+  state.epubSections = (nav.toc || []).map(i=>({label:i.label, href:i.href}));
+  state.pageCount = state.epubSections.length || 1;
+  state.pageNum = Math.min(Math.max(Number(localStorage.getItem(STORAGE_KEYS.lastPage)||'1'),1), state.pageCount);
+  state.textCache.clear();
+  await renderCurrentPage();
+  setStatus(`読込完了: ${fileName}`);
+  dispatch('reader:file-loaded',{name:fileName,pages:state.pageCount,fileType:'epub'});
+}
+
+async function extractEpubText(n){
+  const key = pageTextKey(n);
+  if (state.textCache.has(key)) return state.textCache.get(key);
+  const sec = state.epubSections[n-1];
+  if (!sec) return '';
+  const section = state.epubBook.spine.get(sec.href) || state.epubBook.spine.get(n-1);
+  await section.load(state.epubBook.load.bind(state.epubBook));
+  const text = (section.document?.body?.innerText || '').replace(/\s+/g,' ').trim();
+  section.unload();
+  state.textCache.set(key, text);
+  dispatch('reader:text-extracted', {page:n, length:text.length});
+  return text;
+}
+
+async function restoreSavedFile(){
+  const fileName = localStorage.getItem(STORAGE_KEYS.fileName) || 'saved.file';
+  const fileType = localStorage.getItem(STORAGE_KEYS.fileType) || 'pdf';
   try {
-    const bytes = base64ToUint8Array(base64);
-    await loadPdfBytes(bytes, fileName + ' (saved)');
+    const saved = await idbGet('uploadedFile');
+    if (!saved) { setStatus('保存済みファイルがありません'); return; }
+    const bytes = new Uint8Array(saved);
+    if (fileType === 'epub') await loadEpubBytes(bytes, fileName + ' (saved)');
+    else await loadPdfBytes(bytes, fileName + ' (saved)');
   } catch (e) {
-    setStatus(`保存PDFの復元失敗: ${e.message}`);
+    setStatus(`保存ファイルの復元失敗: ${e.message}`);
     dispatch('reader:error',{type:'restore',error:e.message});
   }
 }
@@ -202,13 +277,15 @@ function setupRuntime(){
 
 $('btnLoad').addEventListener('click', async ()=>{
   const file = $('fileInput').files?.[0];
-  if(!file){ setStatus('PDFファイルを選択してください'); return; }
+  if(!file){ setStatus('PDF/ePubファイルを選択してください'); return; }
   try {
-    const base64 = await fileToBase64(file);
-    localStorage.setItem(STORAGE_KEYS.pdfData, base64);
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    await idbSet('uploadedFile', bytes.buffer);
     localStorage.setItem(STORAGE_KEYS.fileName, file.name);
-    const bytes = base64ToUint8Array(base64);
-    await loadPdfBytes(bytes, file.name);
+    const isEpub = /\.epub$/i.test(file.name) || file.type.includes('epub');
+    localStorage.setItem(STORAGE_KEYS.fileType, isEpub ? 'epub' : 'pdf');
+    if (isEpub) await loadEpubBytes(bytes, file.name);
+    else await loadPdfBytes(bytes, file.name);
     persistSettings();
   } catch(e){
     setStatus(`読込失敗: ${e.message}`);
@@ -216,12 +293,13 @@ $('btnLoad').addEventListener('click', async ()=>{
   }
 });
 
-$('btnRestore').addEventListener('click', restoreSavedPdf);
+$('btnRestore').addEventListener('click', restoreSavedFile);
 $('btnClearSaved').addEventListener('click', ()=>{
-  localStorage.removeItem(STORAGE_KEYS.pdfData);
   localStorage.removeItem(STORAGE_KEYS.fileName);
+  localStorage.removeItem(STORAGE_KEYS.fileType);
+  idbDelete('uploadedFile');
   localStorage.removeItem(STORAGE_KEYS.lastPage);
-  setStatus('保存済みPDFを削除しました');
+  setStatus('保存済みファイルを削除しました');
 });
 $('btnPrev').addEventListener('click', async ()=>{ if(state.pageNum>1){ state.pageNum--; await renderCurrentPage(); persistSettings(); }});
 $('btnNext').addEventListener('click', async ()=>{ if(state.pageNum<state.pageCount){ state.pageNum++; await renderCurrentPage(); persistSettings(); }});
@@ -240,6 +318,6 @@ setupVoices();
 restoreSettings();
 const savedVoice = localStorage.getItem(STORAGE_KEYS.voice); if(savedVoice) $('voiceSelect').value = savedVoice;
 setupRuntime();
-setStatus('待機中（保存PDFがあれば復元できます）');
-restoreSavedPdf();
+setStatus('待機中（保存ファイルがあれば復元できます）');
+restoreSavedFile();
 </script>
