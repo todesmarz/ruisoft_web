@@ -142,9 +142,9 @@ async function renderEpubPage(n){
 async function extractEpubText(n){
   const k=pageTextKey(n); if(state.textCache.has(k)) return state.textCache.get(k);
   if (state.epubLocationsReady) {
-    const cfi = state.epubBook.locations.cfiFromLocation(Math.max(0, n-1));
-    const range = await state.epubBook.getRange(cfi);
-    const t = (range?.toString() || '').replace(/\s+/g,' ').trim();
+    // 位置ベースページング時は、現在表示中ビューの本文を取得してページ表示と一致させる
+    const iframe = $('epubViewer')?.querySelector('iframe');
+    const t = (iframe?.contentDocument?.body?.innerText || '').replace(/\s+/g,' ').trim();
     state.textCache.set(k,t);
     return t;
   }
@@ -177,6 +177,7 @@ function normalizeTextForTTS(text){
 }
 
 function splitSentences(text){ return text.split(/(?<=[。！？.!?])\s+/).map(s=>s.trim()).filter(Boolean); }
+function toChunks(text, maxLen=220){ const sents=splitSentences(text); const chunks=[]; let buf=''; for(const x of sents){ if((buf+' '+x).trim().length>maxLen){ if(buf) chunks.push(buf.trim()); buf=x; } else { buf += ' '+x; } } if(buf.trim()) chunks.push(buf.trim()); return chunks.length?chunks:[text]; }
 function stopSpeech(){
   state.isNarrating = false;
   if (state.watchdogId) { clearInterval(state.watchdogId); state.watchdogId = null; }
@@ -209,7 +210,35 @@ function startSpeechWatchdog(){
   }, 10000);
 }
 
-async function startNarration(){ if(!state.fileType) return; stopSpeech(); state.isNarrating = true; state.isPaused = false; const t=$('btnPauseResume'); if(t) t.textContent='一時停止'; startSpeechWatchdog(); const rawText = state.fileType==='epub' ? await extractEpubText(state.pageNum) : await extractPageText(state.pageNum); if(!rawText){ state.isNarrating = false; return; } const text = normalizeTextForTTS(rawText); const chunks=splitSentences(text); const speak=(i=0)=>{ if(!state.isNarrating) return; if(i>=chunks.length){ if(state.pageNum<state.pageCount){ state.pageNum++; renderCurrentPage().then(startNarration); persistSettings(); } else { state.isNarrating = false; } return; } const ut=new SpeechSynthesisUtterance(chunks[i]); const v=speechSynthesis.getVoices().find(x=>x.name===$('voiceSelect').value); if(v) ut.voice=v; ut.lang='ja-JP'; ut.rate=Number($('rate').value)||1; ut.onend=()=>speak(i+1); ut.onerror=()=>{ setStatus('読み上げが中断されました。再開を試行します。'); setTimeout(()=>{ if(state.isNarrating) speak(i); }, 800); }; speechSynthesis.speak(ut); }; speak(); }
+async function startNarration(){
+  if(!state.fileType) return;
+  stopSpeech();
+  state.isNarrating = true;
+  state.isPaused = false;
+  const t=$('btnPauseResume'); if(t) t.textContent='一時停止';
+  startSpeechWatchdog();
+  const rawText = state.fileType==='epub' ? await extractEpubText(state.pageNum) : await extractPageText(state.pageNum);
+  if(!rawText){ state.isNarrating = false; return; }
+  const text = normalizeTextForTTS(rawText);
+  const chunks = toChunks(text, document.hidden ? 1200 : 220);
+  let completed = 0;
+  chunks.forEach((chunk)=>{
+    const ut=new SpeechSynthesisUtterance(chunk);
+    const v=speechSynthesis.getVoices().find(x=>x.name===$('voiceSelect').value);
+    if(v) ut.voice=v;
+    ut.lang='ja-JP';
+    ut.rate=Number($('rate').value)||1;
+    ut.onend=()=>{
+      completed += 1;
+      if(completed===chunks.length){
+        if(state.pageNum<state.pageCount){ state.pageNum++; renderCurrentPage().then(startNarration); persistSettings(); }
+        else { state.isNarrating = false; }
+      }
+    };
+    ut.onerror=()=>{ setStatus('読み上げが中断されました。再開を試行します。'); };
+    speechSynthesis.speak(ut);
+  });
+}
 
 function setupVoices(){ const sel=$('voiceSelect'); sel.innerHTML=''; speechSynthesis.getVoices().forEach(v=>{const o=document.createElement('option'); o.value=v.name; o.textContent=`${v.name} (${v.lang})`; sel.appendChild(o);}); const saved=localStorage.getItem(STORAGE_KEYS.voice); if(saved) sel.value=saved; }
 
