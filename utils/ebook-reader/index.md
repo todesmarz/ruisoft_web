@@ -15,7 +15,10 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
     .ebook-panel { border:1px solid #ddd; border-radius:8px; padding:10px; margin:10px 0; }
     #textPreview { white-space: pre-wrap; max-height: 320px; overflow:auto; background:#fafafa; padding:10px; border-radius:6px; }
     .ebook-muted { color:#666; font-size: 0.9rem; }
-    #docViewer { position:relative; width:100%; min-height: 420px; border:1px solid #ccc; border-radius:6px; background:#fff; }
+    #docViewer { position:relative; width:100%; min-height: 420px; border:1px solid #ccc; border-radius:6px; background:var(--viewer-bg, #fff); }
+    .theme-light { --viewer-bg:#fff; }
+    .theme-sepia { --viewer-bg:#f4ecd8; }
+    .theme-dark { --viewer-bg:#1e1e1e; }
     .nav-zone { position:absolute; top:0; bottom:0; width:12%; z-index:5; cursor:pointer; }
     .nav-zone.left { left:0; }
     .nav-zone.right { right:0; }
@@ -96,11 +99,10 @@ const STORAGE_KEYS = { fileName:'ebookReader.fileName', fileType:'ebookReader.fi
 const $ = id => document.getElementById(id);
 
 function applyTheme(theme){
-  const app=document.querySelector('.ebook-reader-app');
-  if(!app) return;
-  if(theme==='dark'){ app.style.background='#121212'; app.style.color='#efefef'; }
-  else if(theme==='sepia'){ app.style.background='#f4ecd8'; app.style.color='#3a3125'; }
-  else { app.style.background=''; app.style.color=''; }
+  const viewer = $('docViewer');
+  if(!viewer) return;
+  viewer.classList.remove('theme-light','theme-sepia','theme-dark');
+  viewer.classList.add(`theme-${theme}`);
   localStorage.setItem(STORAGE_KEYS.theme, theme);
 }
 
@@ -239,15 +241,27 @@ function stopSpeech(){
   const t = $('btnPauseResume'); if (t) t.textContent = '一時停止';
 }
 
+
+function ensureNarrationAlive(){
+  if (!state.isNarrating || state.isPaused) return;
+  const pending = speechSynthesis.pending;
+  const speaking = speechSynthesis.speaking;
+  // hidden tab時にキューが空で停止した場合の復帰
+  if (!pending && !speaking) {
+    setStatus('読み上げが停止したため再開を試行します...');
+    startNarration();
+  }
+}
+
 function startSpeechWatchdog(){
   if (state.watchdogId) clearInterval(state.watchdogId);
   state.watchdogId = setInterval(() => {
     if (!state.isNarrating || state.isPaused) return;
-    // 一部ブラウザで別タブ中にpause状態へ遷移するため自動復帰
     if (speechSynthesis.paused) {
       try { speechSynthesis.resume(); state.isPaused = false; const t=$('btnPauseResume'); if(t) t.textContent='一時停止'; } catch {}
     }
-  }, 700);
+    ensureNarrationAlive();
+  }, 600);
 
   if (state.keepAliveId) clearInterval(state.keepAliveId);
   state.keepAliveId = setInterval(() => {
@@ -372,10 +386,12 @@ document.addEventListener('visibilitychange', ()=>{
   if (!state.isNarrating || state.isPaused) return;
   if (document.hidden) {
     setStatus('バックグラウンド再生を維持中...');
+    try { speechSynthesis.resume(); } catch {}
   } else {
     try { speechSynthesis.resume(); } catch {}
     state.isPaused = false;
     const t=$('btnPauseResume'); if(t) t.textContent='一時停止';
+    ensureNarrationAlive();
     setStatus('読み上げを継続中');
   }
 });
@@ -411,7 +427,7 @@ $('rate').addEventListener('change', persistSettings);
 $('voiceSelect').addEventListener('change', persistSettings);
 
 speechSynthesis.onvoiceschanged = setupVoices;
-setupVoices(); restoreSettings();
+setupVoices(); restoreSettings(); applyTheme(localStorage.getItem(STORAGE_KEYS.theme)||'light');
 $('runtimeInfo').textContent = `Media Session: ${'mediaSession' in navigator ? '可':'不可'} / バックグラウンド継続はブラウザ依存`; 
 setStatus('待機中');
 setTimeout(()=>{ restoreSavedFile({ interactive:false }); }, 200);
