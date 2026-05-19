@@ -26,6 +26,11 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
     .loading-indicator { display:none; margin-left:8px; font-size: .9rem; color:#1a5c38; font-weight:600; }
     .loading-indicator.active { display:inline-block; }
     button[disabled] { opacity:.55; cursor:not-allowed; }
+    .theme-dot{ width:20px; height:20px; border-radius:999px; border:1px solid #bbb; cursor:pointer; }
+    .theme-dot[data-theme='light']{ background:#fff; }
+    .theme-dot[data-theme='sepia']{ background:#f4ecd8; }
+    .theme-dot[data-theme='dark']{ background:#222; }
+    .drop-hint{ border:1px dashed #bbb; border-radius:6px; padding:8px; color:#666; font-size:.85rem; margin-top:8px; }
   </style>
 
   <div class="ebook-panel">
@@ -40,6 +45,8 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
       <span class="group-label">ページ</span>
       <button id="btnPrev">前</button>
       <button id="btnNext">次</button>
+      <label>移動 <input id="pageJump" type="number" min="1" style="width:80px" placeholder="ページ"></label>
+      <button id="btnJump">移動</button>
       <strong id="pageLabel">Page - / -</strong>
       <span>自動送り: ON</span>
     </div>
@@ -52,8 +59,15 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
       <select id="voiceSelect"></select>
     </div>
     <div class="ebook-muted">※ 一時停止: 後で再開できます / 停止: 読み上げキューを終了して解除します</div>
+    <div class="ebook-row">
+      <span class="group-label">テーマ</span>
+      <button class="theme-dot" data-theme="light" title="ライト"></button>
+      <button class="theme-dot" data-theme="sepia" title="セピア"></button>
+      <button class="theme-dot" data-theme="dark" title="ダーク"></button>
+    </div>
     <div class="ebook-muted" id="runtimeInfo"></div>
   </div>
+  <div class="drop-hint" id="dropHint">ここにPDF/ePubをドラッグ&ドロップして読込できます</div>
 
   <div class="ebook-panel">
     <h3>ページ表示（左右端クリックでページ移動）</h3>
@@ -77,9 +91,19 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.mjs';
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.mjs';
 
-const state = { fileType:null, pdfDoc:null, epubBook:null, epubRendition:null, pageNum:1, pageCount:0, textCache:new Map(), isNarrating:false, isPaused:false, watchdogId:null, keepAliveId:null, epubLocationsReady:false };
-const STORAGE_KEYS = { fileName:'ebookReader.fileName', fileType:'ebookReader.fileType', lastPage:'ebookReader.lastPage', rate:'ebookReader.rate', voice:'ebookReader.voice' };
+const state = { fileType:null, pdfDoc:null, epubBook:null, epubRendition:null, pageNum:1, pageCount:0, textCache:new Map(), isNarrating:false, isPaused:false, watchdogId:null, keepAliveId:null, epubLocationsReady:false, renderToken:0 };
+const STORAGE_KEYS = { fileName:'ebookReader.fileName', fileType:'ebookReader.fileType', lastPage:'ebookReader.lastPage', rate:'ebookReader.rate', voice:'ebookReader.voice', theme:'ebookReader.theme' };
 const $ = id => document.getElementById(id);
+
+function applyTheme(theme){
+  const app=document.querySelector('.ebook-reader-app');
+  if(!app) return;
+  if(theme==='dark'){ app.style.background='#121212'; app.style.color='#efefef'; }
+  else if(theme==='sepia'){ app.style.background='#f4ecd8'; app.style.color='#3a3125'; }
+  else { app.style.background=''; app.style.color=''; }
+  localStorage.setItem(STORAGE_KEYS.theme, theme);
+}
+
 
 function setStatus(msg){ $('status').textContent = msg; }
 function setBusy(b,msg=''){
@@ -92,13 +116,23 @@ function setBusy(b,msg=''){
 }
 function pageTextKey(n){ return `p${n}`; }
 
-function openDb(){ return new Promise((res,rej)=>{ const r=indexedDB.open('ebookReaderDB',1); r.onupgradeneeded=()=>{const db=r.result; if(!db.objectStoreNames.contains('files')) db.createObjectStore('files')}; r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error);}); }
+let dbPromise = null;
+function openDb(){
+  if (dbPromise) return dbPromise;
+  dbPromise = new Promise((res,rej)=>{
+    const r=indexedDB.open('ebookReaderDB',1);
+    r.onupgradeneeded=()=>{const db=r.result; if(!db.objectStoreNames.contains('files')) db.createObjectStore('files')};
+    r.onsuccess=()=>res(r.result);
+    r.onerror=()=>rej(r.error);
+  });
+  return dbPromise;
+}
 async function idbSet(key, value){ const db=await openDb(); await new Promise((res,rej)=>{const tx=db.transaction('files','readwrite'); tx.objectStore('files').put(value,key); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error);}); }
 async function idbGet(key){ const db=await openDb(); return await new Promise((res,rej)=>{const tx=db.transaction('files','readonly'); const rq=tx.objectStore('files').get(key); rq.onsuccess=()=>res(rq.result); rq.onerror=()=>rej(rq.error);}); }
 async function idbDelete(key){ const db=await openDb(); await new Promise((res,rej)=>{const tx=db.transaction('files','readwrite'); tx.objectStore('files').delete(key); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error);}); }
 
 function persistSettings(){ localStorage.setItem(STORAGE_KEYS.lastPage, String(state.pageNum)); localStorage.setItem(STORAGE_KEYS.rate, $('rate').value); localStorage.setItem(STORAGE_KEYS.voice, $('voiceSelect').value||''); if(state.fileType) localStorage.setItem(STORAGE_KEYS.fileType,state.fileType); }
-function restoreSettings(){ const r=localStorage.getItem(STORAGE_KEYS.rate); if(r) $('rate').value=r; }
+function restoreSettings(){ const r=localStorage.getItem(STORAGE_KEYS.rate); if(r) $('rate').value=r; const th=localStorage.getItem(STORAGE_KEYS.theme)||'light'; applyTheme(th); }
 
 async function extractPageText(n){ const k=pageTextKey(n); if(state.textCache.has(k)) return state.textCache.get(k); const page=await state.pdfDoc.getPage(n); const c=await page.getTextContent(); const t=c.items.map(i=>i.str).join(' ').replace(/\s+/g,' ').trim(); state.textCache.set(k,t); return t; }
 async function renderPdfPage(n){ const page=await state.pdfDoc.getPage(n); const viewport=page.getViewport({scale:1.4}); const canvas=$('pdfCanvas'); canvas.width=viewport.width; canvas.height=viewport.height; await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise; canvas.style.display='block'; $('epubViewer').style.display='none'; }
@@ -156,8 +190,11 @@ async function extractEpubText(n){
 
 async function renderCurrentPage(){
   if(!state.fileType) return;
-  if(state.fileType==='epub') await renderEpubPage(state.pageNum); else await renderPdfPage(state.pageNum);
-  const text = state.fileType==='epub' ? await extractEpubText(state.pageNum) : await extractPageText(state.pageNum);
+  const token = ++state.renderToken;
+  const currentPage = state.pageNum;
+  if(state.fileType==='epub') await renderEpubPage(currentPage); else await renderPdfPage(currentPage);
+  const text = state.fileType==='epub' ? await extractEpubText(currentPage) : await extractPageText(currentPage);
+  if (token !== state.renderToken) return;
   $('textPreview').textContent = text || 'テキスト抽出不可';
   $('pageLabel').textContent = `Page ${state.pageNum} / ${state.pageCount}`;
 }
@@ -206,8 +243,6 @@ function startSpeechWatchdog(){
   if (state.watchdogId) clearInterval(state.watchdogId);
   state.watchdogId = setInterval(() => {
     if (!state.isNarrating || state.isPaused) return;
-    if (state.isPaused) return;
-    if (state.isPaused) return;
     // 一部ブラウザで別タブ中にpause状態へ遷移するため自動復帰
     if (speechSynthesis.paused) {
       try { speechSynthesis.resume(); state.isPaused = false; const t=$('btnPauseResume'); if(t) t.textContent='一時停止'; } catch {}
@@ -346,6 +381,32 @@ document.addEventListener('visibilitychange', ()=>{
 });
 window.addEventListener('focus', ()=>{ if(state.isNarrating && !state.isPaused){ try{ speechSynthesis.resume(); }catch{} } });
 window.addEventListener('pageshow', ()=>{ if(state.isNarrating && !state.isPaused){ try{ speechSynthesis.resume(); }catch{} } });
+
+$('btnJump').addEventListener('click', async ()=>{
+  const v=Number($('pageJump').value);
+  if(!state.pageCount || Number.isNaN(v) || v<1 || v>state.pageCount){ setStatus(`1〜${state.pageCount||'-'} の範囲で入力してください`); return; }
+  if (v===state.pageNum) return;
+  state.pageNum=v; await renderCurrentPage(); persistSettings();
+});
+$('pageJump').addEventListener('keydown', (e)=>{ if(e.key==='Enter') $('btnJump').click(); });
+
+document.querySelectorAll('.theme-dot').forEach(btn=>{
+  btn.addEventListener('click', ()=>applyTheme(btn.dataset.theme));
+});
+
+const dropHint = $('dropHint');
+if (dropHint){
+  dropHint.addEventListener('dragover', (e)=>{ e.preventDefault(); dropHint.style.borderColor='#2e8b57'; });
+  dropHint.addEventListener('dragleave', ()=>{ dropHint.style.borderColor='#bbb'; });
+  dropHint.addEventListener('drop', async (e)=>{
+    e.preventDefault(); dropHint.style.borderColor='#bbb';
+    const file=e.dataTransfer?.files?.[0];
+    if(!file){ return; }
+    const dt=new DataTransfer(); dt.items.add(file); $('fileInput').files = dt.files;
+    $('btnLoad').click();
+  });
+}
+
 $('rate').addEventListener('change', persistSettings);
 $('voiceSelect').addEventListener('change', persistSettings);
 
