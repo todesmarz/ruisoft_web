@@ -178,6 +178,19 @@ function normalizeTextForTTS(text){
 
 function splitSentences(text){ return text.split(/(?<=[。！？.!?])\s+/).map(s=>s.trim()).filter(Boolean); }
 function toChunks(text, maxLen=220){ const sents=splitSentences(text); const chunks=[]; let buf=''; for(const x of sents){ if((buf+' '+x).trim().length>maxLen){ if(buf) chunks.push(buf.trim()); buf=x; } else { buf += ' '+x; } } if(buf.trim()) chunks.push(buf.trim()); return chunks.length?chunks:[text]; }
+
+async function buildNarrationPlanFromCurrentPage(){
+  const maxLen = document.hidden ? 1200 : 220;
+  const plan = [];
+  for(let page = state.pageNum; page <= state.pageCount; page++){
+    const rawText = state.fileType==='epub' ? await extractEpubText(page) : await extractPageText(page);
+    const text = normalizeTextForTTS(rawText || '');
+    if(!text) continue;
+    const chunks = toChunks(text, maxLen);
+    chunks.forEach(chunk => plan.push({ pageNum: page, chunk }));
+  }
+  return plan;
+}
 function stopSpeech(){
   state.isNarrating = false;
   if (state.watchdogId) { clearInterval(state.watchdogId); state.watchdogId = null; }
@@ -216,23 +229,35 @@ async function startNarration(){
   state.isNarrating = true;
   state.isPaused = false;
   const t=$('btnPauseResume'); if(t) t.textContent='一時停止';
+  setStatus('現在ページから最終ページまで読み上げを開始します');
   startSpeechWatchdog();
-  const rawText = state.fileType==='epub' ? await extractEpubText(state.pageNum) : await extractPageText(state.pageNum);
-  if(!rawText){ state.isNarrating = false; return; }
-  const text = normalizeTextForTTS(rawText);
-  const chunks = toChunks(text, document.hidden ? 1200 : 220);
+
+  const plan = await buildNarrationPlanFromCurrentPage();
+  if(!plan.length){ state.isNarrating = false; setStatus('読み上げ可能なテキストがありません'); return; }
+
+  let lastPage = state.pageNum;
   let completed = 0;
-  chunks.forEach((chunk)=>{
-    const ut=new SpeechSynthesisUtterance(chunk);
+  const total = plan.length;
+
+  plan.forEach((item)=>{
+    const ut=new SpeechSynthesisUtterance(item.chunk);
     const v=speechSynthesis.getVoices().find(x=>x.name===$('voiceSelect').value);
     if(v) ut.voice=v;
     ut.lang='ja-JP';
     ut.rate=Number($('rate').value)||1;
+    ut.onstart=()=>{
+      if(item.pageNum !== lastPage){
+        lastPage = item.pageNum;
+        state.pageNum = item.pageNum;
+        renderCurrentPage();
+        persistSettings();
+      }
+    };
     ut.onend=()=>{
       completed += 1;
-      if(completed===chunks.length){
-        if(state.pageNum<state.pageCount){ state.pageNum++; renderCurrentPage().then(startNarration); persistSettings(); }
-        else { state.isNarrating = false; }
+      if(completed===total){
+        state.isNarrating = false;
+        setStatus('最終ページまで読み上げ完了');
       }
     };
     ut.onerror=()=>{ setStatus('読み上げが中断されました。再開を試行します。'); };
@@ -244,6 +269,14 @@ function setupVoices(){ const sel=$('voiceSelect'); sel.innerHTML=''; speechSynt
 
 async function loadPdfBytes(bytes, name='saved.pdf', options={ restore:false }){ state.fileType='pdf'; state.epubBook=null; state.textCache.clear(); state.pdfDoc=await pdfjsLib.getDocument({data:bytes}).promise; state.pageCount=state.pdfDoc.numPages; state.pageNum=options.restore ? Math.min(Math.max(Number(localStorage.getItem(STORAGE_KEYS.lastPage)||'1'),1), state.pageCount) : 1; await renderCurrentPage(); $('pageLabel').textContent = `Page ${state.pageNum} / ${state.pageCount}`; setStatus(`読込完了: ${name}`); }
 
+
+async function withTimeout(promise, ms, message='timeout'){
+  let timer;
+  const timeout = new Promise((_, rej)=>{ timer = setTimeout(()=>rej(new Error(message)), ms); });
+  try { return await Promise.race([promise, timeout]); }
+  finally { clearTimeout(timer); }
+}
+
 async function restoreSavedFile(options={ interactive:true }){
   const interactive = options.interactive !== false;
   if (interactive) setBusy(true,'保存済みファイルを復元中...');
@@ -254,19 +287,23 @@ async function restoreSavedFile(options={ interactive:true }){
       return;
     }
     if (!interactive) setStatus('前回ファイルをバックグラウンド復元中...');
-    const bytes=new Uint8Array(saved);
-    const t=localStorage.getItem(STORAGE_KEYS.fileType)||'pdf';
-    const n=localStorage.getItem(STORAGE_KEYS.fileName)||'saved.file';
-    if(t==='epub') await loadEpubBytes(bytes,n+' (saved)', { restore:true });
-    else await loadPdfBytes(bytes,n+' (saved)', { restore:true });
+
+    const isLegacyBuffer = saved instanceof ArrayBuffer;
+    const bytes = new Uint8Array(isLegacyBuffer ? saved : saved.bytes);
+    const t = (isLegacyBuffer ? localStorage.getItem(STORAGE_KEYS.fileType) : saved.fileType) || localStorage.getItem(STORAGE_KEYS.fileType) || 'pdf';
+    const n = (isLegacyBuffer ? localStorage.getItem(STORAGE_KEYS.fileName) : saved.fileName) || localStorage.getItem(STORAGE_KEYS.fileName) || 'saved.file';
+
+    if (t === 'epub') await withTimeout(loadEpubBytes(bytes, n+' (saved)', { restore:true }), 25000, 'restore-timeout');
+    else await withTimeout(loadPdfBytes(bytes, n+' (saved)', { restore:true }), 25000, 'restore-timeout');
   } catch(e){
-    setStatus(`復元失敗: ${e.message}`);
+    if (e?.message === 'restore-timeout') setStatus('復元がタイムアウトしました。再度読込してください');
+    else setStatus(`復元失敗: ${e.message}`);
   } finally {
     if (interactive) setBusy(false);
   }
 }
 
-$('btnLoad').addEventListener('click', async ()=>{ setBusy(true,'ファイル読み込み中... しばらくお待ちください'); $('pageLabel').textContent='Page 1 / -'; const file=$('fileInput').files?.[0]; if(!file){ setStatus('PDF/ePubファイルを選択してください'); setBusy(false); return; } try { const bytes=new Uint8Array(await file.arrayBuffer()); await idbSet('uploadedFile', bytes.buffer); localStorage.setItem(STORAGE_KEYS.fileName,file.name); const isEpub=/\.epub$/i.test(file.name)||file.type.includes('epub'); localStorage.setItem(STORAGE_KEYS.fileType,isEpub?'epub':'pdf'); if(isEpub) await loadEpubBytes(bytes,file.name,{ restore:false }); else await loadPdfBytes(bytes,file.name,{ restore:false }); persistSettings(); } catch(e){ setStatus(`読込失敗: ${e.message}`); } finally { setBusy(false);} });
+$('btnLoad').addEventListener('click', async ()=>{ setBusy(true,'ファイル読み込み中... しばらくお待ちください'); $('pageLabel').textContent='Page 1 / -'; const file=$('fileInput').files?.[0]; if(!file){ setStatus('PDF/ePubファイルを選択してください'); setBusy(false); return; } try { const bytes=new Uint8Array(await file.arrayBuffer()); const isEpub=/\.epub$/i.test(file.name)||file.type.includes('epub'); const fileType=isEpub?'epub':'pdf'; await idbSet('uploadedFile', { bytes: bytes.buffer, fileName: file.name, fileType, savedAt: Date.now() }); localStorage.setItem(STORAGE_KEYS.fileName,file.name); localStorage.setItem(STORAGE_KEYS.fileType,fileType); if(isEpub) await loadEpubBytes(bytes,file.name,{ restore:false }); else await loadPdfBytes(bytes,file.name,{ restore:false }); persistSettings(); } catch(e){ setStatus(`読込失敗: ${e.message}`); } finally { setBusy(false);} });
 $('btnClearSaved').addEventListener('click', async ()=>{ await idbDelete('uploadedFile'); localStorage.removeItem(STORAGE_KEYS.fileName); localStorage.removeItem(STORAGE_KEYS.fileType); localStorage.removeItem(STORAGE_KEYS.lastPage); state.fileType=null; state.pdfDoc=null; state.epubBook=null; state.textCache.clear(); $('textPreview').textContent=''; $('pageLabel').textContent='Page - / -'; const c=$('pdfCanvas'); c.getContext('2d').clearRect(0,0,c.width||0,c.height||0); $('pdfCanvas').style.display='none'; $('epubViewer').innerHTML=''; $('epubViewer').style.display='none'; setStatus('保存済みファイルを削除しました'); });
 async function goPrev(){ if(state.pageNum>1){ state.pageNum--; await renderCurrentPage(); persistSettings(); }}
 async function goNext(){ if(state.pageNum<state.pageCount){ state.pageNum++; await renderCurrentPage(); persistSettings(); }}
@@ -276,7 +313,7 @@ $('navLeft').addEventListener('click', goPrev);
 $('navRight').addEventListener('click', goNext);
 $('btnSpeak').addEventListener('click', startNarration);
 $('btnPauseResume').addEventListener('click', ()=>{
-  if (!state.isNarrating || state.isPaused) return;
+  if (!state.isNarrating) return;
   if (state.isPaused) {
     speechSynthesis.resume();
     state.isPaused = false;
