@@ -112,7 +112,7 @@ async function loadEpubBytes(bytes, name='saved.epub', options={ restore:false }
   state.epubRendition = state.epubBook.renderTo('epubViewer', { width:'100%', height:'420px' });
 
   try {
-    await state.epubBook.locations.generate(1400);
+    await state.epubBook.locations.generate(1800);
     state.pageCount = state.epubBook.locations.total || state.epubBook.spine.items.length || 1;
     state.epubLocationsReady = state.pageCount > 0;
   } catch {
@@ -122,6 +122,7 @@ async function loadEpubBytes(bytes, name='saved.epub', options={ restore:false }
 
   state.pageNum = options.restore ? Math.min(Math.max(Number(localStorage.getItem(STORAGE_KEYS.lastPage)||'1'),1), state.pageCount) : 1;
   await renderEpubPage(state.pageNum);
+  $('pageLabel').textContent = `Page ${state.pageNum} / ${state.pageCount}`;
   setStatus(`読込完了: ${name}`);
 }
 
@@ -212,11 +213,31 @@ async function startNarration(){ if(!state.fileType) return; stopSpeech(); state
 
 function setupVoices(){ const sel=$('voiceSelect'); sel.innerHTML=''; speechSynthesis.getVoices().forEach(v=>{const o=document.createElement('option'); o.value=v.name; o.textContent=`${v.name} (${v.lang})`; sel.appendChild(o);}); const saved=localStorage.getItem(STORAGE_KEYS.voice); if(saved) sel.value=saved; }
 
-async function loadPdfBytes(bytes, name='saved.pdf', options={ restore:false }){ state.fileType='pdf'; state.epubBook=null; state.textCache.clear(); state.pdfDoc=await pdfjsLib.getDocument({data:bytes}).promise; state.pageCount=state.pdfDoc.numPages; state.pageNum=options.restore ? Math.min(Math.max(Number(localStorage.getItem(STORAGE_KEYS.lastPage)||'1'),1), state.pageCount) : 1; await renderCurrentPage(); setStatus(`読込完了: ${name}`); }
+async function loadPdfBytes(bytes, name='saved.pdf', options={ restore:false }){ state.fileType='pdf'; state.epubBook=null; state.textCache.clear(); state.pdfDoc=await pdfjsLib.getDocument({data:bytes}).promise; state.pageCount=state.pdfDoc.numPages; state.pageNum=options.restore ? Math.min(Math.max(Number(localStorage.getItem(STORAGE_KEYS.lastPage)||'1'),1), state.pageCount) : 1; await renderCurrentPage(); $('pageLabel').textContent = `Page ${state.pageNum} / ${state.pageCount}`; setStatus(`読込完了: ${name}`); }
 
-async function restoreSavedFile(){ setBusy(true,'保存済みファイルを復元中...'); try { const saved=await idbGet('uploadedFile'); if(!saved){ setStatus('保存済みファイルがありません'); return; } const bytes=new Uint8Array(saved); const t=localStorage.getItem(STORAGE_KEYS.fileType)||'pdf'; const n=localStorage.getItem(STORAGE_KEYS.fileName)||'saved.file'; if(t==='epub') await loadEpubBytes(bytes,n+' (saved)', { restore:true }); else await loadPdfBytes(bytes,n+' (saved)', { restore:true }); } catch(e){ setStatus(`復元失敗: ${e.message}`); } finally { setBusy(false);} }
+async function restoreSavedFile(options={ interactive:true }){
+  const interactive = options.interactive !== false;
+  if (interactive) setBusy(true,'保存済みファイルを復元中...');
+  try {
+    const saved=await idbGet('uploadedFile');
+    if(!saved){
+      if (interactive) setStatus('保存済みファイルがありません');
+      return;
+    }
+    if (!interactive) setStatus('前回ファイルをバックグラウンド復元中...');
+    const bytes=new Uint8Array(saved);
+    const t=localStorage.getItem(STORAGE_KEYS.fileType)||'pdf';
+    const n=localStorage.getItem(STORAGE_KEYS.fileName)||'saved.file';
+    if(t==='epub') await loadEpubBytes(bytes,n+' (saved)', { restore:true });
+    else await loadPdfBytes(bytes,n+' (saved)', { restore:true });
+  } catch(e){
+    setStatus(`復元失敗: ${e.message}`);
+  } finally {
+    if (interactive) setBusy(false);
+  }
+}
 
-$('btnLoad').addEventListener('click', async ()=>{ setBusy(true,'ファイル読み込み中... しばらくお待ちください'); const file=$('fileInput').files?.[0]; if(!file){ setStatus('PDF/ePubファイルを選択してください'); setBusy(false); return; } try { const bytes=new Uint8Array(await file.arrayBuffer()); await idbSet('uploadedFile', bytes.buffer); localStorage.setItem(STORAGE_KEYS.fileName,file.name); const isEpub=/\.epub$/i.test(file.name)||file.type.includes('epub'); localStorage.setItem(STORAGE_KEYS.fileType,isEpub?'epub':'pdf'); if(isEpub) await loadEpubBytes(bytes,file.name,{ restore:false }); else await loadPdfBytes(bytes,file.name,{ restore:false }); persistSettings(); } catch(e){ setStatus(`読込失敗: ${e.message}`); } finally { setBusy(false);} });
+$('btnLoad').addEventListener('click', async ()=>{ setBusy(true,'ファイル読み込み中... しばらくお待ちください'); $('pageLabel').textContent='Page 1 / -'; const file=$('fileInput').files?.[0]; if(!file){ setStatus('PDF/ePubファイルを選択してください'); setBusy(false); return; } try { const bytes=new Uint8Array(await file.arrayBuffer()); await idbSet('uploadedFile', bytes.buffer); localStorage.setItem(STORAGE_KEYS.fileName,file.name); const isEpub=/\.epub$/i.test(file.name)||file.type.includes('epub'); localStorage.setItem(STORAGE_KEYS.fileType,isEpub?'epub':'pdf'); if(isEpub) await loadEpubBytes(bytes,file.name,{ restore:false }); else await loadPdfBytes(bytes,file.name,{ restore:false }); persistSettings(); } catch(e){ setStatus(`読込失敗: ${e.message}`); } finally { setBusy(false);} });
 $('btnClearSaved').addEventListener('click', async ()=>{ await idbDelete('uploadedFile'); localStorage.removeItem(STORAGE_KEYS.fileName); localStorage.removeItem(STORAGE_KEYS.fileType); localStorage.removeItem(STORAGE_KEYS.lastPage); state.fileType=null; state.pdfDoc=null; state.epubBook=null; state.textCache.clear(); $('textPreview').textContent=''; $('pageLabel').textContent='Page - / -'; const c=$('pdfCanvas'); c.getContext('2d').clearRect(0,0,c.width||0,c.height||0); $('pdfCanvas').style.display='none'; $('epubViewer').innerHTML=''; $('epubViewer').style.display='none'; setStatus('保存済みファイルを削除しました'); });
 async function goPrev(){ if(state.pageNum>1){ state.pageNum--; await renderCurrentPage(); persistSettings(); }}
 async function goNext(){ if(state.pageNum<state.pageCount){ state.pageNum++; await renderCurrentPage(); persistSettings(); }}
@@ -259,5 +280,6 @@ $('voiceSelect').addEventListener('change', persistSettings);
 speechSynthesis.onvoiceschanged = setupVoices;
 setupVoices(); restoreSettings();
 $('runtimeInfo').textContent = `Media Session: ${'mediaSession' in navigator ? '可':'不可'} / バックグラウンド継続はブラウザ依存`; 
-setStatus('待機中'); restoreSavedFile();
+setStatus('待機中');
+setTimeout(()=>{ restoreSavedFile({ interactive:false }); }, 200);
 </script>
