@@ -94,7 +94,7 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.mjs';
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.mjs';
 
-const state = { fileType:null, pdfDoc:null, epubBook:null, epubRendition:null, pageNum:1, pageCount:0, textCache:new Map(), isNarrating:false, isPaused:false, watchdogId:null, keepAliveId:null, epubLocationsReady:false, renderToken:0 };
+const state = { fileType:null, pdfDoc:null, epubBook:null, epubRendition:null, pageNum:1, pageCount:0, textCache:new Map(), isNarrating:false, isPaused:false, watchdogId:null, keepAliveId:null, epubLocationsReady:false, renderToken:0, currentPlan:[], currentPlanIndex:0 };
 const STORAGE_KEYS = { fileName:'ebookReader.fileName', fileType:'ebookReader.fileType', lastPage:'ebookReader.lastPage', rate:'ebookReader.rate', voice:'ebookReader.voice', theme:'ebookReader.theme' };
 const $ = id => document.getElementById(id);
 
@@ -175,18 +175,26 @@ async function renderEpubPage(n){
   $('pdfCanvas').style.display='none';
 }
 
+
+function textWithoutRubyFromDoc(doc){
+  if (!doc?.body) return '';
+  const clone = doc.body.cloneNode(true);
+  clone.querySelectorAll('rt,rp').forEach(n=>n.remove());
+  return (clone.innerText || clone.textContent || '').replace(/\s+/g,' ').trim();
+}
+
 async function extractEpubText(n){
   const k=pageTextKey(n); if(state.textCache.has(k)) return state.textCache.get(k);
   if (state.epubLocationsReady) {
     // 位置ベースページング時は、現在表示中ビューの本文を取得してページ表示と一致させる
     const iframe = $('epubViewer')?.querySelector('iframe');
-    const t = (iframe?.contentDocument?.body?.innerText || '').replace(/\s+/g,' ').trim();
+    const t = textWithoutRubyFromDoc(iframe?.contentDocument);
     state.textCache.set(k,t);
     return t;
   }
   const section = state.epubBook.spine.get(n-1); if(!section) return '';
   await section.load(state.epubBook.load.bind(state.epubBook));
-  const t = (section.document?.body?.innerText || '').replace(/\s+/g,' ').trim();
+  const t = textWithoutRubyFromDoc(section.document);
   section.unload(); state.textCache.set(k,t); return t;
 }
 
@@ -212,7 +220,7 @@ function normalizeTextForTTS(text){
       .join('');
     r.replaceWith(document.createTextNode(rbText));
   });
-  return (container.textContent || text).replace(/\s+/g,' ').trim();
+  return (container.textContent || text).replace(/\s+/g,' ').replace(/《[^》]*》/g,'').trim();
 }
 
 function splitSentences(text){ return text.split(/(?<=[。！？.!?])\s+/).map(s=>s.trim()).filter(Boolean); }
@@ -248,8 +256,20 @@ function ensureNarrationAlive(){
   const speaking = speechSynthesis.speaking;
   // hidden tab時にキューが空で停止した場合の復帰
   if (!pending && !speaking) {
-    setStatus('読み上げが停止したため再開を試行します...');
-    startNarration();
+    setStatus('読み上げが停止したため残りを再開します...');
+    const remain = state.currentPlan.slice(state.currentPlanIndex + 1);
+    if (!remain.length) { state.isNarrating = false; return; }
+    const voices = speechSynthesis.getVoices();
+    const selectedVoice = voices.find(x=>x.name===$('voiceSelect').value);
+    remain.forEach((item, idx)=>{
+      const ut = new SpeechSynthesisUtterance(item.chunk);
+      if(selectedVoice) ut.voice = selectedVoice;
+      ut.lang='ja-JP';
+      ut.rate=Number($('rate').value)||1;
+      ut.onstart=()=>{ state.currentPlanIndex = state.currentPlanIndex + 1 + idx; };
+      ut.onend=()=>{ if(idx===remain.length-1){ state.isNarrating=false; setStatus('最終ページまで読み上げ完了'); } };
+      speechSynthesis.speak(ut);
+    });
   }
 }
 
@@ -285,19 +305,23 @@ async function startNarration(){
 
   const plan = await buildNarrationPlanFromCurrentPage();
   if(!plan.length){ state.isNarrating = false; setStatus('読み上げ可能なテキストがありません'); return; }
+  state.currentPlan = plan;
+  state.currentPlanIndex = 0;
 
   // 先に全チャンクをキュー投入して、別タブ時の onend 連鎖切れを回避
   const voices = speechSynthesis.getVoices();
   const selectedVoice = voices.find(x=>x.name===$('voiceSelect').value);
   let queuedCount = 0;
 
-  for(const item of plan){
+  for(let i=0;i<plan.length;i++){
+    const item = plan[i];
     const ut = new SpeechSynthesisUtterance(item.chunk);
     if(selectedVoice) ut.voice = selectedVoice;
     ut.lang='ja-JP';
     ut.rate=Number($('rate').value)||1;
 
     ut.onstart=()=>{
+      state.currentPlanIndex = i;
       if(item.pageNum !== state.pageNum){
         state.pageNum = item.pageNum;
         renderCurrentPage();
