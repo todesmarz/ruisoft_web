@@ -33,7 +33,6 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
       <span class="group-label">ファイル</span>
       <input id="fileInput" type="file" accept="application/pdf,.epub,application/epub+zip" />
       <button id="btnLoad">読込</button>
-      <button id="btnRestore">復元</button>
       <button id="btnClearSaved">削除</button>
       <span id="status">未読込</span><span id="loadingIndicator" class="loading-indicator" aria-live="polite">読み込み中...</span>
     </div>
@@ -47,12 +46,12 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
     <div class="ebook-row group">
       <span class="group-label">再生</span>
       <button id="btnSpeak">再生</button>
-      <button id="btnPause">停止</button>
-      <button id="btnResume">再開</button>
-      <button id="btnStop">リセット</button>
+      <button id="btnPauseResume">一時停止</button>
+      <button id="btnStop">停止</button>
       <label>速度 <input id="rate" type="number" min="0.6" max="2" step="0.1" value="1.0"></label>
       <select id="voiceSelect"></select>
     </div>
+    <div class="ebook-muted">※ 一時停止: 後で再開できます / 停止: 読み上げキューを終了して解除します</div>
     <div class="ebook-muted" id="runtimeInfo"></div>
   </div>
 
@@ -78,13 +77,13 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.mjs';
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.mjs';
 
-const state = { fileType:null, pdfDoc:null, epubBook:null, epubRendition:null, pageNum:1, pageCount:0, textCache:new Map(), isNarrating:false, watchdogId:null, keepAliveId:null };
+const state = { fileType:null, pdfDoc:null, epubBook:null, epubRendition:null, pageNum:1, pageCount:0, textCache:new Map(), isNarrating:false, isPaused:false, watchdogId:null, keepAliveId:null };
 const STORAGE_KEYS = { fileName:'ebookReader.fileName', fileType:'ebookReader.fileType', lastPage:'ebookReader.lastPage', rate:'ebookReader.rate', voice:'ebookReader.voice' };
 const $ = id => document.getElementById(id);
 
 function setStatus(msg){ $('status').textContent = msg; }
 function setBusy(b,msg=''){
-  ['btnLoad','btnRestore','btnClearSaved','btnPrev','btnNext','btnSpeak'].forEach(id=>$(id).disabled=b);
+  ['btnLoad','btnClearSaved','btnPrev','btnNext','btnSpeak'].forEach(id=>$(id).disabled=b);
   $('loadingIndicator').classList.toggle('active',b);
   // 画面全体はロックせず、操作が重複しやすいボタンのみ無効化する
   const app = document.querySelector('.ebook-reader-app');
@@ -104,13 +103,13 @@ function restoreSettings(){ const r=localStorage.getItem(STORAGE_KEYS.rate); if(
 async function extractPageText(n){ const k=pageTextKey(n); if(state.textCache.has(k)) return state.textCache.get(k); const page=await state.pdfDoc.getPage(n); const c=await page.getTextContent(); const t=c.items.map(i=>i.str).join(' ').replace(/\s+/g,' ').trim(); state.textCache.set(k,t); return t; }
 async function renderPdfPage(n){ const page=await state.pdfDoc.getPage(n); const viewport=page.getViewport({scale:1.4}); const canvas=$('pdfCanvas'); canvas.width=viewport.width; canvas.height=viewport.height; await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise; canvas.style.display='block'; $('epubViewer').style.display='none'; }
 
-async function loadEpubBytes(bytes, name='saved.epub'){
+async function loadEpubBytes(bytes, name='saved.epub', options={ restore:false }){
   state.fileType='epub'; state.pdfDoc=null; state.textCache.clear();
   if (state.epubRendition) { try { state.epubRendition.destroy(); } catch {} }
   state.epubBook = window.ePub(bytes.buffer);
   await state.epubBook.ready;
   state.pageCount = state.epubBook.spine.items.length || 1;
-  state.pageNum = Math.min(Math.max(Number(localStorage.getItem(STORAGE_KEYS.lastPage)||'1'),1), state.pageCount);
+  state.pageNum = options.restore ? Math.min(Math.max(Number(localStorage.getItem(STORAGE_KEYS.lastPage)||'1'),1), state.pageCount) : 1;
   $('epubViewer').innerHTML='';
   state.epubRendition = state.epubBook.renderTo('epubViewer', { width:'100%', height:'420px' });
   await renderEpubPage(state.pageNum);
@@ -161,6 +160,8 @@ function stopSpeech(){
   if (state.watchdogId) { clearInterval(state.watchdogId); state.watchdogId = null; }
   if (state.keepAliveId) { clearInterval(state.keepAliveId); state.keepAliveId = null; }
   speechSynthesis.cancel();
+  state.isPaused = false;
+  const t = $('btnPauseResume'); if (t) t.textContent = '一時停止';
 }
 
 function startSpeechWatchdog(){
@@ -169,7 +170,7 @@ function startSpeechWatchdog(){
     if (!state.isNarrating) return;
     // 一部ブラウザで別タブ中にpause状態へ遷移するため自動復帰
     if (speechSynthesis.paused) {
-      try { speechSynthesis.resume(); } catch {}
+      try { speechSynthesis.resume(); state.isPaused = false; const t=$('btnPauseResume'); if(t) t.textContent='一時停止'; } catch {}
     }
   }, 1200);
 
@@ -184,17 +185,16 @@ function startSpeechWatchdog(){
   }, 10000);
 }
 
-async function startNarration(){ if(!state.fileType) return; stopSpeech(); state.isNarrating = true; startSpeechWatchdog(); const rawText = state.fileType==='epub' ? await extractEpubText(state.pageNum) : await extractPageText(state.pageNum); if(!rawText){ state.isNarrating = false; return; } const text = normalizeTextForTTS(rawText); const chunks=splitSentences(text); const speak=(i=0)=>{ if(!state.isNarrating) return; if(i>=chunks.length){ if(state.pageNum<state.pageCount){ state.pageNum++; renderCurrentPage().then(startNarration); persistSettings(); } else { state.isNarrating = false; } return; } const ut=new SpeechSynthesisUtterance(chunks[i]); const v=speechSynthesis.getVoices().find(x=>x.name===$('voiceSelect').value); if(v) ut.voice=v; ut.lang='ja-JP'; ut.rate=Number($('rate').value)||1; ut.onend=()=>speak(i+1); ut.onerror=()=>{ setStatus('読み上げが中断されました。再開を試行します。'); setTimeout(()=>{ if(state.isNarrating) speak(i); }, 800); }; speechSynthesis.speak(ut); }; speak(); }
+async function startNarration(){ if(!state.fileType) return; stopSpeech(); state.isNarrating = true; state.isPaused = false; const t=$('btnPauseResume'); if(t) t.textContent='一時停止'; startSpeechWatchdog(); const rawText = state.fileType==='epub' ? await extractEpubText(state.pageNum) : await extractPageText(state.pageNum); if(!rawText){ state.isNarrating = false; return; } const text = normalizeTextForTTS(rawText); const chunks=splitSentences(text); const speak=(i=0)=>{ if(!state.isNarrating) return; if(i>=chunks.length){ if(state.pageNum<state.pageCount){ state.pageNum++; renderCurrentPage().then(startNarration); persistSettings(); } else { state.isNarrating = false; } return; } const ut=new SpeechSynthesisUtterance(chunks[i]); const v=speechSynthesis.getVoices().find(x=>x.name===$('voiceSelect').value); if(v) ut.voice=v; ut.lang='ja-JP'; ut.rate=Number($('rate').value)||1; ut.onend=()=>speak(i+1); ut.onerror=()=>{ setStatus('読み上げが中断されました。再開を試行します。'); setTimeout(()=>{ if(state.isNarrating) speak(i); }, 800); }; speechSynthesis.speak(ut); }; speak(); }
 
 function setupVoices(){ const sel=$('voiceSelect'); sel.innerHTML=''; speechSynthesis.getVoices().forEach(v=>{const o=document.createElement('option'); o.value=v.name; o.textContent=`${v.name} (${v.lang})`; sel.appendChild(o);}); const saved=localStorage.getItem(STORAGE_KEYS.voice); if(saved) sel.value=saved; }
 
-async function loadPdfBytes(bytes, name='saved.pdf'){ state.fileType='pdf'; state.epubBook=null; state.textCache.clear(); state.pdfDoc=await pdfjsLib.getDocument({data:bytes}).promise; state.pageCount=state.pdfDoc.numPages; state.pageNum=Math.min(Math.max(Number(localStorage.getItem(STORAGE_KEYS.lastPage)||'1'),1), state.pageCount); await renderCurrentPage(); setStatus(`読込完了: ${name}`); }
+async function loadPdfBytes(bytes, name='saved.pdf', options={ restore:false }){ state.fileType='pdf'; state.epubBook=null; state.textCache.clear(); state.pdfDoc=await pdfjsLib.getDocument({data:bytes}).promise; state.pageCount=state.pdfDoc.numPages; state.pageNum=options.restore ? Math.min(Math.max(Number(localStorage.getItem(STORAGE_KEYS.lastPage)||'1'),1), state.pageCount) : 1; await renderCurrentPage(); setStatus(`読込完了: ${name}`); }
 
-async function restoreSavedFile(){ setBusy(true,'保存済みファイルを復元中...'); try { const saved=await idbGet('uploadedFile'); if(!saved){ setStatus('保存済みファイルがありません'); return; } const bytes=new Uint8Array(saved); const t=localStorage.getItem(STORAGE_KEYS.fileType)||'pdf'; const n=localStorage.getItem(STORAGE_KEYS.fileName)||'saved.file'; if(t==='epub') await loadEpubBytes(bytes,n+' (saved)'); else await loadPdfBytes(bytes,n+' (saved)'); } catch(e){ setStatus(`復元失敗: ${e.message}`); } finally { setBusy(false);} }
+async function restoreSavedFile(){ setBusy(true,'保存済みファイルを復元中...'); try { const saved=await idbGet('uploadedFile'); if(!saved){ setStatus('保存済みファイルがありません'); return; } const bytes=new Uint8Array(saved); const t=localStorage.getItem(STORAGE_KEYS.fileType)||'pdf'; const n=localStorage.getItem(STORAGE_KEYS.fileName)||'saved.file'; if(t==='epub') await loadEpubBytes(bytes,n+' (saved)', { restore:true }); else await loadPdfBytes(bytes,n+' (saved)', { restore:true }); } catch(e){ setStatus(`復元失敗: ${e.message}`); } finally { setBusy(false);} }
 
-$('btnLoad').addEventListener('click', async ()=>{ setBusy(true,'ファイル読み込み中... しばらくお待ちください'); const file=$('fileInput').files?.[0]; if(!file){ setStatus('PDF/ePubファイルを選択してください'); setBusy(false); return; } try { const bytes=new Uint8Array(await file.arrayBuffer()); await idbSet('uploadedFile', bytes.buffer); localStorage.setItem(STORAGE_KEYS.fileName,file.name); const isEpub=/\.epub$/i.test(file.name)||file.type.includes('epub'); localStorage.setItem(STORAGE_KEYS.fileType,isEpub?'epub':'pdf'); if(isEpub) await loadEpubBytes(bytes,file.name); else await loadPdfBytes(bytes,file.name); persistSettings(); } catch(e){ setStatus(`読込失敗: ${e.message}`); } finally { setBusy(false);} });
-$('btnRestore').addEventListener('click', restoreSavedFile);
-$('btnClearSaved').addEventListener('click', async ()=>{ await idbDelete('uploadedFile'); localStorage.removeItem(STORAGE_KEYS.fileName); localStorage.removeItem(STORAGE_KEYS.fileType); localStorage.removeItem(STORAGE_KEYS.lastPage); setStatus('保存済みファイルを削除しました'); });
+$('btnLoad').addEventListener('click', async ()=>{ setBusy(true,'ファイル読み込み中... しばらくお待ちください'); const file=$('fileInput').files?.[0]; if(!file){ setStatus('PDF/ePubファイルを選択してください'); setBusy(false); return; } try { const bytes=new Uint8Array(await file.arrayBuffer()); await idbSet('uploadedFile', bytes.buffer); localStorage.setItem(STORAGE_KEYS.fileName,file.name); const isEpub=/\.epub$/i.test(file.name)||file.type.includes('epub'); localStorage.setItem(STORAGE_KEYS.fileType,isEpub?'epub':'pdf'); if(isEpub) await loadEpubBytes(bytes,file.name,{ restore:false }); else await loadPdfBytes(bytes,file.name,{ restore:false }); persistSettings(); } catch(e){ setStatus(`読込失敗: ${e.message}`); } finally { setBusy(false);} });
+$('btnClearSaved').addEventListener('click', async ()=>{ await idbDelete('uploadedFile'); localStorage.removeItem(STORAGE_KEYS.fileName); localStorage.removeItem(STORAGE_KEYS.fileType); localStorage.removeItem(STORAGE_KEYS.lastPage); state.fileType=null; state.pdfDoc=null; state.epubBook=null; state.textCache.clear(); $('textPreview').textContent=''; $('pageLabel').textContent='Page - / -'; const c=$('pdfCanvas'); c.getContext('2d').clearRect(0,0,c.width||0,c.height||0); $('pdfCanvas').style.display='none'; $('epubViewer').innerHTML=''; $('epubViewer').style.display='none'; setStatus('保存済みファイルを削除しました'); });
 async function goPrev(){ if(state.pageNum>1){ state.pageNum--; await renderCurrentPage(); persistSettings(); }}
 async function goNext(){ if(state.pageNum<state.pageCount){ state.pageNum++; await renderCurrentPage(); persistSettings(); }}
 $('btnPrev').addEventListener('click', goPrev);
@@ -202,8 +202,20 @@ $('btnNext').addEventListener('click', goNext);
 $('navLeft').addEventListener('click', goPrev);
 $('navRight').addEventListener('click', goNext);
 $('btnSpeak').addEventListener('click', startNarration);
-$('btnPause').addEventListener('click', ()=>speechSynthesis.pause());
-$('btnResume').addEventListener('click', ()=>speechSynthesis.resume());
+$('btnPauseResume').addEventListener('click', ()=>{
+  if (!state.isNarrating) return;
+  if (state.isPaused) {
+    speechSynthesis.resume();
+    state.isPaused = false;
+    $('btnPauseResume').textContent = '一時停止';
+    setStatus('読み上げを再開しました');
+  } else {
+    speechSynthesis.pause();
+    state.isPaused = true;
+    $('btnPauseResume').textContent = '再開';
+    setStatus('読み上げを一時停止しました');
+  }
+});
 $('btnStop').addEventListener('click', stopSpeech);
 document.addEventListener('visibilitychange', ()=>{
   if (!state.isNarrating) return;
@@ -211,6 +223,8 @@ document.addEventListener('visibilitychange', ()=>{
     setStatus('バックグラウンド再生を維持中...');
   } else {
     try { speechSynthesis.resume(); } catch {}
+    state.isPaused = false;
+    const t=$('btnPauseResume'); if(t) t.textContent='一時停止';
     setStatus('読み上げを継続中');
   }
 });
