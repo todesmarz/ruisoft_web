@@ -17,13 +17,20 @@ title: ebook/PDF Reader MVP2 - Rui Software
     .ebook-panel { border:1px solid #ddd; border-radius:8px; padding:10px; margin:10px 0; }
     #textPreview { white-space: pre-wrap; max-height: 320px; overflow:auto; background:#fafafa; padding:10px; border-radius:6px; }
     .ebook-muted { color:#666; font-size: 0.9rem; }
+    #docViewer { width:100%; min-height: 420px; border:1px solid #ccc; border-radius:6px; background:#fff; }
+    #pdfCanvas { width:100%; height:auto; display:none; }
+    #epubFrame { width:100%; min-height:420px; border:0; display:none; }
+    .is-loading { opacity: .65; pointer-events: none; }
+    .loading-indicator { display:none; margin-left:8px; font-size: .9rem; color:#1a5c38; }
+    .loading-indicator.active { display:inline-block; }
+    button[disabled] { opacity:.55; cursor:not-allowed; }
   </style>
 
   <div class="ebook-panel">
     <div class="ebook-row">
       <input id="fileInput" type="file" accept="application/pdf,.epub,application/epub+zip" />
       <button id="btnLoad">ファイルを読み込む (PDF/ePub)</button>
-      <span id="status">未読込</span>
+      <span id="status">未読込</span><span id="loadingIndicator" class="loading-indicator" aria-live="polite">読み込み中...</span>
       <button id="btnRestore">保存ファイルを復元</button>
       <button id="btnClearSaved">保存ファイルを削除</button>
     </div>
@@ -43,6 +50,15 @@ title: ebook/PDF Reader MVP2 - Rui Software
       <select id="voiceSelect"></select>
     </div>
     <div class="ebook-muted" id="runtimeInfo"></div>
+  </div>
+
+
+  <div class="ebook-panel">
+    <h3>ページ表示</h3>
+    <div id="docViewer">
+      <canvas id="pdfCanvas"></canvas>
+      <iframe id="epubFrame" title="ePub Page"></iframe>
+    </div>
   </div>
 
   <div class="ebook-panel">
@@ -71,6 +87,24 @@ const $ = (id)=>document.getElementById(id);
 const dispatch = (name, detail={}) => document.dispatchEvent(new CustomEvent(name,{detail}));
 
 function setStatus(msg){ $('status').textContent = msg; }
+
+function setBusy(isBusy, message = "") {
+  const targetIds = ["btnLoad", "btnRestore", "btnClearSaved", "btnPrev", "btnNext", "btnSpeak"];
+  targetIds.forEach(id => { const el = $(id); if (el) el.disabled = isBusy; });
+  const indicator = $("loadingIndicator");
+  if (indicator) indicator.classList.toggle("active", isBusy);
+  document.body.classList.toggle("is-loading", isBusy);
+  if (message) setStatus(message);
+}
+
+function setButtonFeedback(id, label, timeout = 900){
+  const btn = $(id);
+  if(!btn) return;
+  const original = btn.dataset.originalLabel || btn.textContent;
+  btn.dataset.originalLabel = original;
+  btn.textContent = label;
+  setTimeout(()=>{ btn.textContent = btn.dataset.originalLabel || original; }, timeout);
+}
 function pageTextKey(n){ return `p${n}`; }
 
 async function extractPageText(n){
@@ -84,8 +118,35 @@ async function extractPageText(n){
   return text;
 }
 
+async function renderPdfPage(n){
+  const page = await state.pdfDoc.getPage(n);
+  const viewport = page.getViewport({ scale: 1.5 });
+  const canvas = $('pdfCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  await page.render({ canvasContext: ctx, viewport }).promise;
+  canvas.style.display = 'block';
+  $('epubFrame').style.display = 'none';
+}
+
+async function renderEpubPage(n){
+  const sec = state.epubSections[n-1];
+  const frame = $('epubFrame');
+  if (!sec) { frame.srcdoc = '<p>ページが見つかりません</p>'; return; }
+  const section = state.epubBook.spine.get(sec.href) || state.epubBook.spine.get(n-1);
+  await section.load(state.epubBook.load.bind(state.epubBook));
+  const html = section.document?.documentElement?.outerHTML || '<html><body><p>表示できません</p></body></html>';
+  frame.srcdoc = html;
+  section.unload();
+  frame.style.display = 'block';
+  $('pdfCanvas').style.display = 'none';
+}
+
 async function renderCurrentPage(){
   if(!state.fileType) return;
+  if (state.fileType === 'epub') await renderEpubPage(state.pageNum);
+  else await renderPdfPage(state.pageNum);
   const text = state.fileType === "epub" ? await extractEpubText(state.pageNum) : await extractPageText(state.pageNum);
   $('textPreview').textContent = text || '（テキスト抽出結果が空です。画像PDFの可能性があります）';
   $('pageLabel').textContent = `Page ${state.pageNum} / ${state.pageCount}`;
@@ -120,6 +181,8 @@ function speakChunks(chunks, idx=0){
 async function startNarration(){
   if(!state.fileType) return;
   stopSpeech();
+  if (state.fileType === 'epub') await renderEpubPage(state.pageNum);
+  else await renderPdfPage(state.pageNum);
   const text = state.fileType === "epub" ? await extractEpubText(state.pageNum) : await extractPageText(state.pageNum);
   if(!text){ setStatus('テキストが抽出できません。'); return; }
   state.speaking = true;
@@ -251,6 +314,7 @@ async function extractEpubText(n){
 }
 
 async function restoreSavedFile(){
+  setBusy(true, "保存済みファイルを確認中...");
   const fileName = localStorage.getItem(STORAGE_KEYS.fileName) || 'saved.file';
   const fileType = localStorage.getItem(STORAGE_KEYS.fileType) || 'pdf';
   try {
@@ -262,6 +326,8 @@ async function restoreSavedFile(){
   } catch (e) {
     setStatus(`保存ファイルの復元失敗: ${e.message}`);
     dispatch('reader:error',{type:'restore',error:e.message});
+  } finally {
+    setBusy(false);
   }
 }
 
@@ -276,8 +342,10 @@ function setupRuntime(){
 }
 
 $('btnLoad').addEventListener('click', async ()=>{
+  setButtonFeedback('btnLoad','押下済み');
+  setBusy(true, 'ファイル読み込みを開始します...');
   const file = $('fileInput').files?.[0];
-  if(!file){ setStatus('PDF/ePubファイルを選択してください'); return; }
+  if(!file){ setStatus('PDF/ePubファイルを選択してください'); setBusy(false); return; }
   try {
     const bytes = new Uint8Array(await file.arrayBuffer());
     await idbSet('uploadedFile', bytes.buffer);
@@ -290,19 +358,22 @@ $('btnLoad').addEventListener('click', async ()=>{
   } catch(e){
     setStatus(`読込失敗: ${e.message}`);
     dispatch('reader:error',{type:'load',error:e.message});
+  } finally {
+    setBusy(false);
   }
 });
 
-$('btnRestore').addEventListener('click', restoreSavedFile);
+$('btnRestore').addEventListener('click', ()=>{ setButtonFeedback('btnRestore','押下済み'); restoreSavedFile(); });
 $('btnClearSaved').addEventListener('click', ()=>{
+  setButtonFeedback('btnClearSaved','削除中...');
   localStorage.removeItem(STORAGE_KEYS.fileName);
   localStorage.removeItem(STORAGE_KEYS.fileType);
   idbDelete('uploadedFile');
   localStorage.removeItem(STORAGE_KEYS.lastPage);
   setStatus('保存済みファイルを削除しました');
 });
-$('btnPrev').addEventListener('click', async ()=>{ if(state.pageNum>1){ state.pageNum--; await renderCurrentPage(); persistSettings(); }});
-$('btnNext').addEventListener('click', async ()=>{ if(state.pageNum<state.pageCount){ state.pageNum++; await renderCurrentPage(); persistSettings(); }});
+$('btnPrev').addEventListener('click', async ()=>{ setButtonFeedback('btnPrev','押下済み'); if(state.pageNum>1){ state.pageNum--; await renderCurrentPage(); persistSettings(); }});
+$('btnNext').addEventListener('click', async ()=>{ setButtonFeedback('btnNext','押下済み'); if(state.pageNum<state.pageCount){ state.pageNum++; await renderCurrentPage(); persistSettings(); }});
 $('autoAdvance').addEventListener('change', persistSettings);
 $('bgMode').addEventListener('change', persistSettings);
 $('rate').addEventListener('change', persistSettings);
@@ -318,6 +389,7 @@ setupVoices();
 restoreSettings();
 const savedVoice = localStorage.getItem(STORAGE_KEYS.voice); if(savedVoice) $('voiceSelect').value = savedVoice;
 setupRuntime();
+setBusy(false);
 setStatus('待機中（保存ファイルがあれば復元できます）');
 restoreSavedFile();
 </script>
