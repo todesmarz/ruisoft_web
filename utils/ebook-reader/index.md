@@ -180,7 +180,7 @@ function splitSentences(text){ return text.split(/(?<=[。！？.!?])\s+/).map(s
 function toChunks(text, maxLen=220){ const sents=splitSentences(text); const chunks=[]; let buf=''; for(const x of sents){ if((buf+' '+x).trim().length>maxLen){ if(buf) chunks.push(buf.trim()); buf=x; } else { buf += ' '+x; } } if(buf.trim()) chunks.push(buf.trim()); return chunks.length?chunks:[text]; }
 
 async function buildNarrationPlanFromCurrentPage(){
-  const maxLen = document.hidden ? 1200 : 220;
+  const maxLen = document.hidden ? 1200 : 260;
   const plan = [];
   for(let page = state.pageNum; page <= state.pageCount; page++){
     const rawText = state.fileType==='epub' ? await extractEpubText(page) : await extractPageText(page);
@@ -188,6 +188,8 @@ async function buildNarrationPlanFromCurrentPage(){
     if(!text) continue;
     const chunks = toChunks(text, maxLen);
     chunks.forEach(chunk => plan.push({ pageNum: page, chunk }));
+    // UIが固まらないように1ページごとに制御を返す
+    await new Promise(r=>setTimeout(r,0));
   }
   return plan;
 }
@@ -229,41 +231,45 @@ async function startNarration(){
   state.isNarrating = true;
   state.isPaused = false;
   const t=$('btnPauseResume'); if(t) t.textContent='一時停止';
-  setStatus('現在ページから最終ページまで読み上げを開始します');
+  setStatus('現在ページから最終ページまで読み上げを準備中...');
   startSpeechWatchdog();
 
   const plan = await buildNarrationPlanFromCurrentPage();
   if(!plan.length){ state.isNarrating = false; setStatus('読み上げ可能なテキストがありません'); return; }
 
-  let lastPage = state.pageNum;
-  let completed = 0;
-  const total = plan.length;
+  // 先に全チャンクをキュー投入して、別タブ時の onend 連鎖切れを回避
+  const voices = speechSynthesis.getVoices();
+  const selectedVoice = voices.find(x=>x.name===$('voiceSelect').value);
+  let queuedCount = 0;
 
-  plan.forEach((item)=>{
-    const ut=new SpeechSynthesisUtterance(item.chunk);
-    const v=speechSynthesis.getVoices().find(x=>x.name===$('voiceSelect').value);
-    if(v) ut.voice=v;
+  for(const item of plan){
+    const ut = new SpeechSynthesisUtterance(item.chunk);
+    if(selectedVoice) ut.voice = selectedVoice;
     ut.lang='ja-JP';
     ut.rate=Number($('rate').value)||1;
+
     ut.onstart=()=>{
-      if(item.pageNum !== lastPage){
-        lastPage = item.pageNum;
+      if(item.pageNum !== state.pageNum){
         state.pageNum = item.pageNum;
         renderCurrentPage();
         persistSettings();
       }
+      setStatus(`読み上げ中 (${queuedCount + 1}/${plan.length})`);
     };
+
     ut.onend=()=>{
-      completed += 1;
-      if(completed===total){
+      queuedCount += 1;
+      if(queuedCount>=plan.length){
         state.isNarrating = false;
         setStatus('最終ページまで読み上げ完了');
       }
     };
+
     ut.onerror=()=>{ setStatus('読み上げが中断されました。再開を試行します。'); };
     speechSynthesis.speak(ut);
-  });
+  }
 }
+
 
 function setupVoices(){ const sel=$('voiceSelect'); sel.innerHTML=''; speechSynthesis.getVoices().forEach(v=>{const o=document.createElement('option'); o.value=v.name; o.textContent=`${v.name} (${v.lang})`; sel.appendChild(o);}); const saved=localStorage.getItem(STORAGE_KEYS.voice); if(saved) sel.value=saved; }
 
