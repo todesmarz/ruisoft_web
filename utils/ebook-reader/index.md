@@ -94,7 +94,7 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.mjs';
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.mjs';
 
-const state = { fileType:null, pdfDoc:null, epubBook:null, epubRendition:null, pageNum:1, pageCount:0, textCache:new Map(), isNarrating:false, isPaused:false, watchdogId:null, keepAliveId:null, epubLocationsReady:false, renderToken:0, currentPlan:[], currentPlanIndex:0 };
+const state = { fileType:null, pdfDoc:null, epubBook:null, epubRendition:null, pageNum:1, pageCount:0, textCache:new Map(), isNarrating:false, isPaused:false, watchdogId:null, keepAliveId:null, epubLocationsReady:false, renderToken:0, currentPlan:[], currentPlanIndex:0, currentPlanCompletedIndex:-1 };
 const STORAGE_KEYS = { fileName:'ebookReader.fileName', fileType:'ebookReader.fileType', lastPage:'ebookReader.lastPage', rate:'ebookReader.rate', voice:'ebookReader.voice', theme:'ebookReader.theme' };
 const $ = id => document.getElementById(id);
 
@@ -257,7 +257,10 @@ function ensureNarrationAlive(){
   // hidden tab時にキューが空で停止した場合の復帰
   if (!pending && !speaking) {
     setStatus('読み上げが停止したため残りを再開します...');
-    const remain = state.currentPlan.slice(state.currentPlanIndex + 1);
+    const restartIndex = state.currentPlanCompletedIndex >= state.currentPlanIndex
+      ? state.currentPlanCompletedIndex + 1
+      : state.currentPlanIndex;
+    const remain = state.currentPlan.slice(restartIndex);
     if (!remain.length) { state.isNarrating = false; return; }
     const voices = speechSynthesis.getVoices();
     const selectedVoice = voices.find(x=>x.name===$('voiceSelect').value);
@@ -266,8 +269,11 @@ function ensureNarrationAlive(){
       if(selectedVoice) ut.voice = selectedVoice;
       ut.lang='ja-JP';
       ut.rate=Number($('rate').value)||1;
-      ut.onstart=()=>{ state.currentPlanIndex = state.currentPlanIndex + 1 + idx; };
-      ut.onend=()=>{ if(idx===remain.length-1){ state.isNarrating=false; setStatus('最終ページまで読み上げ完了'); } };
+      ut.onstart=()=>{ state.currentPlanIndex = restartIndex + idx; };
+      ut.onend=()=>{
+        state.currentPlanCompletedIndex = Math.max(state.currentPlanCompletedIndex, restartIndex + idx);
+        if(idx===remain.length-1){ state.isNarrating=false; setStatus('最終ページまで読み上げ完了'); }
+      };
       speechSynthesis.speak(ut);
     });
   }
@@ -286,7 +292,12 @@ function startSpeechWatchdog(){
   if (state.keepAliveId) clearInterval(state.keepAliveId);
   state.keepAliveId = setInterval(() => {
     if (!state.isNarrating || state.isPaused) return;
-    // キュー維持用: 長時間バックグラウンドで停止しにくくする
+    if (document.hidden) {
+      try { speechSynthesis.resume(); } catch {}
+      ensureNarrationAlive();
+      return;
+    }
+    // キュー維持用: 表示中のみ pause/resume で長時間再生の停止を抑制する
     try {
       speechSynthesis.pause();
       speechSynthesis.resume();
@@ -307,6 +318,7 @@ async function startNarration(){
   if(!plan.length){ state.isNarrating = false; setStatus('読み上げ可能なテキストがありません'); return; }
   state.currentPlan = plan;
   state.currentPlanIndex = 0;
+  state.currentPlanCompletedIndex = -1;
 
   // 先に全チャンクをキュー投入して、別タブ時の onend 連鎖切れを回避
   const voices = speechSynthesis.getVoices();
@@ -331,6 +343,7 @@ async function startNarration(){
     };
 
     ut.onend=()=>{
+      state.currentPlanCompletedIndex = Math.max(state.currentPlanCompletedIndex, i);
       queuedCount += 1;
       if(queuedCount>=plan.length){
         state.isNarrating = false;
@@ -454,5 +467,9 @@ speechSynthesis.onvoiceschanged = setupVoices;
 setupVoices(); restoreSettings(); applyTheme(localStorage.getItem(STORAGE_KEYS.theme)||'light');
 $('runtimeInfo').textContent = `Media Session: ${'mediaSession' in navigator ? '可':'不可'} / バックグラウンド継続はブラウザ依存`; 
 setStatus('待機中');
-setTimeout(()=>{ restoreSavedFile({ interactive:false }); }, 200);
+requestAnimationFrame(()=>{
+  requestAnimationFrame(()=>{
+    setTimeout(()=>{ restoreSavedFile({ interactive:false }); }, 5000);
+  });
+});
 </script>
