@@ -185,14 +185,7 @@ async function loadEpubBytes(bytes, name='saved.epub', options={ restore:false }
   $('epubViewer').innerHTML='';
   state.epubRendition = state.epubBook.renderTo('epubViewer', { width:'100%', height:'420px' });
 
-  try {
-    await state.epubBook.locations.generate(1800);
-    state.pageCount = state.epubBook.locations.total || state.epubBook.spine.items.length || 1;
-    state.epubLocationsReady = state.pageCount > 0;
-  } catch {
-    state.pageCount = state.epubBook.spine.items.length || 1;
-    state.epubLocationsReady = false;
-  }
+  state.pageCount = state.epubBook.spine.items.length || 1;
 
   state.pageNum = options.restore ? Math.min(Math.max(Number(localStorage.getItem(STORAGE_KEYS.lastPage)||'1'),1), state.pageCount) : 1;
   await renderEpubPage(state.pageNum);
