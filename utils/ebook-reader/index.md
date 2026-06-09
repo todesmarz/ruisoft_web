@@ -25,6 +25,8 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
     .nav-zone:hover { background:rgba(46,139,87,.08); }
     #pdfCanvas { width:100%; height:auto; display:none; }
     #epubViewer { width:100%; min-height:420px; display:none; }
+    #epubTextFallback { display:none; min-height:420px; padding:24px; box-sizing:border-box; overflow:auto; white-space:pre-wrap; font-size:1.05rem; line-height:1.8; color:#222; }
+    .theme-dark #epubTextFallback { color:#eee; }
     #zipImageViewer { display:none; width:100%; min-height:420px; align-items:center; justify-content:center; overflow:auto; }
     #zipImage { max-width:100%; max-height:80vh; object-fit:contain; transform-origin:center top; }
     .is-loading { opacity: .85; }
@@ -88,6 +90,7 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
       <div class="nav-zone right" id="navRight" title="次ページ"></div>
       <canvas id="pdfCanvas"></canvas>
       <div id="epubViewer"></div>
+      <div id="epubTextFallback" aria-live="polite"></div>
       <div id="zipImageViewer"><img id="zipImage" alt="ZIP内画像プレビュー"></div>
     </div>
   </div>
@@ -190,7 +193,7 @@ function persistSettings(){ localStorage.setItem(STORAGE_KEYS.lastPage, String(s
 function restoreSettings(){ const r=localStorage.getItem(STORAGE_KEYS.rate); if(r) $('rate').value=r; const th=localStorage.getItem(STORAGE_KEYS.theme)||'light'; applyTheme(th); }
 
 async function extractPageText(n){ const k=pageTextKey(n); if(state.textCache.has(k)) return state.textCache.get(k); const page=await state.pdfDoc.getPage(n); const c=await page.getTextContent(); const t=c.items.map(i=>i.str).join(' ').replace(/\s+/g,' ').trim(); state.textCache.set(k,t); return t; }
-async function renderPdfPage(n){ const page=await state.pdfDoc.getPage(n); const viewport=page.getViewport({scale:1.4}); const canvas=$('pdfCanvas'); canvas.width=viewport.width; canvas.height=viewport.height; await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise; canvas.style.display='block'; $('epubViewer').style.display='none'; $('zipImageViewer').style.display='none'; }
+async function renderPdfPage(n){ const page=await state.pdfDoc.getPage(n); const viewport=page.getViewport({scale:1.4}); const canvas=$('pdfCanvas'); canvas.width=viewport.width; canvas.height=viewport.height; await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise; canvas.style.display='block'; $('epubViewer').style.display='none'; $('epubTextFallback').style.display='none'; $('zipImageViewer').style.display='none'; }
 
 async function loadEpubBytes(bytes, name='saved.epub', options={ restore:false }){
   state.fileType='epub'; state.pdfDoc=null; state.textCache.clear(); state.ocrCache.clear(); state.epubLocationsReady = false;
@@ -199,18 +202,35 @@ async function loadEpubBytes(bytes, name='saved.epub', options={ restore:false }
   state.epubBook = window.ePub(bytes.buffer);
   await state.epubBook.ready;
   $('epubViewer').innerHTML='';
+  $('epubViewer').style.display='block';
   state.epubRendition = state.epubBook.renderTo('epubViewer', { width:'100%', height:'420px' });
 
   state.pageCount = state.epubBook.spine.items.length || 1;
 
   state.pageNum = options.restore ? Math.min(Math.max(Number(localStorage.getItem(STORAGE_KEYS.lastPage)||'1'),1), state.pageCount) : 1;
-  await renderEpubPage(state.pageNum);
+  await renderCurrentPage();
   $('pageLabel').textContent = `Page ${state.pageNum} / ${state.pageCount}`;
   setStatus(`読込完了: ${name}`);
   updateModeControls();
 }
 
 async function renderEpubPage(n){
+  const fallback = $('epubTextFallback');
+  const text = await extractEpubText(n, { preserveBlocks:true });
+  if (text.replace(/\s+/g, '').length >= 20) {
+    fallback.textContent = text;
+    fallback.style.display='block';
+    $('epubViewer').style.display='none';
+    $('pdfCanvas').style.display='none';
+    $('zipImageViewer').style.display='none';
+    document.dispatchEvent(new CustomEvent('ebook-reader:epub-text-rendered', { detail: { pageNum:n } }));
+    return;
+  }
+
+  fallback.textContent = '';
+  fallback.style.display='none';
+  // ePub.jsはdisplay:noneのコンテナで初期化・表示すると幅計算が崩れやすいため、表示前に有効化する
+  $('epubViewer').style.display='block';
   if (state.epubLocationsReady) {
     const cfi = state.epubBook.locations.cfiFromLocation(Math.max(0, n-1));
     await state.epubRendition.display(cfi);
@@ -219,7 +239,6 @@ async function renderEpubPage(n){
     if (!section) return;
     await state.epubRendition.display(section.href);
   }
-  $('epubViewer').style.display='block';
   $('pdfCanvas').style.display='none';
   $('zipImageViewer').style.display='none';
 }
@@ -261,28 +280,34 @@ async function renderZipImage(n){
   $('zipImageViewer').style.display='flex';
   $('pdfCanvas').style.display='none';
   $('epubViewer').style.display='none';
+  $('epubTextFallback').style.display='none';
 }
 
 
-function textWithoutRubyFromDoc(doc){
+function textWithoutRubyFromDoc(doc, options={ preserveBlocks:false }){
   if (!doc?.body) return '';
   const clone = doc.body.cloneNode(true);
-  clone.querySelectorAll('rt,rp').forEach(n=>n.remove());
+  clone.querySelectorAll('script,style,noscript,rt,rp').forEach(n=>n.remove());
+  if (options.preserveBlocks) {
+    clone.querySelectorAll('br').forEach(n=>n.replaceWith('\n'));
+    clone.querySelectorAll('p,div,section,article,h1,h2,h3,h4,h5,h6,li,blockquote').forEach(n=>n.appendChild(document.createTextNode('\n')));
+    return (clone.innerText || clone.textContent || '').replace(/[ \t]+/g,' ').replace(/\n[ \t]+/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+  }
   return (clone.innerText || clone.textContent || '').replace(/\s+/g,' ').trim();
 }
 
-async function extractEpubText(n){
-  const k=pageTextKey(n); if(state.textCache.has(k)) return state.textCache.get(k);
+async function extractEpubText(n, options={ preserveBlocks:false }){
+  const k=`${pageTextKey(n)}${options.preserveBlocks ? '-blocks' : ''}`; if(state.textCache.has(k)) return state.textCache.get(k);
   if (state.epubLocationsReady) {
     // 位置ベースページング時は、現在表示中ビューの本文を取得してページ表示と一致させる
     const iframe = $('epubViewer')?.querySelector('iframe');
-    const t = textWithoutRubyFromDoc(iframe?.contentDocument);
+    const t = textWithoutRubyFromDoc(iframe?.contentDocument, options);
     state.textCache.set(k,t);
     return t;
   }
   const section = state.epubBook.spine.get(n-1); if(!section) return '';
   await section.load(state.epubBook.load.bind(state.epubBook));
-  const t = textWithoutRubyFromDoc(section.document);
+  const t = textWithoutRubyFromDoc(section.document, options);
   section.unload(); state.textCache.set(k,t); return t;
 }
 
@@ -534,8 +559,9 @@ async function restoreSavedFile(options={ interactive:true }){
 
     const isLegacyBuffer = saved instanceof ArrayBuffer;
     const bytes = new Uint8Array(isLegacyBuffer ? saved : saved.bytes);
-    const t = (isLegacyBuffer ? localStorage.getItem(STORAGE_KEYS.fileType) : saved.fileType) || localStorage.getItem(STORAGE_KEYS.fileType) || 'pdf';
+    let t = (isLegacyBuffer ? localStorage.getItem(STORAGE_KEYS.fileType) : saved.fileType) || localStorage.getItem(STORAGE_KEYS.fileType) || 'pdf';
     const n = (isLegacyBuffer ? localStorage.getItem(STORAGE_KEYS.fileName) : saved.fileName) || localStorage.getItem(STORAGE_KEYS.fileName) || 'saved.file';
+    if (/\.epub$/i.test(n)) t = 'epub';
 
     if (t === 'zip') await withTimeout(loadZipBytes(bytes, n+' (saved)', { restore:true }), 25000, 'restore-timeout');
     else if (t === 'epub') await withTimeout(loadEpubBytes(bytes, n+' (saved)', { restore:true }), 25000, 'restore-timeout');
