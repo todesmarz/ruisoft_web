@@ -29,6 +29,7 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
 
     /* Main layout: viewer + text side-by-side */
     .er-main { display: grid; grid-template-columns: 1fr 380px; gap: 14px; }
+    .er-main.single-column { grid-template-columns: 1fr; }
     @media (max-width: 1024px) { .er-main { grid-template-columns: 1fr; } }
 
     /* Panels */
@@ -114,6 +115,8 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
     <button class="theme-dot" data-theme="sepia" title="セピア"></button>
     <button class="theme-dot" data-theme="dark" title="ダーク"></button>
 
+    <button id="btnShowText" title="テキストパネルを開く" style="display:none;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;font-size:.9rem;cursor:pointer;">📝 テキスト表示</button>
+
     <div class="er-status">
       <span id="loadingIndicator" class="loading-indicator" aria-live="polite">読み込み中...</span>
       <span id="status" class="er-badge">未読込</span>
@@ -143,10 +146,13 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
     </div>
 
     <!-- Right: Text -->
-    <div class="er-panel">
+    <div class="er-panel" id="textPanel">
       <div class="er-panel-header">
         <h3>📝 テキスト</h3>
-        <span style="font-size:.8rem;color:#888;">OCR / 読み上げ</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:.8rem;color:#888;">OCR / 読み上げ</span>
+          <button id="btnToggleText" title="テキストパネルを閉じる" style="padding:4px 8px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;font-size:.85rem;cursor:pointer;">✕ 閉じる</button>
+        </div>
       </div>
       <div class="er-panel-body">
         <!-- Narration controls -->
@@ -357,8 +363,10 @@ async function renderZipImage(n){
 
 
 function textWithoutRubyFromDoc(doc, options={ preserveBlocks:false }){
-  if (!doc?.body) return '';
-  const clone = doc.body.cloneNode(true);
+  if (!doc) return '';
+  const root = doc.body || doc.documentElement;
+  if (!root) return '';
+  const clone = root.cloneNode(true);
   clone.querySelectorAll('script,style,noscript,rt,rp').forEach(n=>n.remove());
   if (options.preserveBlocks) {
     clone.querySelectorAll('br').forEach(n=>n.replaceWith('\n'));
@@ -794,6 +802,18 @@ $('btnSlideShow').addEventListener('click', toggleSlideshow);
 $('btnExportPdf').addEventListener('click', exportZipToPdf);
 $('btnOcrPage').addEventListener('click', runOcrForCurrentPage);
 $('btnOcrAll').addEventListener('click', runOcrForAllPages);
+
+// テキストパネル開閉
+$('btnToggleText').addEventListener('click', ()=>{
+  $('textPanel').style.display = 'none';
+  $('btnShowText').style.display = 'inline-block';
+  document.querySelector('.er-main').classList.add('single-column');
+});
+$('btnShowText').addEventListener('click', ()=>{
+  $('textPanel').style.display = '';
+  $('btnShowText').style.display = 'none';
+  document.querySelector('.er-main').classList.remove('single-column');
+});
 $('imageZoom').addEventListener('input', ()=>{ if(state.fileType==='zip') renderZipImage(state.pageNum); });
 $('btnSpeak').addEventListener('click', startNarration);
 $('btnPauseResume').addEventListener('click', ()=>{
