@@ -213,7 +213,7 @@ function applyTheme(theme){
 
 function setStatus(msg){ $('status').textContent = msg; }
 function setBusy(b,msg=''){
-  ['btnLoad','btnClearSaved','btnPrev','btnNext','btnJump','btnSpeak','btnPauseResume','btnStop','btnExportPdf','btnSlideShow','btnOcrPage','btnOcrAll'].forEach(id=>$(id).disabled=b);
+  ['btnClearSaved','btnPrev','btnNext','btnJump','btnSpeak','btnPauseResume','btnStop','btnExportPdf','btnSlideShow','btnOcrPage','btnOcrAll'].forEach(id=>{ const el=$(id); if(el) el.disabled=b; });
   $('loadingIndicator').classList.toggle('active',b);
   // 画面全体はロックせず、操作が重複しやすいボタンのみ無効化する
   const app = document.querySelector('.ebook-reader-app');
@@ -238,6 +238,7 @@ function clearZipImages(){
 function updateModeControls(){
   const isZip = state.fileType === 'zip' && state.pageCount > 0;
   const hasDoc = !!state.fileType && state.pageCount > 0;
+  $('btnClearSaved').disabled = !hasDoc;
   $('btnPrev').disabled = !hasDoc;
   $('btnNext').disabled = !hasDoc;
   $('btnSpeak').disabled = !hasDoc;
