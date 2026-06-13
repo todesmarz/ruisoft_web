@@ -538,9 +538,10 @@ async function buildNarrationPlanFromCurrentPage(){
   for(let page = state.pageNum; page <= state.pageCount; page++){
     let rawText = '';
     try {
-      rawText = await getReadableTextForPage(page, { allowOcr:true });
+      // 読み上げ時は自動OCRを行わない（事前に全ページOCRしたテキストのみ使用）
+      rawText = await getReadableTextForPage(page, { allowOcr:false });
     } catch(e) {
-      setStatus(`読み上げ準備中: ${page}ページのOCRをスキップ (${e.message})`);
+      setStatus(`読み上げ準備中: ${page}ページをスキップ (${e.message})`);
     }
     const text = normalizeTextForTTS(rawText || '');
     if(!text) continue;
@@ -549,7 +550,7 @@ async function buildNarrationPlanFromCurrentPage(){
     // UIが固まらないように1ページごとに制御を返す
     await new Promise(r=>setTimeout(r,0));
   }
-  // プラン構築中にOCRでページ表示が変わっていた場合、元のページに戻す
+  // プラン構築中にページ表示が変わっていた場合、元のページに戻す
   if (state.pageNum !== startPage) {
     state.pageNum = startPage;
     await renderCurrentPage();
