@@ -83,7 +83,7 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
     .er-footer { font-size: .8rem; color: #999; text-align: right; margin-top: 8px; }
   </style>
 
-  <input id="fileInput" type="file" accept="application/pdf,.epub,application/epub+zip,.zip,application/zip,application/x-zip-compressed" style="display:none;" />
+  <input id="fileInput" type="file" accept="application/pdf,.epub,application/epub+zip,.zip,application/zip,application/x-zip-compressed" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;" />
   <div class="er-dropzone" id="dropHint" role="button" tabindex="0">📎 クリックまたはドラッグ＆ドロップで PDF / ePub / ZIP を読込</div>
 
   <!-- Toolbar -->
@@ -940,7 +940,7 @@ if (dropHint){
 }
 
 // ファイル選択ダイアログからの読込
-$('fileInput').addEventListener('change', ()=>{ handleFileLoad(); });
+$('fileInput').addEventListener('change', ()=>{ handleFileLoad().catch(e => { console.error('ファイル読込エラー:', e); setStatus(`読込失敗: ${e.message}`); setBusy(false); }); });
 
 $('rate').addEventListener('change', persistSettings);
 $('voiceSelect').addEventListener('change', persistSettings);
