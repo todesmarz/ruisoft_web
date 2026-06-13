@@ -40,7 +40,7 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
     .er-panel-body { padding: 10px; }
 
     /* Viewer */
-    #docViewer { position: relative; width: 100%; min-height: 55vh; max-height: calc(100vh - 200px); background: var(--viewer-bg, #fff); overflow: auto; border-radius: 6px; }
+    #docViewer { position: relative; width: 100%; min-height: 40vh; max-height: calc(100vh - 280px); background: var(--viewer-bg, #fff); overflow: auto; border-radius: 6px; }
     .theme-light { --viewer-bg: #fff; }
     .theme-sepia { --viewer-bg: #f4ecd8; }
     .theme-dark { --viewer-bg: #1e1e1e; }
