@@ -24,8 +24,9 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
     .er-toolbar .er-status .er-badge { font-size: .75rem; padding: 2px 8px; border-radius: 999px; background: #e8f5e9; color: #2e7d32; font-weight: 600; }
 
     /* Drop zone */
-    .er-dropzone { border: 2px dashed #c0c0c0; border-radius: 10px; padding: 14px; text-align: center; color: #777; font-size: .9rem; margin-bottom: 12px; transition: border-color .2s, background .2s; }
+    .er-dropzone { border: 2px dashed #c0c0c0; border-radius: 10px; padding: 14px; text-align: center; color: #777; font-size: .9rem; transition: border-color .2s, background .2s; }
     .er-dropzone.dragover { border-color: #2e8b57; background: #f0faf4; }
+    #docViewer .er-dropzone { position: absolute; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.95); border-radius: 6px; margin: 0; }
 
     /* Main layout: viewer + text side-by-side */
     .er-main { display: grid; grid-template-columns: 1fr 380px; gap: 14px; }
@@ -84,7 +85,6 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
   </style>
 
   <input id="fileInput" type="file" accept="application/pdf,.epub,application/epub+zip,.zip,application/zip,application/x-zip-compressed" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;" />
-  <div class="er-dropzone" id="dropHint" role="button" tabindex="0">📎 クリックまたはドラッグ＆ドロップで PDF / ePub / ZIP を読込</div>
 
   <!-- Toolbar -->
   <div class="er-toolbar">
@@ -140,6 +140,7 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
           <div id="epubViewer"></div>
           <div id="epubTextFallback" aria-live="polite"></div>
           <div id="zipImageViewer"><img id="zipImage" alt="ZIP内画像プレビュー"></div>
+          <div class="er-dropzone" id="dropHint" role="button" tabindex="0" style="display:none;min-height:50vh;align-items:center;justify-content:center;">📎 クリックまたはドラッグ＆ドロップで PDF / ePub / ZIP を読込</div>
         </div>
       </div>
     </div>
@@ -701,10 +702,11 @@ async function handleFileLoad(){
     else if(isEpub) await loadEpubBytes(bytes,file.name,{ restore:false });
     else await loadPdfBytes(bytes,file.name,{ restore:false });
     persistSettings();
+    $('dropHint').style.display = 'none';
   } catch(e){ setStatus(`読込失敗: ${e.message}`); }
   finally { setBusy(false); }
 }
-$('btnClearSaved').addEventListener('click', async ()=>{ await idbDelete('uploadedFile'); localStorage.removeItem(STORAGE_KEYS.fileName); localStorage.removeItem(STORAGE_KEYS.fileType); localStorage.removeItem(STORAGE_KEYS.lastPage); state.fileType=null; state.pdfDoc=null; state.epubBook=null; if(state.epubRendition){ try{ state.epubRendition.destroy(); }catch{} state.epubRendition=null; } state.pageNum=1; state.pageCount=0; clearZipImages(); state.textCache.clear(); $('textPreview').textContent='ファイルを読み込むと、テキストがここに表示されます'; $('pageLabel').textContent='- / -'; const c=$('pdfCanvas'); c.getContext('2d').clearRect(0,0,c.width||0,c.height||0); $('pdfCanvas').style.display='none'; $('epubViewer').innerHTML=''; $('epubViewer').style.display='none'; $('zipImageViewer').style.display='none'; setStatus('保存済みファイルを削除しました'); updateModeControls(); });
+$('btnClearSaved').addEventListener('click', async ()=>{ await idbDelete('uploadedFile'); localStorage.removeItem(STORAGE_KEYS.fileName); localStorage.removeItem(STORAGE_KEYS.fileType); localStorage.removeItem(STORAGE_KEYS.lastPage); state.fileType=null; state.pdfDoc=null; state.epubBook=null; if(state.epubRendition){ try{ state.epubRendition.destroy(); }catch{} state.epubRendition=null; } state.pageNum=1; state.pageCount=0; clearZipImages(); state.textCache.clear(); $('textPreview').textContent='ファイルを読み込むと、テキストがここに表示されます'; $('pageLabel').textContent='- / -'; const c=$('pdfCanvas'); c.getContext('2d').clearRect(0,0,c.width||0,c.height||0); $('pdfCanvas').style.display='none'; $('epubViewer').innerHTML=''; $('epubViewer').style.display='none'; $('zipImageViewer').style.display='none'; $('dropHint').style.display = 'flex'; setStatus('保存済みファイルを削除しました'); updateModeControls(); });
 async function goPrev(){ if(state.pageNum>1){ state.pageNum--; await renderCurrentPage(); persistSettings(); }}
 async function goNext(){ if(state.pageNum<state.pageCount){ state.pageNum++; await renderCurrentPage(); persistSettings(); } else if(state.slideshowId && state.fileType==='zip'){ state.pageNum=1; await renderCurrentPage(); persistSettings(); }}
 $('btnPrev').addEventListener('click', goPrev);
@@ -939,6 +941,27 @@ if (dropHint){
   });
 }
 
+// ビューア全体へのD&D対応（ファイル読込時もドロップで上書き可能）
+const docViewer = $('docViewer');
+if (docViewer) {
+  docViewer.addEventListener('dragover', (e)=>{
+    if (!state.fileType) return;
+    e.preventDefault();
+    dropHint?.classList.add('dragover');
+  });
+  docViewer.addEventListener('dragleave', ()=>{
+    dropHint?.classList.remove('dragover');
+  });
+  docViewer.addEventListener('drop', async (e)=>{
+    e.preventDefault();
+    dropHint?.classList.remove('dragover');
+    const file=e.dataTransfer?.files?.[0];
+    if(!file){ return; }
+    const dt=new DataTransfer(); dt.items.add(file); $('fileInput').files = dt.files;
+    handleFileLoad();
+  });
+}
+
 // ファイル選択ダイアログからの読込
 $('fileInput').addEventListener('change', ()=>{ handleFileLoad().catch(e => { console.error('ファイル読込エラー:', e); setStatus(`読込失敗: ${e.message}`); setBusy(false); }); });
 
@@ -950,6 +973,8 @@ setupVoices(); restoreSettings(); applyTheme(localStorage.getItem(STORAGE_KEYS.t
 $('runtimeInfo').textContent = `Media Session: ${'mediaSession' in navigator ? '可':'不可'} / バックグラウンド継続はブラウザ依存`; 
 setStatus('待機中');
 updateModeControls();
+// ファイル未読込時はD&Dゾーンを表示
+if (!state.fileType) $('dropHint').style.display = 'flex';
 requestAnimationFrame(()=>{
   requestAnimationFrame(()=>{
     setTimeout(()=>{ restoreSavedFile({ interactive:false }); }, 5000);
