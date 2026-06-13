@@ -801,6 +801,7 @@ async function restoreSavedFile(options={ interactive:true }){
     if (t === 'zip') await withTimeout(loadZipBytes(bytes, n+' (saved)', { restore:true }), 25000, 'restore-timeout');
     else if (t === 'epub') await withTimeout(loadEpubBytes(bytes, n+' (saved)', { restore:true }), 25000, 'restore-timeout');
     else await withTimeout(loadPdfBytes(bytes, n+' (saved)', { restore:true }), 25000, 'restore-timeout');
+    $('dropHint').style.display = 'none';
   } catch(e){
     if (e?.message === 'restore-timeout') setStatus('復元がタイムアウトしました。再度読込してください');
     else setStatus(`復元失敗: ${e.message}`);
