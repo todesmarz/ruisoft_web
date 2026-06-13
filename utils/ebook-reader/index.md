@@ -83,6 +83,9 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
     .er-footer { font-size: .8rem; color: #999; text-align: right; margin-top: 8px; }
   </style>
 
+  <input id="fileInput" type="file" accept="application/pdf,.epub,application/epub+zip,.zip,application/zip,application/x-zip-compressed" style="display:none;" />
+  <div class="er-dropzone" id="dropHint" role="button" tabindex="0">📎 クリックまたはドラッグ＆ドロップで PDF / ePub / ZIP を読込</div>
+
   <!-- Toolbar -->
   <div class="er-toolbar">
     <span class="er-label">ファイル</span>
@@ -113,16 +116,13 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
     <button class="theme-dot" data-theme="sepia" title="セピア"></button>
     <button class="theme-dot" data-theme="dark" title="ダーク"></button>
 
-    <button id="btnShowText" title="テキストパネルを開く" style="display:none;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;font-size:.9rem;cursor:pointer;">📝 テキスト表示</button>
+    <button id="btnToggleTextPanel" title="テキストパネルの表示を切り替え" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;font-size:.9rem;cursor:pointer;">📝 テキスト非表示</button>
 
     <div class="er-status">
       <span id="loadingIndicator" class="loading-indicator" aria-live="polite">読み込み中...</span>
       <span id="status" class="er-badge">未読込</span>
     </div>
   </div>
-
-  <input id="fileInput" type="file" accept="application/pdf,.epub,application/epub+zip,.zip,application/zip,application/x-zip-compressed" style="display:none;" />
-  <div class="er-dropzone" id="dropHint" role="button" tabindex="0">📎 クリックまたはドラッグ＆ドロップで PDF / ePub / ZIP を読込</div>
 
   <!-- Main 2-column -->
   <div class="er-main">
@@ -148,10 +148,7 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
     <div class="er-panel" id="textPanel">
       <div class="er-panel-header">
         <h3>📝 テキスト</h3>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:.8rem;color:#888;">OCR / 読み上げ</span>
-          <button id="btnToggleText" title="テキストパネルを閉じる" style="padding:4px 8px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;font-size:.85rem;cursor:pointer;">✕ 閉じる</button>
-        </div>
+        <span style="font-size:.8rem;color:#888;">OCR / 読み上げ</span>
       </div>
       <div class="er-panel-body">
         <!-- Narration controls -->
@@ -823,16 +820,20 @@ $('btnExportPdf').addEventListener('click', exportZipToPdf);
 $('btnOcrPage').addEventListener('click', runOcrForCurrentPage);
 $('btnOcrAll').addEventListener('click', runOcrForAllPages);
 
-// テキストパネル開閉
-$('btnToggleText').addEventListener('click', ()=>{
-  $('textPanel').style.display = 'none';
-  $('btnShowText').style.display = 'inline-block';
-  document.querySelector('.er-main').classList.add('single-column');
-});
-$('btnShowText').addEventListener('click', ()=>{
-  $('textPanel').style.display = '';
-  $('btnShowText').style.display = 'none';
-  document.querySelector('.er-main').classList.remove('single-column');
+// テキストパネル表示切り替え（トグル）
+$('btnToggleTextPanel').addEventListener('click', ()=>{
+  const panel = $('textPanel');
+  const btn = $('btnToggleTextPanel');
+  const main = document.querySelector('.er-main');
+  if (panel.style.display === 'none') {
+    panel.style.display = '';
+    btn.textContent = '📝 テキスト非表示';
+    main.classList.remove('single-column');
+  } else {
+    panel.style.display = 'none';
+    btn.textContent = '📝 テキスト表示';
+    main.classList.add('single-column');
+  }
 });
 $('imageZoom').addEventListener('input', ()=>{ if(state.fileType==='zip') renderZipImage(state.pageNum); });
 $('btnSpeak').addEventListener('click', startNarration);
