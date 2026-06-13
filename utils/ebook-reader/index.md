@@ -7,109 +7,179 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
 
 <div class="ebook-reader-app">
   <style>
-    .ebook-reader-app { font-family: sans-serif; max-width: 1100px; margin: 16px auto; line-height: 1.5; }
-    .ebook-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 8px 0; }
-    .ebook-row.group { padding:8px; border:1px solid #e5e5e5; border-radius:6px; background:#fcfcfc; }
-    .ebook-row .group-label{ font-size:.85rem; color:#444; min-width:72px; }
-    .ebook-reader-app button,.ebook-reader-app input,.ebook-reader-app select { padding: 6px 10px; }
-    .ebook-panel { border:1px solid #ddd; border-radius:8px; padding:10px; margin:10px 0; }
-    #textPreview { white-space: pre-wrap; max-height: 320px; overflow:auto; background:#fafafa; padding:10px; border-radius:6px; }
-    .ebook-muted { color:#666; font-size: 0.9rem; }
-    #docViewer { position:relative; width:100%; min-height: 50vh; max-height: calc(100vh - 260px); border:1px solid #ccc; border-radius:6px; background:var(--viewer-bg, #fff); overflow:auto; }
-    .theme-light { --viewer-bg:#fff; }
-    .theme-sepia { --viewer-bg:#f4ecd8; }
-    .theme-dark { --viewer-bg:#1e1e1e; }
-    .nav-zone { position:absolute; top:0; bottom:0; width:12%; z-index:5; cursor:pointer; }
-    .nav-zone.left { left:0; }
-    .nav-zone.right { right:0; }
-    .nav-zone:hover { background:rgba(46,139,87,.08); }
-    #pdfCanvas { width:100%; height:auto; display:none; }
-    #epubViewer { width:100%; min-height:50vh; max-height: calc(100vh - 260px); display:none; }
-    #zipImageViewer { display:none; width:100%; min-height:50vh; max-height: calc(100vh - 260px); align-items:center; justify-content:center; overflow:auto; }
-    #zipImage { max-width:100%; max-height:80vh; object-fit:contain; transform-origin:center top; }
+    .ebook-reader-app { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; max-width: 1400px; margin: 0 auto; line-height: 1.5; color: #333; }
+
+    /* Toolbar */
+    .er-toolbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 10px 14px; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.06); margin-bottom: 12px; }
+    .er-toolbar .er-sep { width: 1px; height: 24px; background: #e0e0e0; margin: 0 4px; }
+    .er-toolbar .er-label { font-size: .78rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; }
+    .er-toolbar button, .er-toolbar input, .er-toolbar select { padding: 6px 10px; border: 1px solid #d0d0d0; border-radius: 6px; background: #fff; font-size: .9rem; cursor: pointer; }
+    .er-toolbar button:hover:not(:disabled) { background: #f5f5f5; border-color: #bbb; }
+    .er-toolbar button:disabled { opacity: .45; cursor: not-allowed; }
+    .er-toolbar input[type="file"] { border: none; background: transparent; padding: 4px; font-size: .85rem; }
+    .er-toolbar input[type="number"] { width: 64px; text-align: center; }
+    .er-toolbar input[type="range"] { width: 100px; padding: 0; }
+    .er-toolbar select { min-width: 120px; }
+    .er-toolbar .er-status { font-size: .85rem; color: #555; margin-left: auto; display: flex; align-items: center; gap: 8px; }
+    .er-toolbar .er-status .er-badge { font-size: .75rem; padding: 2px 8px; border-radius: 999px; background: #e8f5e9; color: #2e7d32; font-weight: 600; }
+
+    /* Drop zone */
+    .er-dropzone { border: 2px dashed #c0c0c0; border-radius: 10px; padding: 14px; text-align: center; color: #777; font-size: .9rem; margin-bottom: 12px; transition: border-color .2s, background .2s; }
+    .er-dropzone.dragover { border-color: #2e8b57; background: #f0faf4; }
+
+    /* Main layout: viewer + text side-by-side */
+    .er-main { display: grid; grid-template-columns: 1fr 380px; gap: 14px; }
+    @media (max-width: 1024px) { .er-main { grid-template-columns: 1fr; } }
+
+    /* Panels */
+    .er-panel { background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.06); overflow: hidden; }
+    .er-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #fafafa; border-bottom: 1px solid #eee; }
+    .er-panel-header h3 { margin: 0; font-size: 1rem; color: #444; }
+    .er-panel-body { padding: 10px; }
+
+    /* Viewer */
+    #docViewer { position: relative; width: 100%; min-height: 55vh; max-height: calc(100vh - 200px); background: var(--viewer-bg, #fff); overflow: auto; border-radius: 6px; }
+    .theme-light { --viewer-bg: #fff; }
+    .theme-sepia { --viewer-bg: #f4ecd8; }
+    .theme-dark { --viewer-bg: #1e1e1e; }
+    .nav-zone { position: absolute; top: 0; bottom: 0; width: 12%; z-index: 5; cursor: pointer; }
+    .nav-zone.left { left: 0; }
+    .nav-zone.right { right: 0; }
+    .nav-zone:hover { background: rgba(46,139,87,.08); }
+    #pdfCanvas { width: 100%; height: auto; display: none; }
+    #epubViewer { width: 100%; min-height: 55vh; max-height: calc(100vh - 200px); display: none; }
+    #epubTextFallback { display: none; padding: 14px; white-space: pre-wrap; }
+    #zipImageViewer { display: none; width: 100%; min-height: 55vh; max-height: calc(100vh - 200px); align-items: center; justify-content: center; overflow: auto; }
+    #zipImage { max-width: 100%; max-height: 80vh; object-fit: contain; transform-origin: center top; }
+
+    /* Text panel */
+    .er-text-header { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; margin-bottom: 8px; }
+    .er-text-header button, .er-text-header select { padding: 5px 10px; border: 1px solid #d0d0d0; border-radius: 6px; background: #fff; font-size: .85rem; cursor: pointer; }
+    .er-text-header button:hover:not(:disabled) { background: #f5f5f5; }
+    .er-text-header button:disabled { opacity: .45; cursor: not-allowed; }
+    .er-text-header .er-hint { font-size: .8rem; color: #888; margin-left: auto; }
+    #textPreview { white-space: pre-wrap; max-height: calc(100vh - 340px); overflow: auto; background: #fafafa; padding: 12px; border-radius: 6px; font-size: .95rem; line-height: 1.7; color: #333; }
+
+    /* Loading */
     .is-loading { opacity: .85; }
-    .loading-indicator { display:none; margin-left:8px; font-size: .9rem; color:#1a5c38; font-weight:600; }
-    .loading-indicator.active { display:inline-block; }
-    button[disabled] { opacity:.55; cursor:not-allowed; }
-    .theme-dot{ width:20px; height:20px; border-radius:999px; border:1px solid #bbb; cursor:pointer; }
-    .theme-dot[data-theme='light']{ background:#fff; }
-    .theme-dot[data-theme='sepia']{ background:#f4ecd8; }
-    .theme-dot[data-theme='dark']{ background:#222; }
-    .drop-hint{ border:1px dashed #bbb; border-radius:6px; padding:8px; color:#666; font-size:.85rem; margin-top:8px; }
+    .loading-indicator { display: none; font-size: .85rem; color: #2e7d32; font-weight: 600; }
+    .loading-indicator.active { display: inline; }
+
+    /* Theme dots */
+    .theme-dot { width: 20px; height: 20px; border-radius: 999px; border: 1px solid #bbb; cursor: pointer; padding: 0; }
+    .theme-dot[data-theme='light'] { background: #fff; }
+    .theme-dot[data-theme='sepia'] { background: #f4ecd8; }
+    .theme-dot[data-theme='dark'] { background: #222; }
+
+    /* Narration mini bar inside text panel */
+    .er-narration-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px; background: #f0f7ff; border: 1px solid #d0e3f7; border-radius: 8px; margin-bottom: 10px; }
+    .er-narration-bar button { padding: 6px 12px; border-radius: 6px; border: 1px solid #90caf9; background: #fff; color: #1565c0; font-size: .85rem; cursor: pointer; }
+    .er-narration-bar button:hover:not(:disabled) { background: #e3f2fd; }
+    .er-narration-bar button:disabled { opacity: .45; cursor: not-allowed; }
+    .er-narration-bar .er-narration-status { font-size: .8rem; color: #555; margin-left: auto; }
+
+    /* Footer info */
+    .er-footer { font-size: .8rem; color: #999; text-align: right; margin-top: 8px; }
   </style>
 
-  <div class="ebook-panel">
-    <div class="ebook-row group">
-      <span class="group-label">ファイル</span>
-      <input id="fileInput" type="file" accept="application/pdf,.epub,application/epub+zip,.zip,application/zip,application/x-zip-compressed" />
-      <button id="btnLoad">読込</button>
-      <button id="btnClearSaved">削除</button>
-      <button id="btnExportPdf" disabled>PDF保存</button>
-      <span id="status">未読込</span><span id="loadingIndicator" class="loading-indicator" aria-live="polite">読み込み中...</span>
-    </div>
-    <div class="ebook-row group">
-      <span class="group-label">ページ</span>
-      <button id="btnPrev">前</button>
-      <button id="btnNext">次</button>
-      <label>移動 <input id="pageJump" type="number" min="1" style="width:80px" placeholder="ページ"></label>
-      <button id="btnJump">移動</button>
-      <strong id="pageLabel">Page - / -</strong>
-      <label>ズーム <input id="imageZoom" type="range" min="50" max="200" step="10" value="100"></label>
-    </div>
-    <div class="ebook-row group">
-      <span class="group-label">スライド</span>
-      <button id="btnSlideShow" disabled>再生</button>
-      <label>間隔 <input id="slideInterval" type="number" min="1" max="60" step="1" value="4" style="width:64px"> 秒</label>
-      <span class="ebook-muted">ZIP画像のみ</span>
-    </div>
-    <div class="ebook-row group">
-      <span class="group-label">再生</span>
-      <button id="btnSpeak">再生</button>
-      <button id="btnPauseResume">一時停止</button>
-      <button id="btnStop">停止</button>
-      <label>速度 <input id="rate" type="number" min="0.6" max="2" step="0.1" value="1.0"></label>
-      <select id="voiceSelect"></select>
-    </div>
-    <div class="ebook-muted">※ 一時停止: 後で再開できます / 停止: 読み上げキューを終了して解除します</div>
-    <div class="ebook-row">
-      <span class="group-label">テーマ</span>
-      <button class="theme-dot" data-theme="light" title="ライト"></button>
-      <button class="theme-dot" data-theme="sepia" title="セピア"></button>
-      <button class="theme-dot" data-theme="dark" title="ダーク"></button>
-    </div>
-    <div class="ebook-muted" id="runtimeInfo"></div>
-  </div>
-  <div class="drop-hint" id="dropHint">ここにPDF/ePub/ZIPをドラッグ&ドロップして読込できます</div>
+  <!-- Toolbar -->
+  <div class="er-toolbar">
+    <span class="er-label">ファイル</span>
+    <input id="fileInput" type="file" accept="application/pdf,.epub,application/epub+zip,.zip,application/zip,application/x-zip-compressed" />
+    <button id="btnLoad">読込</button>
+    <button id="btnClearSaved">削除</button>
+    <button id="btnExportPdf" disabled>PDF保存</button>
 
-  <div class="ebook-panel">
-    <h3>ページ表示（左右端クリックでページ移動）</h3>
-    <div id="docViewer">
-      <div class="nav-zone left" id="navLeft" title="前ページ"></div>
-      <div class="nav-zone right" id="navRight" title="次ページ"></div>
-      <canvas id="pdfCanvas"></canvas>
-      <div id="epubViewer"></div>
-      <div id="epubTextFallback" aria-live="polite"></div>
-      <div id="zipImageViewer"><img id="zipImage" alt="ZIP内画像プレビュー"></div>
+    <div class="er-sep"></div>
+
+    <span class="er-label">ページ</span>
+    <button id="btnPrev">◀ 前</button>
+    <button id="btnNext">次 ▶</button>
+    <input id="pageJump" type="number" min="1" placeholder="ページ">
+    <button id="btnJump">移動</button>
+    <strong id="pageLabel">- / -</strong>
+
+    <div class="er-sep"></div>
+
+    <span class="er-label">スライド</span>
+    <button id="btnSlideShow" disabled>▶ 再生</button>
+    <input id="slideInterval" type="number" min="1" max="60" step="1" value="4" title="秒">
+    <label style="font-size:.8rem;color:#888;">秒</label>
+    <input id="imageZoom" type="range" min="50" max="200" step="10" value="100" title="ズーム">
+
+    <div class="er-sep"></div>
+
+    <span class="er-label">テーマ</span>
+    <button class="theme-dot" data-theme="light" title="ライト"></button>
+    <button class="theme-dot" data-theme="sepia" title="セピア"></button>
+    <button class="theme-dot" data-theme="dark" title="ダーク"></button>
+
+    <div class="er-status">
+      <span id="loadingIndicator" class="loading-indicator" aria-live="polite">読み込み中...</span>
+      <span id="status" class="er-badge">未読込</span>
     </div>
   </div>
 
-  <div class="ebook-panel">
-    <h3>テキスト</h3>
-    <div class="ebook-row group">
-      <span class="group-label">OCR</span>
-      <button id="btnOcrPage" disabled>表示ページをOCR</button>
-      <button id="btnOcrAll" disabled>全ページOCR</button>
-      <label>言語
-        <select id="ocrLang">
-          <option value="jpn+eng">日本語+英語</option>
-          <option value="jpn">日本語</option>
-          <option value="eng">英語</option>
-        </select>
-      </label>
-      <span class="ebook-muted">画像だけのPDF/ePub/ZIPでもテキスト化して読み上げできます</span>
+  <div class="er-dropzone" id="dropHint">📎 ここに PDF / ePub / ZIP をドラッグ＆ドロップして読込</div>
+
+  <!-- Main 2-column -->
+  <div class="er-main">
+    <!-- Left: Viewer -->
+    <div class="er-panel">
+      <div class="er-panel-header">
+        <h3>📖 ページ表示</h3>
+        <span style="font-size:.8rem;color:#888;">左右端をクリックでページ移動</span>
+      </div>
+      <div class="er-panel-body">
+        <div id="docViewer">
+          <div class="nav-zone left" id="navLeft" title="前ページ"></div>
+          <div class="nav-zone right" id="navRight" title="次ページ"></div>
+          <canvas id="pdfCanvas"></canvas>
+          <div id="epubViewer"></div>
+          <div id="epubTextFallback" aria-live="polite"></div>
+          <div id="zipImageViewer"><img id="zipImage" alt="ZIP内画像プレビュー"></div>
+        </div>
+      </div>
     </div>
-    <div id="textPreview"></div>
+
+    <!-- Right: Text -->
+    <div class="er-panel">
+      <div class="er-panel-header">
+        <h3>📝 テキスト</h3>
+        <span style="font-size:.8rem;color:#888;">OCR / 読み上げ</span>
+      </div>
+      <div class="er-panel-body">
+        <!-- Narration controls -->
+        <div class="er-narration-bar">
+          <button id="btnSpeak">🔊 読み上げ開始</button>
+          <button id="btnPauseResume">⏸ 一時停止</button>
+          <button id="btnStop">⏹ 停止</button>
+          <label style="font-size:.8rem;color:#555;">速度 <input id="rate" type="number" min="0.6" max="2" step="0.1" value="1.0" style="width:52px;text-align:center;"></label>
+          <select id="voiceSelect" style="min-width:140px;font-size:.8rem;"></select>
+          <span class="er-narration-status" id="narrationHint">一時停止で再開 / 停止で終了</span>
+        </div>
+
+        <!-- OCR controls -->
+        <div class="er-text-header">
+          <span style="font-size:.8rem;color:#888;font-weight:600;">OCR</span>
+          <button id="btnOcrPage" disabled>表示ページをOCR</button>
+          <button id="btnOcrAll" disabled>全ページOCR</button>
+          <label style="font-size:.8rem;color:#555;">言語
+            <select id="ocrLang">
+              <option value="jpn+eng">日本語+英語</option>
+              <option value="jpn">日本語</option>
+              <option value="eng">英語</option>
+            </select>
+          </label>
+          <span class="er-hint">画像PDF・ePub・ZIPもテキスト化可能</span>
+        </div>
+
+        <div id="textPreview">ファイルを読み込むと、テキストがここに表示されます</div>
+      </div>
+    </div>
   </div>
+
+  <div class="er-footer" id="runtimeInfo"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -152,7 +222,7 @@ function pageTextKey(n){ return `p${n}`; }
 
 function stopSlideshow(){
   if (state.slideshowId) { clearInterval(state.slideshowId); state.slideshowId = null; }
-  const btn = $('btnSlideShow'); if (btn) btn.textContent = '再生';
+  const btn = $('btnSlideShow'); if (btn) btn.textContent = '▶ 再生';
 }
 
 function clearZipImages(){
@@ -211,7 +281,7 @@ async function loadEpubBytes(bytes, name='saved.epub', options={ restore:false }
 
   state.pageNum = options.restore ? Math.min(Math.max(Number(localStorage.getItem(STORAGE_KEYS.lastPage)||'1'),1), state.pageCount) : 1;
   await renderCurrentPage();
-  $('pageLabel').textContent = `Page ${state.pageNum} / ${state.pageCount}`;
+  $('pageLabel').textContent = `${state.pageNum} / ${state.pageCount}`;
   setStatus(`読込完了: ${name}`);
   updateModeControls();
 }
@@ -433,7 +503,7 @@ async function renderCurrentPage(){
   if (text) $('textPreview').textContent = text;
   else if (state.fileType === 'zip') $('textPreview').textContent = `画像: ${state.zipImages[currentPage-1]?.name || ''}（OCRでテキスト化できます）`;
   else $('textPreview').textContent = 'テキスト抽出不可（画像ページの場合はOCRを実行してください）';
-  $('pageLabel').textContent = `Page ${state.pageNum} / ${state.pageCount}`;
+  $('pageLabel').textContent = `${state.pageNum} / ${state.pageCount}`;
   updateModeControls();
 }
 
@@ -507,7 +577,7 @@ function stopSpeech(){
   speechSynthesis.cancel();
   state.isPaused = false;
   stopNarrationWatchdog();
-  const t = $('btnPauseResume'); if (t) t.textContent = '一時停止';
+  const t = $('btnPauseResume'); if (t) t.textContent = '⏸ 一時停止';
 }
 
 
@@ -555,7 +625,7 @@ async function startNarration(){
   stopSpeech();
   state.isNarrating = true;
   state.isPaused = false;
-  const t=$('btnPauseResume'); if(t) t.textContent='一時停止';
+  const t=$('btnPauseResume'); if(t) t.textContent='⏸ 一時停止';
   setStatus('現在ページから最終ページまで読み上げを準備中...');
 
   const plan = await buildNarrationPlanFromCurrentPage();
@@ -570,7 +640,7 @@ async function startNarration(){
 
 function setupVoices(){ const sel=$('voiceSelect'); sel.innerHTML=''; speechSynthesis.getVoices().forEach(v=>{const o=document.createElement('option'); o.value=v.name; o.textContent=`${v.name} (${v.lang})`; sel.appendChild(o);}); const saved=localStorage.getItem(STORAGE_KEYS.voice); if(saved) sel.value=saved; }
 
-async function loadPdfBytes(bytes, name='saved.pdf', options={ restore:false }){ state.fileType='pdf'; state.epubBook=null; if(state.epubRendition){ try{ state.epubRendition.destroy(); }catch{} state.epubRendition=null; } clearZipImages(); state.textCache.clear(); state.pdfDoc=await pdfjsLib.getDocument({data:bytes}).promise; state.pageCount=state.pdfDoc.numPages; state.pageNum=options.restore ? Math.min(Math.max(Number(localStorage.getItem(STORAGE_KEYS.lastPage)||'1'),1), state.pageCount) : 1; await renderCurrentPage(); $('pageLabel').textContent = `Page ${state.pageNum} / ${state.pageCount}`; setStatus(`読込完了: ${name}`); updateModeControls(); }
+async function loadPdfBytes(bytes, name='saved.pdf', options={ restore:false }){ state.fileType='pdf'; state.epubBook=null; if(state.epubRendition){ try{ state.epubRendition.destroy(); }catch{} state.epubRendition=null; } clearZipImages(); state.textCache.clear(); state.pdfDoc=await pdfjsLib.getDocument({data:bytes}).promise; state.pageCount=state.pdfDoc.numPages; state.pageNum=options.restore ? Math.min(Math.max(Number(localStorage.getItem(STORAGE_KEYS.lastPage)||'1'),1), state.pageCount) : 1; await renderCurrentPage(); $('pageLabel').textContent = `${state.pageNum} / ${state.pageCount}`; setStatus(`読込完了: ${name}`); updateModeControls(); }
 
 
 async function withTimeout(promise, ms, message='timeout'){
@@ -608,8 +678,8 @@ async function restoreSavedFile(options={ interactive:true }){
   }
 }
 
-$('btnLoad').addEventListener('click', async ()=>{ setBusy(true,'ファイル読み込み中... しばらくお待ちください'); $('pageLabel').textContent='Page 1 / -'; const file=$('fileInput').files?.[0]; if(!file){ setStatus('PDF/ePub/ZIPファイルを選択してください'); setBusy(false); return; } try { stopSpeech(); stopSlideshow(); const bytes=new Uint8Array(await file.arrayBuffer()); const isEpub=/\.epub$/i.test(file.name)||file.type==='application/epub+zip'; const isZip=!isEpub && (/\.zip$/i.test(file.name)||file.type==='application/zip'||file.type==='application/x-zip-compressed'); const fileType=isZip?'zip':(isEpub?'epub':'pdf'); await idbSet('uploadedFile', { bytes: bytes.slice().buffer, fileName: file.name, fileType, savedAt: Date.now() }); localStorage.setItem(STORAGE_KEYS.fileName,file.name); localStorage.setItem(STORAGE_KEYS.fileType,fileType); if(isZip) await loadZipBytes(bytes,file.name,{ restore:false }); else if(isEpub) await loadEpubBytes(bytes,file.name,{ restore:false }); else await loadPdfBytes(bytes,file.name,{ restore:false }); persistSettings(); } catch(e){ setStatus(`読込失敗: ${e.message}`); } finally { setBusy(false);} });
-$('btnClearSaved').addEventListener('click', async ()=>{ await idbDelete('uploadedFile'); localStorage.removeItem(STORAGE_KEYS.fileName); localStorage.removeItem(STORAGE_KEYS.fileType); localStorage.removeItem(STORAGE_KEYS.lastPage); state.fileType=null; state.pdfDoc=null; state.epubBook=null; if(state.epubRendition){ try{ state.epubRendition.destroy(); }catch{} state.epubRendition=null; } state.pageNum=1; state.pageCount=0; clearZipImages(); state.textCache.clear(); $('textPreview').textContent=''; $('pageLabel').textContent='Page - / -'; const c=$('pdfCanvas'); c.getContext('2d').clearRect(0,0,c.width||0,c.height||0); $('pdfCanvas').style.display='none'; $('epubViewer').innerHTML=''; $('epubViewer').style.display='none'; $('zipImageViewer').style.display='none'; setStatus('保存済みファイルを削除しました'); updateModeControls(); });
+$('btnLoad').addEventListener('click', async ()=>{ setBusy(true,'ファイル読み込み中... しばらくお待ちください'); $('pageLabel').textContent='1 / -'; const file=$('fileInput').files?.[0]; if(!file){ setStatus('PDF/ePub/ZIPファイルを選択してください'); setBusy(false); return; } try { stopSpeech(); stopSlideshow(); const bytes=new Uint8Array(await file.arrayBuffer()); const isEpub=/\.epub$/i.test(file.name)||file.type==='application/epub+zip'; const isZip=!isEpub && (/\.zip$/i.test(file.name)||file.type==='application/zip'||file.type==='application/x-zip-compressed'); const fileType=isZip?'zip':(isEpub?'epub':'pdf'); await idbSet('uploadedFile', { bytes: bytes.slice().buffer, fileName: file.name, fileType, savedAt: Date.now() }); localStorage.setItem(STORAGE_KEYS.fileName,file.name); localStorage.setItem(STORAGE_KEYS.fileType,fileType); if(isZip) await loadZipBytes(bytes,file.name,{ restore:false }); else if(isEpub) await loadEpubBytes(bytes,file.name,{ restore:false }); else await loadPdfBytes(bytes,file.name,{ restore:false }); persistSettings(); } catch(e){ setStatus(`読込失敗: ${e.message}`); } finally { setBusy(false);} });
+$('btnClearSaved').addEventListener('click', async ()=>{ await idbDelete('uploadedFile'); localStorage.removeItem(STORAGE_KEYS.fileName); localStorage.removeItem(STORAGE_KEYS.fileType); localStorage.removeItem(STORAGE_KEYS.lastPage); state.fileType=null; state.pdfDoc=null; state.epubBook=null; if(state.epubRendition){ try{ state.epubRendition.destroy(); }catch{} state.epubRendition=null; } state.pageNum=1; state.pageCount=0; clearZipImages(); state.textCache.clear(); $('textPreview').textContent='ファイルを読み込むと、テキストがここに表示されます'; $('pageLabel').textContent='- / -'; const c=$('pdfCanvas'); c.getContext('2d').clearRect(0,0,c.width||0,c.height||0); $('pdfCanvas').style.display='none'; $('epubViewer').innerHTML=''; $('epubViewer').style.display='none'; $('zipImageViewer').style.display='none'; setStatus('保存済みファイルを削除しました'); updateModeControls(); });
 async function goPrev(){ if(state.pageNum>1){ state.pageNum--; await renderCurrentPage(); persistSettings(); }}
 async function goNext(){ if(state.pageNum<state.pageCount){ state.pageNum++; await renderCurrentPage(); persistSettings(); } else if(state.slideshowId && state.fileType==='zip'){ state.pageNum=1; await renderCurrentPage(); persistSettings(); }}
 $('btnPrev').addEventListener('click', goPrev);
@@ -731,12 +801,12 @@ $('btnPauseResume').addEventListener('click', ()=>{
   if (state.isPaused) {
     speechSynthesis.resume();
     state.isPaused = false;
-    $('btnPauseResume').textContent = '一時停止';
+    $('btnPauseResume').textContent = '⏸ 一時停止';
     setStatus('読み上げを再開しました');
   } else {
     speechSynthesis.pause();
     state.isPaused = true;
-    $('btnPauseResume').textContent = '再開';
+    $('btnPauseResume').textContent = '▶ 再開';
     setStatus('読み上げを一時停止しました');
   }
 });
@@ -749,7 +819,7 @@ document.addEventListener('visibilitychange', ()=>{
     try { speechSynthesis.resume(); } catch {}
     if(!narrationWatchdog) startNarrationWatchdog();
     state.isPaused = false;
-    const t=$('btnPauseResume'); if(t) t.textContent='一時停止';
+    const t=$('btnPauseResume'); if(t) t.textContent='⏸ 一時停止';
     setStatus('読み上げを継続中');
   }
 });
@@ -775,10 +845,10 @@ document.querySelectorAll('.theme-dot').forEach(btn=>{
 
 const dropHint = $('dropHint');
 if (dropHint){
-  dropHint.addEventListener('dragover', (e)=>{ e.preventDefault(); dropHint.style.borderColor='#2e8b57'; });
-  dropHint.addEventListener('dragleave', ()=>{ dropHint.style.borderColor='#bbb'; });
+  dropHint.addEventListener('dragover', (e)=>{ e.preventDefault(); dropHint.classList.add('dragover'); });
+  dropHint.addEventListener('dragleave', ()=>{ dropHint.classList.remove('dragover'); });
   dropHint.addEventListener('drop', async (e)=>{
-    e.preventDefault(); dropHint.style.borderColor='#bbb';
+    e.preventDefault(); dropHint.classList.remove('dragover');
     const file=e.dataTransfer?.files?.[0];
     if(!file){ return; }
     const dt=new DataTransfer(); dt.items.add(file); $('fileInput').files = dt.files;

@@ -230,12 +230,15 @@ title: プロジェクト管理 (DeepSeek v4 Pro) - Rui Software
 .pm-wrap.dark .pm-kanban-card,
 .pm-wrap.dark .pm-table td,
 .pm-wrap.dark .pm-calendar-day { background:#333; color:#e0e0e0; }
+.pm-wrap.dark .pm-calendar-header.sun { color:#e74c3c; }
+.pm-wrap.dark .pm-calendar-header.sat { color:#5dade2; }
 .pm-wrap.dark .pm-table tr:hover td,
 .pm-wrap.dark .pm-gantt-row.task-col:hover { background:#3a3a3a; }
 .pm-wrap.dark .pm-kanban-card { border-color:#444; }
 .pm-wrap.dark .pm-kanban-card .card-footer { border-color:#444; }
 .pm-wrap.dark .pm-tag { background:#2e8b57; color:#fff; }
 .pm-wrap.dark .pm-gantt-row { background:#333; }
+.pm-wrap.dark .pm-gantt-grid { background:#2a2a2a; border-color:#555; }
 .pm-wrap.dark .pm-gantt-row.task-col { background:#333; }
 .pm-wrap.dark .pm-calendar-day.other-month { background:#2a2a2a; }
 .pm-wrap.dark .pm-calendar-day.today { background:#3a4a3e; }
@@ -396,7 +399,7 @@ title: プロジェクト管理 (DeepSeek v4 Pro) - Rui Software
       <button class="pm-btn danger small" id="btnDeleteTask" style="display:none;margin-right:auto;">🗑️ 削除</button>
       <button class="pm-btn secondary" id="btnCancel">キャンセル</button>
       <button class="pm-btn secondary" id="btnCreateGithub" style="display:none;">GitHub Issue作成</button>
-      <button class="pm-btn" id="btnSaveTask">保存</button>
+      <button type="button" class="pm-btn" id="btnSaveTask">保存</button>
     </div>
   </div>
 </div>
@@ -984,8 +987,9 @@ title: プロジェクト管理 (DeepSeek v4 Pro) - Rui Software
     }
 
     wrap.appendChild(grid);
+    container.appendChild(wrap);
 
-    // SVG overlay for dependency arrows
+    // SVG overlay for dependency arrows (must be after DOM insertion for offsetWidth)
     if (ganttRows.some(r => r.predecessors.length)) {
       const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       svg.classList.add('pm-gantt-svg');
@@ -1028,8 +1032,6 @@ title: プロジェクト管理 (DeepSeek v4 Pro) - Rui Software
       }
       wrap.appendChild(svg);
     }
-
-    container.appendChild(wrap);
   }
 
   // ==========================================
@@ -1288,7 +1290,7 @@ title: プロジェクト管理 (DeepSeek v4 Pro) - Rui Software
     });
 
     const predecessors = Array.from($('taskPredecessors').selectedOptions).map(o => o.value);
-    if (TaskMgr.hasCircular(editingId || '__new__', predecessors)) {
+    if (TaskMgr.hasCircular(editingId, predecessors)) {
       showToast('⚠️ 循環依存が検出されました');
       return;
     }
