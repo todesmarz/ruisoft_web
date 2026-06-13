@@ -129,7 +129,7 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
     <!-- Left: Viewer -->
     <div class="er-panel">
       <div class="er-panel-header">
-        <h3>📖 ページ表示</h3>
+        <h5>📖 ページ表示</h5>
         <span style="font-size:.8rem;color:#888;">左右端をクリックでページ移動</span>
       </div>
       <div class="er-panel-body">
@@ -148,7 +148,7 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
     <!-- Right: Text -->
     <div class="er-panel" id="textPanel">
       <div class="er-panel-header">
-        <h3>📝 テキスト</h3>
+        <h5>📝 テキスト</h5>
         <span style="font-size:.8rem;color:#888;">OCR / 読み上げ</span>
       </div>
       <div class="er-panel-body">
@@ -195,7 +195,111 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 
 const state = { fileType:null, pdfDoc:null, epubBook:null, epubRendition:null, zipImages:[], pageNum:1, pageCount:0, textCache:new Map(), ocrCache:new Map(), isNarrating:false, isPaused:false, slideshowId:null, epubLocationsReady:false, renderToken:0, currentPlan:[], currentPlanIndex:0, currentPlanCompletedIndex:-1 };
 const STORAGE_KEYS = { fileName:'ebookReader.fileName', fileType:'ebookReader.fileType', lastPage:'ebookReader.lastPage', rate:'ebookReader.rate', voice:'ebookReader.voice', theme:'ebookReader.theme' };
+const SESSION_KEYS = { isNarrating:'ebookReader.isNarrating', currentPlanCompletedIndex:'ebookReader.currentPlanCompletedIndex', currentPlanLength:'ebookReader.currentPlanLength', pageNum:'ebookReader.pageNum', fileType:'ebookReader.fileType', timestamp:'ebookReader.timestamp' };
 const $ = id => document.getElementById(id);
+
+// --- Session persistence for tab discard recovery ---
+function persistSessionState(){
+  try {
+    sessionStorage.setItem(SESSION_KEYS.isNarrating, String(state.isNarrating));
+    sessionStorage.setItem(SESSION_KEYS.currentPlanCompletedIndex, String(state.currentPlanCompletedIndex));
+    sessionStorage.setItem(SESSION_KEYS.currentPlanLength, String(state.currentPlan.length));
+    sessionStorage.setItem(SESSION_KEYS.pageNum, String(state.pageNum));
+    sessionStorage.setItem(SESSION_KEYS.fileType, state.fileType || '');
+    sessionStorage.setItem(SESSION_KEYS.timestamp, String(Date.now()));
+  } catch {}
+}
+function clearSessionState(){
+  try {
+    Object.values(SESSION_KEYS).forEach(k => sessionStorage.removeItem(k));
+  } catch {}
+}
+function restoreSessionState(){
+  try {
+    const ts = Number(sessionStorage.getItem(SESSION_KEYS.timestamp) || '0');
+    if (!ts || Date.now() - ts > 300000) return null; // 5分以上前の状態は無視
+    const isNarrating = sessionStorage.getItem(SESSION_KEYS.isNarrating) === 'true';
+    const completedIndex = Number(sessionStorage.getItem(SESSION_KEYS.currentPlanCompletedIndex) || '-1');
+    const planLength = Number(sessionStorage.getItem(SESSION_KEYS.currentPlanLength) || '0');
+    const pageNum = Number(sessionStorage.getItem(SESSION_KEYS.pageNum) || '1');
+    const fileType = sessionStorage.getItem(SESSION_KEYS.fileType) || '';
+    if (!isNarrating || !planLength) return null;
+    return { isNarrating, completedIndex, planLength, pageNum, fileType };
+  } catch { return null; }
+}
+
+// --- Media Session API integration ---
+function setupMediaSession(){
+  if (!('mediaSession' in navigator)) return;
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: 'ebook 読み上げ',
+    artist: 'Rui Software Reader',
+    album: '読み上げ中',
+    artwork: [{ src: '', sizes: '128x128', type: 'image/png' }]
+  });
+  navigator.mediaSession.playbackState = 'playing';
+  try {
+    navigator.mediaSession.setActionHandler('play', () => {
+      if (state.isNarrating && state.isPaused) {
+        $('btnPauseResume').click();
+      } else if (!state.isNarrating) {
+        $('btnSpeak').click();
+      }
+    });
+    navigator.mediaSession.setActionHandler('pause', () => {
+      if (state.isNarrating && !state.isPaused) {
+        $('btnPauseResume').click();
+      }
+    });
+    navigator.mediaSession.setActionHandler('previoustrack', () => {
+      if (state.isNarrating) { stopSpeech(); goPrev(); }
+    });
+    navigator.mediaSession.setActionHandler('nexttrack', () => {
+      if (state.isNarrating) { stopSpeech(); goNext(); }
+    });
+  } catch {}
+}
+function updateMediaSessionState(){
+  if (!('mediaSession' in navigator)) return;
+  navigator.mediaSession.playbackState = state.isNarrating && !state.isPaused ? 'playing' : 'paused';
+}
+
+// --- AudioContext keep-alive to prevent browser audio subsystem suspension ---
+let keepAliveCtx = null;
+let keepAliveInterval = null;
+function startAudioKeepAlive(){
+  if (keepAliveInterval) return;
+  try {
+    if (!keepAliveCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) keepAliveCtx = new AudioContext();
+    }
+    if (keepAliveCtx && keepAliveCtx.state === 'suspended') {
+      keepAliveCtx.resume().catch(()=>{});
+    }
+    keepAliveInterval = setInterval(()=>{
+      try {
+        if (keepAliveCtx && keepAliveCtx.state === 'suspended') {
+          keepAliveCtx.resume().catch(()=>{});
+        }
+        // 無音の短い音を再生して音声サブシステムを維持
+        if (keepAliveCtx) {
+          const osc = keepAliveCtx.createOscillator();
+          const gain = keepAliveCtx.createGain();
+          gain.gain.value = 0.001; // ほぼ無音
+          osc.connect(gain);
+          gain.connect(keepAliveCtx.destination);
+          osc.start();
+          osc.stop(keepAliveCtx.currentTime + 0.01);
+        }
+      } catch {}
+    }, 5000);
+  } catch {}
+}
+function stopAudioKeepAlive(){
+  if (keepAliveInterval) { clearInterval(keepAliveInterval); keepAliveInterval = null; }
+  try { if (keepAliveCtx) { keepAliveCtx.close(); keepAliveCtx = null; } } catch {}
+}
 
 function getViewerHeight(){
   const vh = window.innerHeight || document.documentElement.clientHeight;
@@ -562,6 +666,10 @@ function startNarrationWatchdog(){
   if(narrationWatchdog) clearInterval(narrationWatchdog);
   narrationWatchdog = setInterval(()=>{
     if(!state.isNarrating || state.isPaused) return;
+    // 定期的に sessionStorage に永続化（タブ破棄対策）
+    persistSessionState();
+    // AudioContext を維持
+    try { if (keepAliveCtx && keepAliveCtx.state === 'suspended') keepAliveCtx.resume().catch(()=>{}); } catch {}
     if(!speechSynthesis.speaking && !speechSynthesis.pending){
       const nextIndex = state.currentPlanCompletedIndex + 1;
       if(nextIndex < state.currentPlan.length && nextIndex !== state.currentPlanIndex){
@@ -569,6 +677,9 @@ function startNarrationWatchdog(){
       } else if(nextIndex >= state.currentPlan.length) {
         state.isNarrating = false;
         stopNarrationWatchdog();
+        stopAudioKeepAlive();
+        clearSessionState();
+        updateMediaSessionState();
         setStatus('最終ページまで読み上げ完了');
       }
     }
@@ -584,6 +695,9 @@ function stopSpeech(){
   speechSynthesis.cancel();
   state.isPaused = false;
   stopNarrationWatchdog();
+  stopAudioKeepAlive();
+  clearSessionState();
+  updateMediaSessionState();
   const t = $('btnPauseResume'); if (t) t.textContent = '⏸ 一時停止';
 }
 
@@ -592,6 +706,8 @@ function speakPlanItem(i){
   if (!state.isNarrating || state.isPaused) return;
   if (i >= state.currentPlan.length) {
     state.isNarrating = false;
+    clearSessionState();
+    updateMediaSessionState();
     setStatus('最終ページまで読み上げ完了');
     return;
   }
@@ -605,6 +721,8 @@ function speakPlanItem(i){
 
   ut.onstart=()=>{
     state.currentPlanIndex = i;
+    persistSessionState();
+    updateMediaSessionState();
     if(item.pageNum !== state.pageNum){
       state.pageNum = item.pageNum;
       renderCurrentPage();
@@ -615,11 +733,13 @@ function speakPlanItem(i){
 
   ut.onend=()=>{
     state.currentPlanCompletedIndex = Math.max(state.currentPlanCompletedIndex, i);
+    persistSessionState();
     if(state.isNarrating && !state.isPaused) speakPlanItem(i + 1);
   };
 
   ut.onerror=()=>{
     state.currentPlanCompletedIndex = Math.max(state.currentPlanCompletedIndex, i);
+    persistSessionState();
     setStatus('読み上げが中断されました。次の文から再開します。');
     if(state.isNarrating && !state.isPaused) speakPlanItem(i + 1);
   };
@@ -635,11 +755,15 @@ async function startNarration(){
   const t=$('btnPauseResume'); if(t) t.textContent='⏸ 一時停止';
   setStatus('現在ページから最終ページまで読み上げを準備中...');
 
+  setupMediaSession();
+  startAudioKeepAlive();
+
   const plan = await buildNarrationPlanFromCurrentPage();
-  if(!plan.length){ state.isNarrating = false; setStatus('読み上げ可能なテキストがありません'); return; }
+  if(!plan.length){ state.isNarrating = false; clearSessionState(); updateMediaSessionState(); setStatus('読み上げ可能なテキストがありません'); return; }
   state.currentPlan = plan;
   state.currentPlanIndex = 0;
   state.currentPlanCompletedIndex = -1;
+  persistSessionState();
   startNarrationWatchdog();
   speakPlanItem(0);
 }
@@ -845,67 +969,115 @@ $('btnPauseResume').addEventListener('click', ()=>{
   if (state.isPaused) {
     speechSynthesis.resume();
     state.isPaused = false;
+    persistSessionState();
+    updateMediaSessionState();
     $('btnPauseResume').textContent = '⏸ 一時停止';
     setStatus('読み上げを再開しました');
   } else {
     speechSynthesis.pause();
     state.isPaused = true;
+    persistSessionState();
+    updateMediaSessionState();
     $('btnPauseResume').textContent = '▶ 再開';
     setStatus('読み上げを一時停止しました');
   }
 });
 $('btnStop').addEventListener('click', stopSpeech);
-document.addEventListener('visibilitychange', ()=>{
-  if (!state.isNarrating || state.isPaused) return;
-  if (document.hidden) {
-    setStatus('バックグラウンド再生を維持中...');
-  } else {
-    // タブ復帰時: resume() を試み、実際に動いていなければ次の未完了チャンクから再開
-    try { speechSynthesis.resume(); } catch {}
-    if(!narrationWatchdog) startNarrationWatchdog();
-    state.isPaused = false;
-    const t=$('btnPauseResume'); if(t) t.textContent='⏸ 一時停止';
-    setStatus('読み上げを継続中');
-    // ブラウザが音声合成を停止していた場合、次の未完了アイテムから再開
-    setTimeout(()=>{
-      if (!state.isNarrating || state.isPaused || document.hidden) return;
-      if (!speechSynthesis.speaking && !speechSynthesis.pending) {
-        const nextIndex = state.currentPlanCompletedIndex + 1;
-        if (nextIndex < state.currentPlan.length) {
-          speakPlanItem(nextIndex);
-        }
+// --- Unified tab-recovery logic ---
+async function recoverNarrationIfNeeded(){
+  if (document.hidden) return;
+  // 1. まず sessionStorage から状態を復元（タブ破棄後の復元用）
+  const saved = restoreSessionState();
+  if (saved) {
+    // タブ破棄後に復元された場合、state が初期化されている可能性がある
+    if (!state.isNarrating) {
+      // ファイルが未読込なら先に復元する
+      if (!state.fileType && saved.fileType) {
+        setStatus('タブ復元: ファイルを復元中...');
+        await restoreSavedFile({ interactive:false });
       }
-    }, 600);
+      // ファイル復元後も fileType が一致しない場合は諦める
+      if (saved.fileType !== state.fileType) {
+        clearSessionState();
+        return;
+      }
+      state.isNarrating = true;
+      state.isPaused = false;
+      state.pageNum = saved.pageNum;
+      state.currentPlanCompletedIndex = saved.completedIndex;
+      // プランは再構築が必要（メモリ上にないため）
+      setStatus('タブ復元: 読み上げプランを再構築中...');
+      try {
+        const plan = await buildNarrationPlanFromCurrentPage();
+        if (!plan.length) {
+          state.isNarrating = false;
+          clearSessionState();
+          updateMediaSessionState();
+          setStatus('読み上げ可能なテキストがありません');
+          return;
+        }
+        state.currentPlan = plan;
+        state.currentPlanIndex = 0;
+        setupMediaSession();
+        startAudioKeepAlive();
+        startNarrationWatchdog();
+        const t = $('btnPauseResume'); if (t) t.textContent = '⏸ 一時停止';
+        const nextIndex = saved.completedIndex + 1;
+        if (nextIndex < plan.length) {
+          speakPlanItem(nextIndex);
+        } else {
+          state.isNarrating = false;
+          clearSessionState();
+          updateMediaSessionState();
+          setStatus('最終ページまで読み上げ完了');
+        }
+      } catch {
+        state.isNarrating = false;
+        clearSessionState();
+        updateMediaSessionState();
+      }
+      return;
+    }
+  }
+
+  // 2. 通常のタブ切り替え復帰（state は生きている）
+  if (!state.isNarrating || state.isPaused) return;
+
+  // resume() は効かないことが多いので、直接次のチャンクから再開
+  try { speechSynthesis.resume(); } catch {}
+  if (!narrationWatchdog) startNarrationWatchdog();
+  startAudioKeepAlive();
+  state.isPaused = false;
+  const t = $('btnPauseResume'); if (t) t.textContent = '⏸ 一時停止';
+  setStatus('読み上げを継続中');
+
+  setTimeout(()=>{
+    if (!state.isNarrating || state.isPaused || document.hidden) return;
+    if (!speechSynthesis.speaking && !speechSynthesis.pending) {
+      const nextIndex = state.currentPlanCompletedIndex + 1;
+      if (nextIndex < state.currentPlan.length) {
+        speakPlanItem(nextIndex);
+      }
+    }
+  }, 600);
+}
+
+document.addEventListener('visibilitychange', ()=>{
+  if (document.hidden) {
+    if (state.isNarrating && !state.isPaused) {
+      persistSessionState();
+      setStatus('バックグラウンド再生を維持中...');
+    }
+  } else {
+    recoverNarrationIfNeeded().catch(()=>{});
   }
 });
 window.addEventListener('focus', ()=>{
-  if(state.isNarrating && !state.isPaused){
-    try{ speechSynthesis.resume(); }catch{}
-    // focus 時も音声合成が止まっていたら再開
-    setTimeout(()=>{
-      if (!state.isNarrating || state.isPaused || document.hidden) return;
-      if (!speechSynthesis.speaking && !speechSynthesis.pending) {
-        const nextIndex = state.currentPlanCompletedIndex + 1;
-        if (nextIndex < state.currentPlan.length) {
-          speakPlanItem(nextIndex);
-        }
-      }
-    }, 600);
-  }
+  recoverNarrationIfNeeded().catch(()=>{});
 });
-window.addEventListener('pageshow', ()=>{
-  if(state.isNarrating && !state.isPaused){
-    try{ speechSynthesis.resume(); }catch{}
-    setTimeout(()=>{
-      if (!state.isNarrating || state.isPaused || document.hidden) return;
-      if (!speechSynthesis.speaking && !speechSynthesis.pending) {
-        const nextIndex = state.currentPlanCompletedIndex + 1;
-        if (nextIndex < state.currentPlan.length) {
-          speakPlanItem(nextIndex);
-        }
-      }
-    }, 600);
-  }
+window.addEventListener('pageshow', (e)=>{
+  // bfcache から復元された場合も対応
+  recoverNarrationIfNeeded().catch(()=>{});
 });
 window.addEventListener('resize', ()=>{
   if(state.fileType==='epub' && state.epubRendition){
@@ -971,7 +1143,7 @@ $('voiceSelect').addEventListener('change', persistSettings);
 
 speechSynthesis.onvoiceschanged = setupVoices;
 setupVoices(); restoreSettings(); applyTheme(localStorage.getItem(STORAGE_KEYS.theme)||'light');
-$('runtimeInfo').textContent = `Media Session: ${'mediaSession' in navigator ? '可':'不可'} / バックグラウンド継続はブラウザ依存`; 
+$('runtimeInfo').textContent = `Media Session: ${'mediaSession' in navigator ? '可':'不可'} / AudioContext: ${keepAliveCtx ? keepAliveCtx.state : '未初期化'} / タブ復元対応: 有効`; 
 setStatus('待機中');
 updateModeControls();
 // ファイル未読込時はD&Dゾーンを表示
