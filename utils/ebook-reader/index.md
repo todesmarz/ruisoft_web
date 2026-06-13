@@ -88,12 +88,26 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
       <div class="nav-zone right" id="navRight" title="次ページ"></div>
       <canvas id="pdfCanvas"></canvas>
       <div id="epubViewer"></div>
+      <div id="epubTextFallback" aria-live="polite"></div>
       <div id="zipImageViewer"><img id="zipImage" alt="ZIP内画像プレビュー"></div>
     </div>
   </div>
 
   <div class="ebook-panel">
     <h3>テキスト</h3>
+    <div class="ebook-row group">
+      <span class="group-label">OCR</span>
+      <button id="btnOcrPage" disabled>表示ページをOCR</button>
+      <button id="btnOcrAll" disabled>全ページOCR</button>
+      <label>言語
+        <select id="ocrLang">
+          <option value="jpn+eng">日本語+英語</option>
+          <option value="jpn">日本語</option>
+          <option value="eng">英語</option>
+        </select>
+      </label>
+      <span class="ebook-muted">画像だけのPDF/ePub/ZIPでもテキスト化して読み上げできます</span>
+    </div>
     <div id="textPreview"></div>
   </div>
 </div>
@@ -101,11 +115,12 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script type="module">
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.mjs';
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.mjs';
 
-const state = { fileType:null, pdfDoc:null, epubBook:null, epubRendition:null, zipImages:[], pageNum:1, pageCount:0, textCache:new Map(), isNarrating:false, isPaused:false, slideshowId:null, epubLocationsReady:false, renderToken:0, currentPlan:[], currentPlanIndex:0, currentPlanCompletedIndex:-1 };
+const state = { fileType:null, pdfDoc:null, epubBook:null, epubRendition:null, zipImages:[], pageNum:1, pageCount:0, textCache:new Map(), ocrCache:new Map(), isNarrating:false, isPaused:false, slideshowId:null, epubLocationsReady:false, renderToken:0, currentPlan:[], currentPlanIndex:0, currentPlanCompletedIndex:-1 };
 const STORAGE_KEYS = { fileName:'ebookReader.fileName', fileType:'ebookReader.fileType', lastPage:'ebookReader.lastPage', rate:'ebookReader.rate', voice:'ebookReader.voice', theme:'ebookReader.theme' };
 const $ = id => document.getElementById(id);
 
@@ -125,7 +140,7 @@ function applyTheme(theme){
 
 function setStatus(msg){ $('status').textContent = msg; }
 function setBusy(b,msg=''){
-  ['btnLoad','btnClearSaved','btnPrev','btnNext','btnJump','btnSpeak','btnPauseResume','btnStop','btnExportPdf','btnSlideShow'].forEach(id=>$(id).disabled=b);
+  ['btnLoad','btnClearSaved','btnPrev','btnNext','btnJump','btnSpeak','btnPauseResume','btnStop','btnExportPdf','btnSlideShow','btnOcrPage','btnOcrAll'].forEach(id=>$(id).disabled=b);
   $('loadingIndicator').classList.toggle('active',b);
   // 画面全体はロックせず、操作が重複しやすいボタンのみ無効化する
   const app = document.querySelector('.ebook-reader-app');
@@ -152,12 +167,14 @@ function updateModeControls(){
   const hasDoc = !!state.fileType && state.pageCount > 0;
   $('btnPrev').disabled = !hasDoc;
   $('btnNext').disabled = !hasDoc;
-  $('btnSpeak').disabled = isZip || !hasDoc;
-  $('btnPauseResume').disabled = isZip || !hasDoc;
-  $('btnStop').disabled = isZip || !hasDoc;
+  $('btnSpeak').disabled = !hasDoc;
+  $('btnPauseResume').disabled = !hasDoc;
+  $('btnStop').disabled = !hasDoc;
   $('btnExportPdf').disabled = !isZip;
   $('btnSlideShow').disabled = !isZip;
   $('imageZoom').disabled = !isZip;
+  $('btnOcrPage').disabled = !hasDoc;
+  $('btnOcrAll').disabled = !hasDoc;
 }
 
 let dbPromise = null;
@@ -179,10 +196,10 @@ function persistSettings(){ localStorage.setItem(STORAGE_KEYS.lastPage, String(s
 function restoreSettings(){ const r=localStorage.getItem(STORAGE_KEYS.rate); if(r) $('rate').value=r; const th=localStorage.getItem(STORAGE_KEYS.theme)||'light'; applyTheme(th); }
 
 async function extractPageText(n){ const k=pageTextKey(n); if(state.textCache.has(k)) return state.textCache.get(k); const page=await state.pdfDoc.getPage(n); const c=await page.getTextContent(); const t=c.items.map(i=>i.str).join(' ').replace(/\s+/g,' ').trim(); state.textCache.set(k,t); return t; }
-async function renderPdfPage(n){ const page=await state.pdfDoc.getPage(n); const viewport=page.getViewport({scale:1.4}); const canvas=$('pdfCanvas'); canvas.width=viewport.width; canvas.height=viewport.height; await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise; canvas.style.display='block'; $('epubViewer').style.display='none'; $('zipImageViewer').style.display='none'; }
+async function renderPdfPage(n){ const page=await state.pdfDoc.getPage(n); const viewport=page.getViewport({scale:1.4}); const canvas=$('pdfCanvas'); canvas.width=viewport.width; canvas.height=viewport.height; await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise; canvas.style.display='block'; $('epubViewer').style.display='none'; $('epubTextFallback').style.display='none'; $('zipImageViewer').style.display='none'; }
 
 async function loadEpubBytes(bytes, name='saved.epub', options={ restore:false }){
-  state.fileType='epub'; state.pdfDoc=null; state.textCache.clear(); state.epubLocationsReady = false;
+  state.fileType='epub'; state.pdfDoc=null; state.textCache.clear(); state.ocrCache.clear(); state.epubLocationsReady = false;
   clearZipImages();
   if (state.epubRendition) { try { state.epubRendition.destroy(); } catch {} }
   state.epubBook = window.ePub(bytes.buffer);
@@ -193,13 +210,29 @@ async function loadEpubBytes(bytes, name='saved.epub', options={ restore:false }
   state.pageCount = state.epubBook.spine.items.length || 1;
 
   state.pageNum = options.restore ? Math.min(Math.max(Number(localStorage.getItem(STORAGE_KEYS.lastPage)||'1'),1), state.pageCount) : 1;
-  await renderEpubPage(state.pageNum);
+  await renderCurrentPage();
   $('pageLabel').textContent = `Page ${state.pageNum} / ${state.pageCount}`;
   setStatus(`読込完了: ${name}`);
   updateModeControls();
 }
 
 async function renderEpubPage(n){
+  const fallback = $('epubTextFallback');
+  const text = await extractEpubText(n, { preserveBlocks:true });
+  if (text.replace(/\s+/g, '').length >= 20) {
+    fallback.textContent = text;
+    fallback.style.display='block';
+    $('epubViewer').style.display='none';
+    $('pdfCanvas').style.display='none';
+    $('zipImageViewer').style.display='none';
+    document.dispatchEvent(new CustomEvent('ebook-reader:epub-text-rendered', { detail: { pageNum:n } }));
+    return;
+  }
+
+  fallback.textContent = '';
+  fallback.style.display='none';
+  // ePub.jsはdisplay:noneのコンテナで初期化・表示すると幅計算が崩れやすいため、表示前に有効化する
+  $('epubViewer').style.display='block';
   if (state.epubLocationsReady) {
     const cfi = state.epubBook.locations.cfiFromLocation(Math.max(0, n-1));
     await state.epubRendition.display(cfi);
@@ -208,7 +241,6 @@ async function renderEpubPage(n){
     if (!section) return;
     await state.epubRendition.display(section.href);
   }
-  $('epubViewer').style.display='block';
   $('pdfCanvas').style.display='none';
   $('zipImageViewer').style.display='none';
 }
@@ -218,7 +250,7 @@ function imageSortKey(name){
 }
 
 async function loadZipBytes(bytes, name='saved.zip', options={ restore:false }){
-  state.fileType='zip'; state.pdfDoc=null; state.epubBook=null; state.textCache.clear(); state.epubLocationsReady = false;
+  state.fileType='zip'; state.pdfDoc=null; state.epubBook=null; state.textCache.clear(); state.ocrCache.clear(); state.epubLocationsReady = false;
   if (state.epubRendition) { try { state.epubRendition.destroy(); } catch {} state.epubRendition = null; }
   clearZipImages();
   const zip = await JSZip.loadAsync(bytes);
@@ -250,29 +282,142 @@ async function renderZipImage(n){
   $('zipImageViewer').style.display='flex';
   $('pdfCanvas').style.display='none';
   $('epubViewer').style.display='none';
+  $('epubTextFallback').style.display='none';
 }
 
 
-function textWithoutRubyFromDoc(doc){
+function textWithoutRubyFromDoc(doc, options={ preserveBlocks:false }){
   if (!doc?.body) return '';
   const clone = doc.body.cloneNode(true);
-  clone.querySelectorAll('rt,rp').forEach(n=>n.remove());
+  clone.querySelectorAll('script,style,noscript,rt,rp').forEach(n=>n.remove());
+  if (options.preserveBlocks) {
+    clone.querySelectorAll('br').forEach(n=>n.replaceWith('\n'));
+    clone.querySelectorAll('p,div,section,article,h1,h2,h3,h4,h5,h6,li,blockquote').forEach(n=>n.appendChild(document.createTextNode('\n')));
+    return (clone.innerText || clone.textContent || '').replace(/[ \t]+/g,' ').replace(/\n[ \t]+/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+  }
   return (clone.innerText || clone.textContent || '').replace(/\s+/g,' ').trim();
 }
 
-async function extractEpubText(n){
-  const k=pageTextKey(n); if(state.textCache.has(k)) return state.textCache.get(k);
+async function extractEpubText(n, options={ preserveBlocks:false }){
+  const k=`${pageTextKey(n)}${options.preserveBlocks ? '-blocks' : ''}`; if(state.textCache.has(k)) return state.textCache.get(k);
   if (state.epubLocationsReady) {
     // 位置ベースページング時は、現在表示中ビューの本文を取得してページ表示と一致させる
     const iframe = $('epubViewer')?.querySelector('iframe');
-    const t = textWithoutRubyFromDoc(iframe?.contentDocument);
+    const t = textWithoutRubyFromDoc(iframe?.contentDocument, options);
     state.textCache.set(k,t);
     return t;
   }
   const section = state.epubBook.spine.get(n-1); if(!section) return '';
   await section.load(state.epubBook.load.bind(state.epubBook));
-  const t = textWithoutRubyFromDoc(section.document);
+  const t = textWithoutRubyFromDoc(section.document, options);
   section.unload(); state.textCache.set(k,t); return t;
+}
+
+function ocrTextKey(n){ return `ocr-${state.fileType}-${n}`; }
+function cleanOcrText(text){ return (text || '').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim(); }
+function ensureOcrAvailable(){
+  if (!window.Tesseract?.recognize) throw new Error('OCRライブラリを読み込めませんでした');
+}
+
+async function waitForImageReady(img){
+  if (!img) throw new Error('画像が見つかりません');
+  if (img.complete && (img.naturalWidth || img.width)) return img;
+  await new Promise((resolve, reject)=>{
+    img.addEventListener('load', resolve, { once:true });
+    img.addEventListener('error', ()=>reject(new Error('画像を読み込めませんでした')), { once:true });
+  });
+  return img;
+}
+
+function imageElementToCanvas(img){
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth || img.width;
+  canvas.height = img.naturalHeight || img.height;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(img,0,0);
+  return canvas;
+}
+
+async function pdfPageToOcrCanvas(n){
+  const page = await state.pdfDoc.getPage(n);
+  const viewport = page.getViewport({ scale: 2.2 });
+  const canvas = document.createElement('canvas');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+  return canvas;
+}
+
+async function epubPageToOcrCanvases(n){
+  await renderEpubPage(n);
+  // ePub.js が iframe 内へ画像を流し込むまで少し待つ
+  await new Promise(r=>setTimeout(r, 120));
+  const iframe = $('epubViewer')?.querySelector('iframe');
+  const images = Array.from(iframe?.contentDocument?.images || []);
+  const canvases = [];
+  for (const img of images) {
+    try {
+      await waitForImageReady(img);
+      if ((img.naturalWidth || img.width) < 8 || (img.naturalHeight || img.height) < 8) continue;
+      canvases.push(imageElementToCanvas(img));
+    } catch {
+      // 装飾画像や読み込み不能な画像はスキップする
+    }
+  }
+  return canvases;
+}
+
+async function recognizeSource(source, pageNum, partLabel=''){
+  const lang = $('ocrLang').value || 'jpn+eng';
+  const label = partLabel ? `${pageNum}ページ ${partLabel}` : `${pageNum}ページ`;
+  const result = await window.Tesseract.recognize(source, lang, {
+    logger: m => {
+      if (m.status === 'recognizing text' && Number.isFinite(m.progress)) {
+        setStatus(`OCR中: ${label} ${Math.round(m.progress * 100)}%`);
+      }
+    }
+  });
+  return cleanOcrText(result?.data?.text || '');
+}
+
+async function ocrPage(n, options={ updateView:true }){
+  ensureOcrAvailable();
+  const k = ocrTextKey(n);
+  if (state.ocrCache.has(k)) return state.ocrCache.get(k);
+  let text = '';
+  if (state.fileType === 'pdf') {
+    text = await recognizeSource(await pdfPageToOcrCanvas(n), n);
+  } else if (state.fileType === 'zip') {
+    const item = state.zipImages[n-1];
+    if (!item) throw new Error('OCR対象の画像が見つかりません');
+    text = await recognizeSource(item.url, n);
+  } else if (state.fileType === 'epub') {
+    const canvases = await epubPageToOcrCanvases(n);
+    if (!canvases.length) throw new Error('このePubページ内にOCR可能な画像が見つかりません');
+    const parts = [];
+    for (let i=0; i<canvases.length; i++) {
+      const part = await recognizeSource(canvases[i], n, `画像${i+1}/${canvases.length}`);
+      if (part) parts.push(part);
+    }
+    text = parts.join('\n\n');
+  }
+  state.ocrCache.set(k, text);
+  if (options.updateView && n === state.pageNum) {
+    $('textPreview').textContent = text || 'OCRでテキストを検出できませんでした';
+  }
+  document.dispatchEvent(new CustomEvent('ebook-reader:ocr-complete', { detail: { fileType: state.fileType, pageNum: n, text } }));
+  return text;
+}
+
+async function getReadableTextForPage(n, options={ allowOcr:false }){
+  const k = ocrTextKey(n);
+  if (state.ocrCache.has(k)) return state.ocrCache.get(k);
+  if (state.fileType === 'zip') return options.allowOcr ? await ocrPage(n, { updateView:false }) : '';
+  const extracted = state.fileType === 'epub' ? await extractEpubText(n) : await extractPageText(n);
+  if (extracted) return extracted;
+  return options.allowOcr ? await ocrPage(n, { updateView:false }) : '';
 }
 
 async function renderCurrentPage(){
@@ -282,11 +427,11 @@ async function renderCurrentPage(){
   if(state.fileType==='zip') await renderZipImage(currentPage);
   else if(state.fileType==='epub') await renderEpubPage(currentPage);
   else await renderPdfPage(currentPage);
-  const text = state.fileType==='zip'
-    ? `${state.zipImages[currentPage-1]?.name || ''}`
-    : (state.fileType==='epub' ? await extractEpubText(currentPage) : await extractPageText(currentPage));
+  const text = await getReadableTextForPage(currentPage, { allowOcr:false });
   if (token !== state.renderToken) return;
-  $('textPreview').textContent = state.fileType==='zip' ? `画像: ${text}` : (text || 'テキスト抽出不可');
+  if (text) $('textPreview').textContent = text;
+  else if (state.fileType === 'zip') $('textPreview').textContent = `画像: ${state.zipImages[currentPage-1]?.name || ''}（OCRでテキスト化できます）`;
+  else $('textPreview').textContent = 'テキスト抽出不可（画像ページの場合はOCRを実行してください）';
   $('pageLabel').textContent = `Page ${state.pageNum} / ${state.pageCount}`;
   updateModeControls();
 }
@@ -309,11 +454,15 @@ function splitSentences(text){ return text.split(/(?<=[。！？.!?])\s+/).map(s
 function toChunks(text, maxLen=220){ const sents=splitSentences(text); const chunks=[]; let buf=''; for(const x of sents){ if((buf+' '+x).trim().length>maxLen){ if(buf) chunks.push(buf.trim()); buf=x; } else { buf += ' '+x; } } if(buf.trim()) chunks.push(buf.trim()); return chunks.length?chunks:[text]; }
 
 async function buildNarrationPlanFromCurrentPage(){
-  if (state.fileType === 'zip') return [];
   const maxLen = 260;
   const plan = [];
   for(let page = state.pageNum; page <= state.pageCount; page++){
-    const rawText = state.fileType==='epub' ? await extractEpubText(page) : await extractPageText(page);
+    let rawText = '';
+    try {
+      rawText = await getReadableTextForPage(page, { allowOcr:true });
+    } catch(e) {
+      setStatus(`読み上げ準備中: ${page}ページのOCRをスキップ (${e.message})`);
+    }
     const text = normalizeTextForTTS(rawText || '');
     if(!text) continue;
     const chunks = toChunks(text, maxLen);
@@ -396,7 +545,6 @@ function speakPlanItem(i){
 
 async function startNarration(){
   if(!state.fileType) return;
-  if(state.fileType === 'zip'){ setStatus('ZIP画像は読み上げ対象外です'); return; }
   stopSpeech();
   state.isNarrating = true;
   state.isPaused = false;
@@ -438,8 +586,9 @@ async function restoreSavedFile(options={ interactive:true }){
 
     const isLegacyBuffer = saved instanceof ArrayBuffer;
     const bytes = new Uint8Array(isLegacyBuffer ? saved : saved.bytes);
-    const t = (isLegacyBuffer ? localStorage.getItem(STORAGE_KEYS.fileType) : saved.fileType) || localStorage.getItem(STORAGE_KEYS.fileType) || 'pdf';
+    let t = (isLegacyBuffer ? localStorage.getItem(STORAGE_KEYS.fileType) : saved.fileType) || localStorage.getItem(STORAGE_KEYS.fileType) || 'pdf';
     const n = (isLegacyBuffer ? localStorage.getItem(STORAGE_KEYS.fileName) : saved.fileName) || localStorage.getItem(STORAGE_KEYS.fileName) || 'saved.file';
+    if (/\.epub$/i.test(n)) t = 'epub';
 
     if (t === 'zip') await withTimeout(loadZipBytes(bytes, n+' (saved)', { restore:true }), 25000, 'restore-timeout');
     else if (t === 'epub') await withTimeout(loadEpubBytes(bytes, n+' (saved)', { restore:true }), 25000, 'restore-timeout');
@@ -524,8 +673,50 @@ async function exportZipToPdf(){
   }
 }
 
+async function runOcrForCurrentPage(){
+  if (!state.fileType) return;
+  stopSpeech();
+  stopSlideshow();
+  setBusy(true, `OCR準備中: ${state.pageNum}ページ`);
+  try {
+    const text = await ocrPage(state.pageNum, { updateView:true });
+    setStatus(text ? `OCR完了: ${state.pageNum}ページ` : `OCR完了: ${state.pageNum}ページ（テキスト未検出）`);
+  } catch(e) {
+    setStatus(`OCR失敗: ${e.message}`);
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function runOcrForAllPages(){
+  if (!state.fileType || !state.pageCount) return;
+  stopSpeech();
+  stopSlideshow();
+  const startPage = state.pageNum;
+  setBusy(true, '全ページOCR準備中...');
+  try {
+    for (let page=1; page<=state.pageCount; page++) {
+      setStatus(`全ページOCR中 (${page}/${state.pageCount})`);
+      await ocrPage(page, { updateView:false });
+      await new Promise(r=>setTimeout(r,0));
+    }
+    state.pageNum = startPage;
+    await renderCurrentPage();
+    persistSettings();
+    setStatus(`全ページOCR完了 (${state.pageCount}ページ)`);
+  } catch(e) {
+    setStatus(`全ページOCR失敗: ${e.message}`);
+    state.pageNum = startPage;
+    try { await renderCurrentPage(); } catch {}
+  } finally {
+    setBusy(false);
+  }
+}
+
 $('btnSlideShow').addEventListener('click', toggleSlideshow);
 $('btnExportPdf').addEventListener('click', exportZipToPdf);
+$('btnOcrPage').addEventListener('click', runOcrForCurrentPage);
+$('btnOcrAll').addEventListener('click', runOcrForAllPages);
 $('imageZoom').addEventListener('input', ()=>{ if(state.fileType==='zip') renderZipImage(state.pageNum); });
 $('btnSpeak').addEventListener('click', startNarration);
 $('btnPauseResume').addEventListener('click', ()=>{
