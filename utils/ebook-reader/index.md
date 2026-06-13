@@ -310,7 +310,8 @@ async function extractEpubText(n, options={ preserveBlocks:false }){
   const section = state.epubBook.spine.get(n-1); if(!section) return '';
   await section.load(state.epubBook.load.bind(state.epubBook));
   const t = textWithoutRubyFromDoc(section.document, options);
-  section.unload(); state.textCache.set(k,t); return t;
+  // section.unload() を呼ばない: ePub.jsの内部状態を破損させず、rendition.display()の挙動を安定させる
+  state.textCache.set(k,t); return t;
 }
 
 function ocrTextKey(n){ return `ocr-${state.fileType}-${n}`; }
@@ -456,6 +457,7 @@ function toChunks(text, maxLen=220){ const sents=splitSentences(text); const chu
 async function buildNarrationPlanFromCurrentPage(){
   const maxLen = 260;
   const plan = [];
+  const startPage = state.pageNum;
   for(let page = state.pageNum; page <= state.pageCount; page++){
     let rawText = '';
     try {
@@ -469,6 +471,11 @@ async function buildNarrationPlanFromCurrentPage(){
     chunks.forEach(chunk => plan.push({ pageNum: page, chunk }));
     // UIが固まらないように1ページごとに制御を返す
     await new Promise(r=>setTimeout(r,0));
+  }
+  // プラン構築中にOCRでページ表示が変わっていた場合、元のページに戻す
+  if (state.pageNum !== startPage) {
+    state.pageNum = startPage;
+    await renderCurrentPage();
   }
   return plan;
 }
