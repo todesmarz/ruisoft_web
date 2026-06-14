@@ -251,14 +251,27 @@ resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
 function render() {
-  const sx = W/(N+2), sy = H/(N+2);
-  for (let j=0; j<H; j++) for (let i=0; i<W; i++) {
-    const ci = IX(Math.floor(i/sx), Math.floor(j/sy));
-    const p = (j*W+i)*4;
-    pixels[p]   = Math.min(255, fluid.r[ci]*255);
-    pixels[p+1] = Math.min(255, fluid.g[ci]*255);
-    pixels[p+2] = Math.min(255, fluid.b[ci]*255);
-    pixels[p+3] = 255;
+  const sx = (N+2)/W, sy = (N+2)/H;
+  for (let j=0; j<H; j++) {
+    for (let i=0; i<W; i++) {
+      const x = i*sx - 0.5;
+      const y = j*sy - 0.5;
+      const i0 = Math.max(0, Math.min(N+1, Math.floor(x)));
+      const i1 = Math.max(0, Math.min(N+1, i0+1));
+      const j0 = Math.max(0, Math.min(N+1, Math.floor(y)));
+      const j1 = Math.max(0, Math.min(N+1, j0+1));
+      const s1 = x - i0, s0 = 1 - s1;
+      const t1 = y - j0, t0 = 1 - t1;
+      const c00 = IX(i0,j0), c10 = IX(i1,j0), c01 = IX(i0,j1), c11 = IX(i1,j1);
+      const r = s0*(t0*fluid.r[c00]+t1*fluid.r[c01]) + s1*(t0*fluid.r[c10]+t1*fluid.r[c11]);
+      const g = s0*(t0*fluid.g[c00]+t1*fluid.g[c01]) + s1*(t0*fluid.g[c10]+t1*fluid.g[c11]);
+      const b = s0*(t0*fluid.b[c00]+t1*fluid.b[c01]) + s1*(t0*fluid.b[c10]+t1*fluid.b[c11]);
+      const p = (j*W+i)*4;
+      pixels[p]   = Math.min(255, r*255);
+      pixels[p+1] = Math.min(255, g*255);
+      pixels[p+2] = Math.min(255, b*255);
+      pixels[p+3] = 255;
+    }
   }
   ctx.putImageData(imageData, 0, 0);
 }
@@ -324,6 +337,13 @@ function loop() {
     diffuse(0,fluid[ch],fluid[ch+'0'],diffusion,dt);
     fluid[ch+'0'].set(fluid[ch]);
     advect(0,fluid[ch],fluid[ch+'0'],fluid.vx,fluid.vy,dt);
+  }
+  // 減衰：白飛び防止
+  const decay = 0.995;
+  for (let i=0; i<SIZE; i++) {
+    fluid.r[i] *= decay;
+    fluid.g[i] *= decay;
+    fluid.b[i] *= decay;
   }
   render();
   requestAnimationFrame(loop);
