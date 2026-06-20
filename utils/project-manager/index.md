@@ -15,6 +15,7 @@ title: プロジェクト管理ツール - Rui Software
 - [Kimi K2.6 実装](index_kimi_k2_6.md)
 - [DeepSeek V4 Pro 実装](index_deepseek_v4_pro.md)
 - [GLM 5.1 実装](index_glm_5_1.md)
+- [GLM 5.2 実装](index_glm_5_2.md)
 - [MIMO V2.5 Pro 実装](index_mimo_v2_5_pro.md)
 - [Minimax M3 実装](index_minimax_m3.md)
 
