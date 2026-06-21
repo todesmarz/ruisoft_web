@@ -498,6 +498,7 @@ title: プログラミングタイピングゲーム - Rui Software
 </div>
 
 <script>
+{% raw %}
 (function() {
 'use strict';
 
@@ -1332,6 +1333,7 @@ state.mode = 'lang';
 elInput.disabled = true;
 
 })();
+{% endraw %}
 </script>
 
 <!--
