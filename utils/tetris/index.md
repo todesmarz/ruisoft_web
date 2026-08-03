@@ -217,6 +217,9 @@ const nextCtx=nextCv.getContext('2d');
 
 // ===== 状態 =====
 let board, current, hold, holdUsed, queue, score, lines, level, gameOver, paused, running, dropTimer, lastTime, rafId;
+let lockTimer, lockDelay, onGround;
+let dasDir, dasTimer, dasDelay, dasInterval, dasActive;
+let clearAnim, clearAnimTimer;
 let highScore=parseInt(localStorage.getItem('tetris_highscore')||'0',10);
 document.getElementById('highscore').textContent=highScore;
 
@@ -226,6 +229,7 @@ function ensureAudio(){
   if(!audioCtx){
     try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}
   }
+  if(audioCtx&&audioCtx.state==='suspended'){audioCtx.resume();}
 }
 function beep(freq,dur,type,vol){
   if(!audioCtx)return;
@@ -267,6 +271,8 @@ function spawn(){
   refillQueue();
   current=newPiece(queue.shift());
   holdUsed=false;
+  onGround=false;
+  lockTimer=0;
   if(collides(current,0,0)){endGame();return;}
 }
 function collides(p,ox,oy,shape){
@@ -291,17 +297,25 @@ function tryRotate(){
   if(!current)return;
   const r=rotate(current);
   for(const k of [0,1,-1,2,-2]){
-    if(!collides(current,k,0,r)){current.shape=r;current.x+=k;SE.rotate();return;}
+    if(!collides(current,k,0,r)){current.shape=r;current.x+=k;SE.rotate();resetLock();return;}
   }
 }
 function move(dx){
   if(!current)return;
-  if(!collides(current,dx,0)){current.x+=dx;SE.move();}
+  if(!collides(current,dx,0)){current.x+=dx;SE.move();resetLock();}
 }
-function softDrop(){
+function resetLock(){
+  if(onGround)lockTimer=0;
+}
+function softDrop(manual){
   if(!current)return;
-  if(!collides(current,0,1)){current.y++;score+=1;update();return true;}
-  lock();
+  if(!collides(current,0,1)){
+    current.y++;
+    if(manual)score+=1;
+    onGround=false;
+    return true;
+  }
+  onGround=true;
   return false;
 }
 function hardDrop(){
@@ -343,12 +357,31 @@ function lock(){
       }
     }
   }
-  let cleared=0;
+  current=null;
+  // 消去対象行を特定
+  const fullRows=[];
+  for(let y=0;y<ROWS;y++){
+    if(board[y].every(c=>c))fullRows.push(y);
+  }
+  if(fullRows.length>0){
+    clearAnim=fullRows;
+    clearAnimTimer=300;
+    pendingClear=fullRows.length;
+  }else{
+    spawn();
+  }
+  if(score>highScore){highScore=score;localStorage.setItem('tetris_highscore',String(highScore));}
+  update();
+}
+let pendingClear=0;
+function finishClear(){
+  const cleared=pendingClear;
+  pendingClear=0;
+  // 行削除
   for(let y=ROWS-1;y>=0;y--){
     if(board[y].every(c=>c)){
       board.splice(y,1);
       board.unshift(new Array(COLS).fill(null));
-      cleared++;y++;
     }
   }
   if(cleared>0){
@@ -387,7 +420,18 @@ function draw(){
   // 盤面
   for(let y=0;y<ROWS;y++){
     for(let x=0;x<COLS;x++){
-      if(board[y][x])drawBlock(ctx,x,y,board[y][x]);
+      if(board[y][x]){
+        if(clearAnim&&clearAnim.indexOf(y)>=0){
+          // フラッシュ
+          const phase=1-(clearAnimTimer/300);
+          ctx.save();
+          ctx.globalAlpha=Math.abs(Math.cos(phase*Math.PI*3));
+          drawBlock(ctx,x,y,board[y][x]);
+          ctx.restore();
+        }else{
+          drawBlock(ctx,x,y,board[y][x]);
+        }
+      }
     }
   }
   // ゴースト
@@ -457,11 +501,43 @@ function loop(t){
   const dt=t-lastTime;
   lastTime=t;
   if(!paused){
+    // ライン消去アニメーション中
+    if(clearAnim){
+      clearAnimTimer-=dt;
+      if(clearAnimTimer<=0){clearAnim=null;finishClear();}
+      draw();
+      rafId=requestAnimationFrame(loop);
+      return;
+    }
+    // DAS（キーリピート）
+    if(dasDir!==0){
+      dasTimer+=dt;
+      if(!dasActive&&dasTimer>=dasDelay){
+        dasActive=true;
+        dasTimer=0;
+        move(dasDir);
+      }else if(dasActive&&dasTimer>=dasInterval){
+        dasTimer=0;
+        move(dasDir);
+      }
+    }
+    // 落下
     dropTimer+=dt;
     const interval=Math.max(80,800-(level-1)*70);
     if(dropTimer>=interval){
-      softDrop();
+      softDrop(false);
       dropTimer=0;
+    }
+    // ロックディレイ
+    if(current){
+      if(collides(current,0,1)){
+        onGround=true;
+        lockTimer+=dt;
+        if(lockTimer>=lockDelay){lock();lockTimer=0;}
+      }else{
+        onGround=false;
+        lockTimer=0;
+      }
     }
   }
   draw();
@@ -476,6 +552,9 @@ function startGame(){
   queue=[];hold=null;holdUsed=false;
   score=0;lines=0;level=1;gameOver=false;paused=false;
   dropTimer=0;lastTime=0;
+  lockTimer=0;lockDelay=500;onGround=false;
+  dasDir=0;dasTimer=0;dasDelay=160;dasInterval=40;dasActive=false;
+  clearAnim=null;clearAnimTimer=0;pendingClear=0;
   spawn();
   update();
   hideOverlay();
@@ -514,10 +593,14 @@ startBtn.addEventListener('click',()=>{
 document.addEventListener('keydown',e=>{
   if(['ArrowLeft','ArrowRight','ArrowDown','ArrowUp',' ','c','C','p','P'].includes(e.key))e.preventDefault();
   if(gameOver)return;
+  if(e.repeat)return;
   switch(e.key){
-    case 'ArrowLeft':move(-1);break;
-    case 'ArrowRight':move(1);break;
-    case 'ArrowDown':softDrop();break;
+    case 'ArrowLeft':
+      move(-1);dasDir=-1;dasTimer=0;dasActive=false;break;
+    case 'ArrowRight':
+      move(1);dasDir=1;dasTimer=0;dasActive=false;break;
+    case 'ArrowDown':
+      softDrop(true);break;
     case 'ArrowUp':tryRotate();break;
     case ' ':hardDrop();break;
     case 'c':case 'C':doHold();break;
@@ -525,21 +608,37 @@ document.addEventListener('keydown',e=>{
   }
   update();
 });
-// モバイル
+document.addEventListener('keyup',e=>{
+  if(e.key==='ArrowLeft'&&dasDir===-1){dasDir=0;}
+  else if(e.key==='ArrowRight'&&dasDir===1){dasDir=0;}
+});
+// モバイル：長押しリピート対応
 document.querySelectorAll('.mc-btn').forEach(b=>{
   const act=b.dataset.act;
-  const handler=(ev)=>{
+  let repeatId=null;
+  const start=(ev)=>{
     ev.preventDefault();
     if(gameOver)return;
+    doAct();
+    if(act==='left'||act==='right'||act==='down'){
+      repeatId=setInterval(doAct,60);
+    }
+  };
+  const doAct=()=>{
     if(act==='left')move(-1);
     else if(act==='right')move(1);
-    else if(act==='down')softDrop();
+    else if(act==='down')softDrop(true);
     else if(act==='rotate')tryRotate();
     else if(act==='drop')hardDrop();
     update();
   };
-  b.addEventListener('touchstart',handler,{passive:false});
-  b.addEventListener('click',handler);
+  const stop=()=>{if(repeatId){clearInterval(repeatId);repeatId=null;}};
+  b.addEventListener('touchstart',start,{passive:false});
+  b.addEventListener('touchend',stop);
+  b.addEventListener('touchcancel',stop);
+  b.addEventListener('mousedown',start);
+  b.addEventListener('mouseup',stop);
+  b.addEventListener('mouseleave',stop);
 });
 
 // 初期表示
