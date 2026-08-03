@@ -233,6 +233,7 @@ let board, current, hold, holdUsed, queue, score, lines, level, gameOver, paused
 let lockTimer, lockDelay, onGround;
 let dasDir, dasTimer, dasDelay, dasInterval, dasActive;
 let clearAnim, clearAnimTimer;
+let particles, shakeTime, shakeMag, scorePopups, flashTime;
 let highScore=parseInt(localStorage.getItem('tetris_highscore')||'0',10);
 document.getElementById('highscore').textContent=highScore;
 
@@ -261,9 +262,10 @@ const SE={
   rotate:()=>beep(440,0.06,'square',0.04),
   drop:()=>beep(120,0.1,'sawtooth',0.05),
   line:()=>{beep(660,0.08,'square',0.05);setTimeout(()=>beep(880,0.1,'square',0.05),60);},
-  tetris:()=>{[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,0.1,'square',0.06),i*60));},
+  tetris:()=>{[523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>beep(f,0.12,'square',0.07),i*55));},
   hold:()=>beep(330,0.06,'triangle',0.04),
-  over:()=>{[400,300,200,120].forEach((f,i)=>setTimeout(()=>beep(f,0.2,'sawtooth',0.06),i*120));}
+  over:()=>{[400,300,200,120].forEach((f,i)=>setTimeout(()=>beep(f,0.2,'sawtooth',0.06),i*120));},
+  combo:(n)=>{[523,587,659,698,784,880,988,1047].forEach((f,i)=>{if(i<n)setTimeout(()=>beep(f,0.1,'triangle',0.06),i*50);});}
 };
 
 // ===== ピース操作 =====
@@ -378,8 +380,10 @@ function lock(){
   }
   if(fullRows.length>0){
     clearAnim=fullRows;
-    clearAnimTimer=300;
+    clearAnimTimer=400;
     pendingClear=fullRows.length;
+    // 爽快感演出：パーティクル・フラッシュ・シェイク・ポップアップ
+    spawnClearEffects(fullRows);
   }else{
     spawn();
   }
@@ -387,6 +391,7 @@ function lock(){
   update();
 }
 let pendingClear=0;
+let comboCount=0;
 function finishClear(){
   const cleared=pendingClear;
   pendingClear=0;
@@ -402,11 +407,72 @@ function finishClear(){
     score+=pts;
     lines+=cleared;
     level=Math.floor(lines/10)+1;
-    if(cleared===4)SE.tetris();else SE.line();
+    comboCount++;
+    if(cleared===4){SE.tetris();shakeTime=350;shakeMag=12;}
+    else{SE.line();shakeTime=180;shakeMag=5;}
+    if(comboCount>1)SE.combo(Math.min(comboCount,8));
+    // スコアポップアップ
+    const labels=['','SINGLE','DOUBLE','TRIPLE','TETRIS!'];
+    scorePopups.push({
+      text:labels[cleared]+(comboCount>1?' x'+comboCount:''),
+      pts:'+'+pts,
+      y:main.height/2,
+      alpha:1,
+      vy:-0.6,
+      life:1200
+    });
+  }else{
+    comboCount=0;
   }
   if(score>highScore){highScore=score;localStorage.setItem('tetris_highscore',String(highScore));}
   update();
   spawn();
+}
+
+// ===== 爽快感演出 =====
+function spawnClearEffects(rows){
+  flashTime=200;
+  for(const ry of rows){
+    for(let x=0;x<COLS;x++){
+      const type=board[ry][x];
+      if(!type)continue;
+      const col=COLORS[type];
+      const cx=x*BLOCK+BLOCK/2, cy=ry*BLOCK+BLOCK/2;
+      for(let i=0;i<6;i++){
+        const ang=Math.random()*Math.PI*2;
+        const spd=2+Math.random()*4;
+        particles.push({
+          x:cx,y:cy,
+          vx:Math.cos(ang)*spd,
+          vy:Math.sin(ang)*spd-1,
+          life:600+Math.random()*300,
+          maxLife:600,
+          size:3+Math.random()*4,
+          color:col,
+          gravity:0.15
+        });
+      }
+    }
+  }
+}
+function updateEffects(dt){
+  // パーティクル
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx;p.y+=p.vy;p.vy+=p.gravity;
+    p.life-=dt;
+    if(p.life<=0)particles.splice(i,1);
+  }
+  // シェイク
+  if(shakeTime>0)shakeTime-=dt;
+  // フラッシュ
+  if(flashTime>0)flashTime-=dt;
+  // ポップアップ
+  for(let i=scorePopups.length-1;i>=0;i--){
+    const s=scorePopups[i];
+    s.y+=s.vy;s.life-=dt;s.alpha=Math.max(0,s.life/1200);
+    if(s.life<=0)scorePopups.splice(i,1);
+  }
 }
 
 // ===== 描画 =====
@@ -425,7 +491,13 @@ function drawBlock(c,x,y,type,alpha){
   c.restore();
 }
 function draw(){
-  ctx.clearRect(0,0,main.width,main.height);
+  ctx.save();
+  // シェイク
+  if(shakeTime>0){
+    const mag=shakeMag*(shakeTime/350);
+    ctx.translate((Math.random()-0.5)*mag,(Math.random()-0.5)*mag);
+  }
+  ctx.clearRect(-20,-20,main.width+40,main.height+40);
   // グリッド
   ctx.strokeStyle='rgba(60,60,120,.2)';
   for(let x=0;x<=COLS;x++){ctx.beginPath();ctx.moveTo(x*BLOCK,0);ctx.lineTo(x*BLOCK,ROWS*BLOCK);ctx.stroke();}
@@ -435,11 +507,15 @@ function draw(){
     for(let x=0;x<COLS;x++){
       if(board[y][x]){
         if(clearAnim&&clearAnim.indexOf(y)>=0){
-          // フラッシュ
-          const phase=1-(clearAnimTimer/300);
+          // 消去行：白フラッシュ＋縮小
+          const phase=1-(clearAnimTimer/400);
           ctx.save();
-          ctx.globalAlpha=Math.abs(Math.cos(phase*Math.PI*3));
+          ctx.globalAlpha=Math.max(0,1-phase);
           drawBlock(ctx,x,y,board[y][x]);
+          // 白オーバーレイ
+          ctx.globalAlpha=Math.max(0,1-phase*1.5);
+          ctx.fillStyle='#ffffff';
+          ctx.fillRect(x*BLOCK,y*BLOCK,BLOCK,BLOCK);
           ctx.restore();
         }else{
           drawBlock(ctx,x,y,board[y][x]);
@@ -463,6 +539,42 @@ function draw(){
       }
     }
   }
+  // パーティクル
+  for(const p of particles){
+    const a=Math.max(0,p.life/p.maxLife);
+    ctx.save();
+    ctx.globalAlpha=a;
+    ctx.fillStyle=p.color;
+    ctx.shadowColor=p.color;
+    ctx.shadowBlur=8;
+    ctx.fillRect(p.x-p.size/2,p.y-p.size/2,p.size,p.size);
+    ctx.restore();
+  }
+  // フラッシュ
+  if(flashTime>0){
+    ctx.save();
+    ctx.globalAlpha=(flashTime/200)*0.5;
+    ctx.fillStyle='#ffffff';
+    ctx.fillRect(0,0,main.width,main.height);
+    ctx.restore();
+  }
+  // スコアポップアップ
+  for(const s of scorePopups){
+    ctx.save();
+    ctx.globalAlpha=s.alpha;
+    ctx.textAlign='center';
+    ctx.fillStyle='#fff';
+    ctx.shadowColor='#00f0ff';
+    ctx.shadowBlur=12;
+    ctx.font='bold 22px "Segoe UI",sans-serif';
+    ctx.fillText(s.text,main.width/2,s.y);
+    ctx.fillStyle='#ffe600';
+    ctx.shadowColor='#ffe600';
+    ctx.font='bold 18px "Segoe UI",sans-serif';
+    ctx.fillText(s.pts,main.width/2,s.y+26);
+    ctx.restore();
+  }
+  ctx.restore();
   drawHold();
   drawNext();
 }
@@ -514,6 +626,7 @@ function loop(t){
   const dt=t-lastTime;
   lastTime=t;
   if(!paused){
+    updateEffects(dt);
     // ライン消去アニメーション中
     if(clearAnim){
       clearAnimTimer-=dt;
@@ -568,6 +681,8 @@ function startGame(){
   lockTimer=0;lockDelay=500;onGround=false;
   dasDir=0;dasTimer=0;dasDelay=160;dasInterval=40;dasActive=false;
   clearAnim=null;clearAnimTimer=0;pendingClear=0;
+  particles=[];shakeTime=0;shakeMag=0;scorePopups=[];flashTime=0;
+  comboCount=0;
   spawn();
   update();
   hideOverlay();
