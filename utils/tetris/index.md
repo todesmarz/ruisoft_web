@@ -72,6 +72,9 @@ h1{
   border-radius:6px;
   box-shadow:0 0 20px rgba(157,75,255,.5),0 0 40px rgba(157,75,255,.2);
   display:block;
+  max-width:100%;
+  height:auto;
+  touch-action:none;
 }
 .side-info{
   display:flex;
@@ -117,25 +120,35 @@ h1{
   grid-template-columns:repeat(5,1fr);
   gap:8px;
   width:100%;
-  max-width:340px;
+  max-width:420px;
 }
 .mc-btn{
   background:var(--panel);
   border:1px solid var(--panel-border);
   color:var(--neon-cyan);
-  padding:14px 0;
-  border-radius:6px;
-  font-size:1.2rem;
+  padding:18px 0;
+  border-radius:8px;
+  font-size:1.6rem;
   cursor:pointer;
   touch-action:manipulation;
+  font-weight:bold;
 }
 .mc-btn:active{background:var(--neon-cyan);color:#000}
 footer{margin-top:14px;color:var(--muted);font-size:.7rem;text-align:center}
-@media(max-width:560px){
+@media(max-width:760px){
   #game-wrap{grid-template-columns:auto auto;gap:6px}
   .side-info{grid-row:2;grid-column:1/3;flex-direction:row;flex-wrap:wrap;justify-content:center}
+  .side-info .panel{min-width:80px}
   #mobile-controls{display:grid}
   h1{font-size:1.2rem}
+  #main-canvas{width:min(90vw,360px);height:auto}
+}
+@media(max-width:420px){
+  #game-wrap{gap:4px}
+  .panel{padding:6px}
+  .stat .value{font-size:1.1rem}
+  #main-canvas{width:92vw}
+  .mc-btn{padding:16px 0;font-size:1.4rem}
 }
 </style>
 </head>
@@ -144,13 +157,13 @@ footer{margin-top:14px;color:var(--muted);font-size:.7rem;text-align:center}
 <div id="game-wrap">
   <div class="panel">
     <h3>HOLD</h3>
-    <canvas id="hold-canvas" width="100" height="100"></canvas>
+    <canvas id="hold-canvas" width="120" height="120"></canvas>
   </div>
   <div id="main-area">
-    <canvas id="main-canvas" width="200" height="400"></canvas>
+    <canvas id="main-canvas" width="300" height="600"></canvas>
     <div id="overlay">
       <h2>NEON TETRIS</h2>
-      <p>矢印キー:移動・回転<br>↑:回転 / Space:ハードドロップ<br>C:ホールド / P:一時停止</p>
+      <p>矢印キー:移動・回転<br>↑:回転 / Space:ハードドロップ<br>C:ホールド / P:一時停止<br><br>📱 スマホ:スワイプ移動・タップ回転<br>長押しでハードドロップ</p>
       <button class="btn" id="start-btn">START</button>
     </div>
   </div>
@@ -173,7 +186,7 @@ footer{margin-top:14px;color:var(--muted);font-size:.7rem;text-align:center}
     </div>
     <div class="panel">
       <h3>NEXT</h3>
-      <canvas id="next-canvas" width="100" height="260"></canvas>
+      <canvas id="next-canvas" width="120" height="300"></canvas>
     </div>
   </div>
 </div>
@@ -191,7 +204,7 @@ footer{margin-top:14px;color:var(--muted);font-size:.7rem;text-align:center}
 'use strict';
 
 // ===== 定数 =====
-const COLS=10, ROWS=20, BLOCK=20;
+const COLS=10, ROWS=20, BLOCK=30;
 const COLORS={
   I:'#00f0ff', O:'#ffe600', T:'#c800ff',
   S:'#00ff66', Z:'#ff2b4d', J:'#2b6dff', L:'#ff8c1a'
@@ -456,9 +469,9 @@ function draw(){
 function drawMini(c,piece,ox,oy){
   if(!piece)return;
   const s=SHAPES[piece.type];
-  const sz=18;
+  const sz=22;
   const w=s[0].length*sz, h=s.length*sz;
-  const sx=ox+(100-w)/2, sy=oy+(40-h)/2;
+  const sx=ox+(120-w)/2, sy=oy+(50-h)/2;
   c.save();
   for(let y=0;y<s.length;y++){
     for(let x=0;x<s[y].length;x++){
@@ -476,12 +489,12 @@ function drawMini(c,piece,ox,oy){
 }
 function drawHold(){
   holdCtx.clearRect(0,0,holdCv.width,holdCv.height);
-  if(hold)drawMini(holdCtx,hold,0,30);
+  if(hold)drawMini(holdCtx,hold,0,35);
 }
 function drawNext(){
   nextCtx.clearRect(0,0,nextCv.width,nextCv.height);
   for(let i=0;i<3&&i<queue.length;i++){
-    drawMini(nextCtx,{type:queue[i]},0,10+i*85);
+    drawMini(nextCtx,{type:queue[i]},0,15+i*95);
   }
 }
 
@@ -640,6 +653,53 @@ document.querySelectorAll('.mc-btn').forEach(b=>{
   b.addEventListener('mouseup',stop);
   b.addEventListener('mouseleave',stop);
 });
+
+// ===== スワイプジェスチャー（メインキャンバス上） =====
+(function(){
+  let sx=0, sy=0, st=0, moved=false, tapTimer=null;
+  main.addEventListener('touchstart',e=>{
+    if(gameOver||!running)return;
+    const t=e.touches[0];
+    sx=t.clientX; sy=t.clientY; st=Date.now(); moved=false;
+    e.preventDefault();
+  },{passive:false});
+  main.addEventListener('touchmove',e=>{
+    if(gameOver||!running)return;
+    const t=e.touches[0];
+    const dx=t.clientX-sx, dy=t.clientY-sy;
+    const adx=Math.abs(dx), ady=Math.abs(dy);
+    if(adx<20&&ady<20)return;
+    moved=true;
+    if(adx>ady){
+      // 横スワイプ
+      const step=Math.floor(adx/30);
+      const dir=dx>0?1:-1;
+      for(let i=0;i<step;i++)move(dir);
+      sx=t.clientX; sy=t.clientY;
+    }else{
+      // 下スワイプ（ソフトドロップ）
+      const step=Math.floor(ady/30);
+      for(let i=0;i<step;i++)softDrop(true);
+      sy=t.clientY;
+    }
+    update();
+    e.preventDefault();
+  },{passive:false});
+  main.addEventListener('touchend',e=>{
+    if(gameOver||!running)return;
+    const dt=Date.now()-st;
+    if(!moved&&dt<200){
+      // タップ = 回転
+      tryRotate();
+      update();
+    }else if(!moved&&dt>400){
+      // 長押しタップ = ハードドロップ
+      hardDrop();
+      update();
+    }
+    e.preventDefault();
+  },{passive:false});
+})();
 
 // 初期表示
 showOverlay('NEON TETRIS','矢印キー:移動・回転<br>↑:回転 / Space:ハードドロップ<br>C:ホールド / P:一時停止','START');
