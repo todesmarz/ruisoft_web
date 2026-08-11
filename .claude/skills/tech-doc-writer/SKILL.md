@@ -136,6 +136,26 @@ Phase 1 で特定した対象システムについて、ドキュメント作成
 
 読者と種別に応じた構成を設計する。以下のテンプレートを基準とし、対象システムの特性に合わせて調整する。
 
+### 3.0 テンプレートの参照
+
+各ドキュメント種別のテンプレートは `.claude/skills/tech-doc-writer/templates/` 配下に配置されている。Phase 3 では対応するテンプレートを読み込み、対象システムに合わせて調整する。
+
+| 種別 | テンプレートファイル | 想定読者 |
+|---|---|---|
+| `overview` | `templates/overview.md` | プロジェクト外の方 |
+| `user-manual` | `templates/user-manual.md` | エンドユーザー |
+| `setup-guide` | `templates/setup-guide.md` | 導入者 |
+| `api-spec` | `templates/api-spec.yaml`（OpenAPI）+ `templates/api-spec-summary.md`（Markdownサマリ） | 開発者 |
+| `runbook` | `templates/runbook.md` | 運用者 |
+| `wiki` | `templates/wiki.md` | チーム内 |
+| `architecture` | `templates/architecture.md` | 開発者 |
+
+各テンプレートには以下が含まれる:
+- **フロントマター**: `title`・`description`・`last_updated`・`document_type`・`target_audience`
+- **プレースホルダー**: `<プロジェクト名>`・`<システム名>` 等（`<` `>` で囲まれた部分を実際の値に置換）
+- **記入ガイド**: HTMLコメント形式で各セクションの記入方針を明示
+- **Mermaid図の例**: 構成図・フロー図・ER図のテンプレート
+
 ### 3.1 プロジェクト説明資料（`overview`）の構成
 
 ```markdown

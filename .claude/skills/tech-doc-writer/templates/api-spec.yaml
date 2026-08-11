@@ -1,0 +1,228 @@
+openapi: 3.0.3
+info:
+  title: <API名>
+  version: <バージョン（例: 1.0.0）>
+  description: |
+    <APIの概要・目的>
+    <対象読者: 開発者>
+  contact:
+    name: <連絡先名>
+    email: <連絡先メール>
+    url: <サポートURL>
+  license:
+    name: <ライセンス名>
+    url: <ライセンスURL>
+servers:
+  - url: <ベースURL（例: https://api.example.com/v1）>
+    description: 本番環境
+  - url: <ベースURL（例: https://staging.api.example.com/v1）>
+    description: ステージング環境
+  - url: http://localhost:<ポート>/v1
+    description: ローカル開発環境
+tags:
+  - name: <タグ1>
+    description: <タグ1の説明>
+  - name: <タグ2>
+    description: <タグ2の説明>
+paths:
+  /<エンドポイント1>:
+    get:
+      tags:
+        - <タグ1>
+      summary: <概要（1行）>
+      description: <詳細説明>
+      operationId: <操作ID（例: getUserById）>
+      parameters:
+        - name: <パラメータ名>
+          in: <query|path|header|cookie>
+          required: <true|false>
+          schema:
+            type: <string|integer|boolean等>
+            example: <例>
+          description: <パラメータの説明>
+      responses:
+        '200':
+          description: <成功時の説明>
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/<スキーマ名>'
+              example:
+                <フィールド1>: <例1>
+                <フィールド2>: <例2>
+        '400':
+          description: < Bad Requestの説明>
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - <タグ1>
+      summary: <概要>
+      description: <詳細説明>
+      operationId: <操作ID>
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/<リクエストスキーマ名>'
+            example:
+              <フィールド1>: <例1>
+              <フィールド2>: <例2>
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/<レスポンススキーマ名>'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /<エンドポイント2>:
+    put:
+      tags:
+        - <タグ2>
+      summary: <概要>
+      description: <詳細説明>
+      operationId: <操作ID>
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: <リソースID>
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/<スキーマ名>'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/<スキーマ名>'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - <タグ2>
+      summary: <概要>
+      description: <詳細説明>
+      operationId: <操作ID>
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT ベアラートークンによる認証。
+        ヘッダーに `Authorization: Bearer <token>` を指定してください。
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: APIキーによる認証
+  schemas:
+    <スキーマ名1>:
+      type: object
+      required:
+        - <必須フィールド1>
+        - <必須フィールド2>
+      properties:
+        <フィールド1>:
+          type: <型>
+          description: <説明>
+          example: <例>
+        <フィールド2>:
+          type: <型>
+          format: <フォーマット（date-time/email/uuid等）>
+          description: <説明>
+          example: <例>
+        <フィールド3>:
+          type: array
+          items:
+            $ref: '#/components/schemas/<ネストスキーマ名>'
+          description: <説明>
+    <スキーマ名2>:
+      type: object
+      properties:
+        <フィールド1>:
+          type: <型>
+          description: <説明>
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: エラーコード
+          example: INVALID_PARAMETER
+        message:
+          type: string
+          description: エラーメッセージ
+          example: 指定されたパラメータが不正です
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: エラーが発生したフィールド
+              issue:
+                type: string
+                description: エラーの詳細
+          description: エラー詳細（バリデーションエラー等）
+security:
+  - bearerAuth: []
+  - apiKey: []
