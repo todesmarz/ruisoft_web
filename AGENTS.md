@@ -49,37 +49,19 @@ ruisoft_web/
 ## 4. Multi-Agent System
 
 このリポジトリにはブログ制作およびソフトウェア開発のマルチエージェント構成が実装されています。
-エージェント・スキルともに `.claude/` 配下に配置されています。
 
-### エージェント一覧（`.claude/agents/`）
-
-エージェントは **職種定義**（誰か・何を判断するか・価値観）を担います。
+### エージェント一覧（`.codex/agents/`）
 
 | エージェント | 役割 | 参照ファイル |
 |---|---|---|
-| blog-director | 編集長。企画・執筆を指・執筆を指揮するオーケストレーター | `.claude/agents/blog-director.md` |
-| blog-planner | コンテンツ戦略家。フォルダを分析しSEO企画案を生成 | `.claude/agents/blog-planner.md` |
-| blog-writer | テクニカルライター。調査・執筆・品質管理を担当 | `.claude/agents/blog-writer.md` |
-| requirements-analyzer | 要求分析エンジニア。曖昧な依頼を要件定義書に整理 | `.claude/agents/requirements-analyzer.md` |
-| system-architect | システムアーキテクト。要件定義書から設計書を生成 | `.claude/agents/system-architect.md` |
-| code-implementer | 実装エンジニア。設計書から実装・単体テスト・報告書を生成 | `.claude/agents/code-implementer.md` |
-| unit-test-designer | テスト設計エンジニア。設計書からパターン網羅の単体テストを生成 | `.claude/agents/unit-test-designer.md` |
-| integration-test-designer | 結合テスト設計エンジニア。モジュール間連携・E2Eテストを設計 | `.claude/agents/integration-test-designer.md` |
-| ci-cd-builder | CI/CDエンジニア。パイプライン・品質ゲート・デプロイを構築 | `.claude/agents/ci-cd-builder.md` |
-| ops-monitor-designer | 運用監視エンジニア。SLO/SLI・メトリクス・アラート・ダッシュボードを設計 | `.claude/agents/ops-monitor-designer.md` |
-| release-manager | リリース管理者。バージョニング・Changelog・リリース判定・告知を担当 | `.claude/agents/release-manager.md` |
-| tech-researcher | 技術調査エンジニア。技術選定・PoC・比較レポートを生成 | `.claude/agents/tech-researcher.md` |
-| debugger | デバッグエンジニア。根本原因特定・修正・再発防止策を担当 | `.claude/agents/debugger.md` |
-| self-review | シニアレビューア。6観点で成果物を検証し問題点リストと是正案を生成 | `.claude/agents/self-review.md` |
-| stakeholder-review | ステークホルダーレビューア。目的整合性・前工程整合性・代替案を検証 | `.claude/agents/stakeholder-review.md` |
+| blog-director | 編集長。企画・執筆を指・執筆を指揮するオーケストレーター | `.codex/agents/blog-director.md` |
+| blog-planner | コンテンツ戦略家。フォルダを分析しSEO企画案を生成 | `.codex/agents/blog-planner.md` |
+| blog-writer | テクニカルライター。調査・執筆・品質管理を担当 | `.codex/agents/blog-writer.md` |
+| unit-test-designer | テスト設計エンジニア。設計書からパターン網羅の単体テストを生成 | `.codex/agents/unit-test-designer.md` |
+| self-review | シニアレビューア。6観点で成果物を検証し問題点リストと是正案を生成 | `.codex/agents/self-review.md` |
+| tech-doc-writer | テクニカルドキュメントライター。読者別に最適化された技術ドキュメント（ユーザーマニュアル・API仕様書・運用手順書・wiki等）を作成 | `.claude/agents/tech-doc-writer.md` |
 
-> 全エージェントの職種定義ファイルが `.claude/agents/` 配下に作成済み。スキル実行時はスキル内の判断基準を補完的に参照する。
-
-### スキル一覧（`.claude/skills/`）
-
-スキルは **業務フロー**（何をどう実行するか・出力形式）を担います。
-
-#### ブログ制作系
+### スキル一覧（`.codex/skills/`）
 
 | スキル | 内容 |
 |---|---|
@@ -88,52 +70,11 @@ ruisoft_web/
 | blog-writer | 執筆フロー（調査→タイトル設計→構成→執筆→保存） |
 | daily-news | 前日のAI・テック・経済ニュース収集とMarkdown生成 |
 | blog-mapper | logsフォルダのブログ記事をmarkmap形式でマッピング |
-
-#### ソフトウェア開発系（ライフサイクル順）
-
-| スキル | フェーズ | 内容 |
-|---|---|---|
-| requirements-analyzer | 要件定義 | REBoK・MoSCoW・Kano・ISO 25010 で要件定義書を生成 |
-| system-architect | 設計 | C4・DDD・クリーンアーキテクチャ・STRIDE・ADR で設計書を生成 |
-| tech-researcher | 技術調査 | 技術選定・PoC・比較レポート・フィジビリティスタディ |
-| code-implementer | 実装 | TDD・SOLID・クリーンコードで汎用実装（多ファイル・GAS・CLI） |
-| web-app-builder | 実装 | GitHub Pages向け単一HTMLファイルのWebアプリ生成 |
-| unit-test-designer | 単体テスト | ISTQB技法・カバレッジC0-C3 でパターン網羅の単体テスト設計 |
-| integration-test-designer | 結合・E2Eテスト | 結合レベル・シナリオ・契約テスト・データフロー検証 |
-| ci-cd-builder | CI/CD | GitHub Actions・品質ゲート・デプロイ戦略・ロールバック |
-| release-manager | リリース管理 | SemVer・Changelog・リリース判定・告知・事後検証 |
-| ops-monitor-designer | 運用監視 | SLO/SLI・メトリクス・ログ・アラート・ダッシュボード設計 |
-| debugger | 保守 | 科学的方法・RCA・なぜなぜ分析・git bisect でトラブル対応 |
-
-#### レビュー系
-
-| スキル | 内容 |
-|---|---|
+| web-app-builder | GitHub Pages向け単一HTMLファイルのWebアプリ生成 |
+| unit-test-designer | 設計書からパターン網羅のテスト設計書・テストケース・テストコードを生成 |
 | self-review | 成果物を6観点（不整合・誤字・わかりやすさ・ファクト・より良い方法・目的達成）でレビューし報告書を生成 |
-| stakeholder-review | ステークホルダー視点で目的整合性・前工程整合性・関心事カバレッジ・不明点質問・代替案を検証 |
-
-### 開発ライフサイクルマップ
-
-```mermaid
-flowchart TD
-    A[依頼] --> R[requirements-analyzer<br/>要件定義書]
-    R --> TR[tech-researcher<br/>技術調査]
-    TR --> S[system-architect<br/>システム設計書]
-    S --> I{実装形態}
-    I -- 単一HTML/静的 --> W[web-app-builder]
-    I -- 多ファイル/GAS/CLI --> C[code-implementer]
-    W --> U[unit-test-designer<br/>単体テスト設計]
-    C --> U
-    U --> IT[integration-test-designer<br/>結合・E2Eテスト設計]
-    IT --> CI[ci-cd-builder<br/>CI/CDパイプライン]
-    CI --> RM[release-manager<br/>リリース管理]
-    RM --> O[運用・監視]
-    O --> OM[ops-monitor-designer<br/>運用監視設計]
-    O -.障害.-> DBG[debugger]
-    RM --> RV{レビュー}
-    RV --> SR[self-review]
-    RV --> ST[stakeholder-review]
-```
+| phase-gate-check | 各開発工程（要件定義・設計・実装・テスト設計・リリース準備）の成果物が「最低限決めなければいけないこと」を網羅しているか検証し、未決定項目の抽出と次工程への進行可否（Go/Conditional Go/No-Go）を判定 |
+| tech-doc-writer | ソフトウェア開発に付随する技術ドキュメント（プロジェクト説明資料・ユーザーマニュアル・セットアップガイド・API仕様書・運用手順書・wiki・アーキテクチャドキュメント）を読者別に最適化して作成 |
 
 ### エージェント×スキルの関係
 
@@ -147,16 +88,24 @@ flowchart TD
 「blog-directorにlogsフォルダから記事を企画・執筆させて」
 「blog-plannerでlogsフォルダの企画案を出して」
 「blog-writerにClaudeのMCPについてブログを書かせて」
-「requirements-analyzerに要件を整理させて」
-「system-architectに設計させて」
-「code-implementerに設計書から実装させて」
 「unit-test-designerに設計書からパターン網羅の単体テストを作らせて」
-「integration-test-designerに結合テストを設計させて」
-「ci-cd-builderにCI/CDを構築させて」
-「release-managerにリリース管理させて」
-「ops-monitor-designerに監視設計させて」
-「tech-researcherに技術調査させて」
-「debuggerにバグを調査させて」
 「self-reviewエージェントにこの記事/設計書をレビューさせて」
-「stakeholder-reviewで発注者視点でレビューして」
+「phase-gate-checkで要件定義書の未決定事項を洗い出して」
+「phase-gate-checkで設計工程のゲートチェックして、次工程に進めるか判定して」
+「tech-doc-writerエージェントにユーザーマニュアルを作らせて」
+「tech-doc-writerでAPI仕様書を書いて」
+「tech-doc-writerでプロジェクト外の人向けの説明資料を作って」
+「tech-doc-writerでチーム内向けのwikiを作って」
 ```
+
+---
+
+## 5. File Creation Guidelines
+
+新規ファイルを作成する際の指針：
+
+- **Jekyll テンプレート**: `_includes/` または `_layouts/` に配置
+- **スクリプト類**: `utils/` に配置（言語別にサブフォルダ推奨）
+- **ドキュメント**: リポジトリルートまたは `logs/` に配置
+- **アセット**: `images/` または `downloads/` に配置
+- **AI指示**: `.codex/` に配置
