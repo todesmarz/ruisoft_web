@@ -105,6 +105,35 @@ title: 冷やしすぎず、我慢しない。夏の仕事環境を整えて夏�
 - **熱源**：日射、窓、照明、PC、プリンターのそばの暑さを見直す
 - **体調と負荷**：眠気、頭痛、吐き気、めまい、汗の出方、作業量を確認する
 
+<svg id="five-knobs" viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="knobs-title knobs-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="knobs-title">環境適応の五つのつまみ</title>
+  <desc id="knobs-desc">温度、湿度、風、熱源、体調と負荷の5つのつまみを調整して「程よい環境」を作る様子を示す図。</desc>
+  <rect x="60" y="25" width="170" height="64" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="145" y="52" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">温度</text>
+  <text x="145" y="74" text-anchor="middle" font-size="11" fill="#334155">執務位置の温度計で確認</text>
+  <rect x="670" y="25" width="170" height="64" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="755" y="52" text-anchor="middle" font-size="14" font-weight="700" fill="#166534">湿度</text>
+  <text x="755" y="74" text-anchor="middle" font-size="11" fill="#334155">除湿・加湿・換気で調整</text>
+  <rect x="40" y="138" width="170" height="64" rx="12" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="125" y="165" text-anchor="middle" font-size="14" font-weight="700" fill="#075985">風</text>
+  <text x="125" y="187" text-anchor="middle" font-size="11" fill="#334155">直撃を避け、循環に使う</text>
+  <rect x="690" y="138" width="170" height="64" rx="12" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="775" y="165" text-anchor="middle" font-size="14" font-weight="700" fill="#92400e">熱源</text>
+  <text x="775" y="187" text-anchor="middle" font-size="11" fill="#334155">日射・窓・機器の排熱を見直す</text>
+  <circle cx="450" cy="170" r="80" fill="#e8f7ec" stroke="#5aaf70" stroke-width="2.5"/>
+  <text x="450" y="165" text-anchor="middle" font-size="16" font-weight="700" fill="#25452e">程よい環境</text>
+  <text x="450" y="190" text-anchor="middle" font-size="11" fill="#25452e">我慢の量ではなく</text>
+  <text x="450" y="207" text-anchor="middle" font-size="11" fill="#25452e">調整の回数で作る</text>
+  <line x1="230" y1="57" x2="382" y2="128" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="670" y1="57" x2="518" y2="128" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="210" y1="170" x2="368" y2="170" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="690" y1="170" x2="532" y2="170" stroke="#94a3b8" stroke-width="2"/>
+  <rect x="365" y="265" width="170" height="60" rx="12" fill="#fff0f0" stroke="#d66b6b" stroke-width="2"/>
+  <text x="450" y="290" text-anchor="middle" font-size="14" font-weight="700" fill="#7b2b2b">体調と負荷</text>
+  <text x="450" y="312" text-anchor="middle" font-size="11" fill="#334155">眠気・頭痛・汗・作業量</text>
+  <line x1="450" y1="263" x2="450" y2="252" stroke="#94a3b8" stroke-width="2"/>
+</svg>
+
 温度計が28℃を示していても、窓際の机が暑ければ、ブラインドや座席移動の方が先かもしれません。逆に室温が適正範囲でも、冷気の直撃でつらいなら、風向き、座席、羽織るものを調整します。「温度を変えられないから耐える」ではなく、「温度以外のつまみを回す」と考えると、個人差にも対応しやすくなります。
 
 ## 💡 活用事例：在宅勤務の午後を「回復込みの工程」にする

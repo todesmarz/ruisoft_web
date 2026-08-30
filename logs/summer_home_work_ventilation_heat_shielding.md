@@ -53,6 +53,29 @@ date: 2026-08-30
   </tbody>
 </table>
 
+<svg id="vent-roles" viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ventroles-title ventroles-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="ventroles-title">換気・空気循環・遮熱・冷却の役割分担</title>
+  <desc id="ventroles-desc">4つの対策の「できること」と「代わりにならないこと」を対比させた2x2の図。</desc>
+  <rect x="15" y="30" width="425" height="105" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="227" y="58" text-anchor="middle" font-size="15" font-weight="700" fill="#1e3a8a">換気</text>
+  <text x="227" y="84" text-anchor="middle" font-size="11" fill="#334155">できる：こもった空気を外へ出し、定期作業にできる</text>
+  <text x="227" y="108" text-anchor="middle" font-size="11" fill="#7a5c1e">代わりにならない：外気が涼しいとは限らず、冷房にはならない</text>
+  <rect x="460" y="30" width="425" height="105" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="672" y="58" text-anchor="middle" font-size="15" font-weight="700" fill="#166534">空気循環</text>
+  <text x="672" y="84" text-anchor="middle" font-size="11" fill="#334155">できる：室内の温度差や冷気の偏りをならす</text>
+  <text x="672" y="108" text-anchor="middle" font-size="11" fill="#7a5c1e">代わりにならない：窓や換気設備と組み合わせないと外気交換にならない</text>
+  <rect x="15" y="150" width="425" height="105" rx="12" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="227" y="178" text-anchor="middle" font-size="15" font-weight="700" fill="#92400e">遮熱・日射遮蔽</text>
+  <text x="227" y="204" text-anchor="middle" font-size="11" fill="#334155">できる：窓から入る日射を減らし、熱の負担を抑える</text>
+  <text x="227" y="228" text-anchor="middle" font-size="11" fill="#7a5c1e">代わりにならない：換気の代わりにはならず、温まった部屋を瞬間冷却もしない</text>
+  <rect x="460" y="150" width="425" height="105" rx="12" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="672" y="178" text-anchor="middle" font-size="15" font-weight="700" fill="#9d174d">冷却</text>
+  <text x="672" y="204" text-anchor="middle" font-size="11" fill="#334155">できる：室温・湿度を下げ、回復する場所をつくる</text>
+  <text x="672" y="228" text-anchor="middle" font-size="11" fill="#7a5c1e">代わりにならない：日射や室外機の排熱が大きいと効率が下がる</text>
+  <rect x="15" y="272" width="870" height="38" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+  <text x="450" y="296" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">4つは役割が違う。迷ったら「今の目的は空気か、熱か、体か」に対応する道具を選ぶ</text>
+</svg>
+
 ### 換気：こもりを解消する定期メンテナンスとして考える
 
 換気は、部屋が苦しくなってから慌てて行う非常操作ではなく、空気のこもりを防ぐ定期メンテナンスとして扱うと続けやすくなります。窓を一枚だけ開ければ必ず効率よく進むわけではありません。空気の入口と出口ができると、部屋の中を通る流れをつくりやすくなります。厚生労働省の資料が示す「2方向の窓」は、その基本を理解するためのわかりやすい例です。窓が一つしかない部屋では、ドアを開けたり、換気扇で排気したりして、空気の通り道をつくります。
@@ -61,7 +84,9 @@ date: 2026-08-30
 
 ### 遮熱：換気を避けたくなる暑さを減らす補助策
 
-資源エネルギー庁の家庭向け省エネ情報では、カーテンやブラインドによる日射遮蔽、エアコンのフィルター清掃、室外機周囲の通風確保、扇風機やサーキュレーターによる空気循環が家庭の対策として紹介されています。いずれも、部屋の状態や機種、窓の向きで効果は変わりますが、在宅ワークの机まわりにも応用しやすい方法です。ここでの遮熱は、換気を省略するためではありません。換気をしたときの一時的な暑さや、日中の熱の蓄積を抑え、「換気すると暑いからやめよう」という気持ちを小さくするために使います。
+資源エネルギー庁の家庭向け省エネ情報では、カーテンやブラインドによる日射遮蔽、エアコンのフィルター清掃、室外機周囲の通風確保、扇風機やサーキュレーターによる空気循環が家庭の対策として紹介されています。いずれも、部屋の状態や機種、窓の向きで効果は変わりますが、在宅ワークの机まわりにも応用しやすい方法です。
+
+ここでの遮熱は、換気を省略するためではありません。換気をしたときの一時的な暑さや、日中の熱の蓄積を抑え、「換気すると暑いからやめよう」という気持ちを小さくするために使います。
 
 遮熱で最初に見る場所は、部屋全体ではなく、**太陽が当たる窓と、体がいる机**です。窓からの日射で床や机が熱くなると、エアコンの設定温度を下げても、体感のつらさが残ります。窓の内側のカーテンやブラインドに加えて、可能なら外側で日射を遮る方法も検討します。窓開けの前に日射を遮っておけば、換気による空気の入れ替えを行うときにも、机や床に蓄積する熱を抑えやすくなります。ただし、賃貸物件の外付け器具、避難経路、落下、強風への耐性などは、建物のルールと製品説明を優先してください。
 

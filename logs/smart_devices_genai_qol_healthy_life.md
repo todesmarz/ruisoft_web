@@ -48,7 +48,9 @@ date: 2026-08-30
 
 ここで注意したいのは、スマートウォッチの歩数や「達成」表示が、そのままWHOの基準と同じではないことです。歩数は活動の一部を表す記録であり、強度や動作の種類、個人差まで完全に表す指標ではありません。公的な目安は方向を決める地図、デバイスは自分の移動履歴を残すログ、と役割を分けます。
 
-睡眠も同じです。厚生労働省の「健康づくりのための睡眠ガイド2023」は、生活指導者や職場管理者などを対象に、良質な睡眠に関する推奨事項と参考情報をまとめています。米国CDC（疾病対策予防センター）も、成人の必要睡眠時間を年齢別に案内しています。本稿では、CDCのページが自動取得環境から安定して参照できないため、その具体的な数値を転載せず、年齢や個人差を考慮して睡眠時間を確保するという原則にとどめます。一方、厚生労働省の一般向け資料では、成人について少なくとも6時間以上を確保することが目安として紹介されています。
+睡眠も同じです。厚生労働省の「健康づくりのための睡眠ガイド2023」は、生活指導者や職場管理者などを対象に、良質な睡眠に関する推奨事項と参考情報をまとめています。米国CDC（疾病対策予防センター）も、成人の必要睡眠時間を年齢別に案内しています。
+
+本稿では、CDCのページが自動取得環境から安定して参照できないため、その具体的な数値を転載せず、年齢や個人差を考慮して睡眠時間を確保するという原則にとどめます。一方、厚生労働省の一般向け資料では、成人について少なくとも6時間以上を確保することが目安として紹介されています。
 
 この二つは対象や表現が異なるため、「全員に共通する唯一の正解」として混ぜない方が誠実です。睡眠時間だけでなく、睡眠休養感、生活リズム、日中の状態も見ます。睡眠センサーの睡眠段階や睡眠スコアは、センサー信号をアルゴリズムで推定した値です。睡眠障害の診断や治療の代わりにはなりません。点数の上下より、同じ機器・同じ使い方で長期的な傾向を振り返る方が、生活改善の材料としては扱いやすいでしょう。
 
@@ -110,6 +112,27 @@ WHOのヘルスケア向け生成AIガイダンスは、不正確・不完全・
 - 症状の緊急度をAIだけで判断する
 - 睡眠スコアや心拍数だけで「健康」と断定する
 - 詳細な健康記録を公開型AIへそのまま入力する
+
+<svg id="health-ai-split" viewBox="0 0 820 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="hsplit-title hsplit-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="hsplit-title">生成AIに任せてよい用途と任せない用途の線引き</title>
+  <desc id="hsplit-desc">左に任せてよい用途（要約・質問整理・候補提示）、右に任せない用途（診断・服薬判断・緊急度判定）を対比させた図。</desc>
+  <rect x="15" y="30" width="385" height="195" rx="14" fill="#eaf8ef" stroke="#55a46b" stroke-width="2"/>
+  <text x="207" y="60" text-anchor="middle" font-size="15" font-weight="700" fill="#2e6c40">任せてよい（人が最終確認）</text>
+  <text x="207" y="92" text-anchor="middle" font-size="12" fill="#334155">記録の要約・1週間の傾向の整理</text>
+  <text x="207" y="118" text-anchor="middle" font-size="12" fill="#334155">医療者へ相談する質問の下書き</text>
+  <text x="207" y="144" text-anchor="middle" font-size="12" fill="#334155">負担の少ない行動候補の提示</text>
+  <text x="207" y="178" text-anchor="middle" font-size="11" fill="#5a7a63">※氏名・住所などを除いた最小限の入力</text>
+  <text x="207" y="198" text-anchor="middle" font-size="11" fill="#5a7a63">※推測には「推測」と明示させる</text>
+  <rect x="420" y="30" width="385" height="195" rx="14" fill="#fff0f0" stroke="#c56a6a" stroke-width="2"/>
+  <text x="612" y="60" text-anchor="middle" font-size="15" font-weight="700" fill="#7d3434">任せない（AIだけで判断しない）</text>
+  <text x="612" y="92" text-anchor="middle" font-size="12" fill="#334155">ウェアラブルの値から病名を推定</text>
+  <text x="612" y="118" text-anchor="middle" font-size="12" fill="#334155">服薬の開始・中止・変更の判断</text>
+  <text x="612" y="144" text-anchor="middle" font-size="12" fill="#334155">症状の緊急度の判定</text>
+  <text x="612" y="178" text-anchor="middle" font-size="11" fill="#8a5a5a">※睡眠スコアや心拍数だけで</text>
+  <text x="612" y="198" text-anchor="middle" font-size="11" fill="#8a5a5a">「健康」と断定しない</text>
+  <rect x="15" y="240" width="790" height="38" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+  <text x="410" y="264" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">AIは高速な整理係であり、責任を引き受ける主体ではない——医療機関・専門職へつなぐ出口を先に決める</text>
+</svg>
 
 健康に関わる用途では、AIが提案した内容を人が確認するだけでなく、必要なら医療機関や有資格の医療専門職へつなぐ出口を先に決めておきます。AIは高速な整理係ですが、責任を引き受ける主体ではありません。
 

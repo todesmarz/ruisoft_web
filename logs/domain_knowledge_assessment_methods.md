@@ -116,6 +116,28 @@ date: 2026-08-22
   </tbody>
 </table>
 
+<svg id="lv-stairs" viewBox="0 0 900 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="lv-title lv-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="lv-title">ドメイン知識の理解度レベル（Lv1〜Lv5）の階段</title>
+  <desc id="lv-desc">記憶から理解、応用、分析、評価・設計へと段階が上がるほど、確認できる振る舞いが増えることを示す階段図。</desc>
+  <rect x="20" y="200" width="160" height="40" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="100" y="225" text-anchor="middle" font-size="13" font-weight="700" fill="#1e3a8a">Lv1 記憶</text>
+  <rect x="190" y="160" width="160" height="80" rx="8" fill="#c7e0f7" stroke="#2563eb" stroke-width="2"/>
+  <text x="270" y="185" text-anchor="middle" font-size="13" font-weight="700" fill="#1e3a8a">Lv2 理解</text>
+  <text x="270" y="207" text-anchor="middle" font-size="10" fill="#334155">例えで説明できる</text>
+  <rect x="360" y="120" width="160" height="120" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="440" y="145" text-anchor="middle" font-size="13" font-weight="700" fill="#166534">Lv3 応用</text>
+  <text x="440" y="167" text-anchor="middle" font-size="10" fill="#334155">別ケースで判断できる</text>
+  <rect x="530" y="80" width="160" height="160" rx="8" fill="#a7e3c0" stroke="#16a34a" stroke-width="2"/>
+  <text x="610" y="105" text-anchor="middle" font-size="13" font-weight="700" fill="#166534">Lv4 分析</text>
+  <text x="610" y="127" text-anchor="middle" font-size="10" fill="#334155">トレードオフを分解できる</text>
+  <rect x="700" y="40" width="180" height="200" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="790" y="65" text-anchor="middle" font-size="13" font-weight="700" fill="#92400e">Lv5 評価・設計</text>
+  <text x="790" y="87" text-anchor="middle" font-size="10" fill="#334155">根拠を示して設計・却下・</text>
+  <text x="790" y="105" text-anchor="middle" font-size="10" fill="#334155">改善を提案できる</text>
+  <line x1="15" y1="245" x2="885" y2="245" stroke="#94a3b8" stroke-width="2"/>
+  <text x="450" y="265" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">記事を書くだけならLv2でも可能。技術選定や業務導入に関わるならLv4以上が欲しい</text>
+</svg>
+
 目安として、記事を書くだけならLv2でも可能です。しかし、技術選定や業務導入に関わるならLv4以上が欲しい。特にAIエージェントに記事を書かせる場合、Lv2風の流暢な文章は簡単に出ます。だからこそ、境界条件やファクトチェックを必ず入れるべきです。
 
 ## 考察：知識確認は「説明させる」から「疑わせる」へ

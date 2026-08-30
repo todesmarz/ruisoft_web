@@ -158,6 +158,37 @@ McKinseyのState of AI 2025は、AI利用が広がる一方で、パイロット
 
 いきなり完璧なAI開発環境を作ろうとすると、環境構築だけで週末が溶けます。怠けるために疲弊するのは本末転倒なので、段階を分けます。
 
+<svg id="lazy-flow" viewBox="0 0 900 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="lazyflow-title lazyflow-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="lazyflow-title">作業を資産化する怠け方のフロー</title>
+  <desc id="lazyflow-desc">同じ作業の発生回数に応じて、メモ、テンプレ化、自動化、見直しへ段階的に進めるフロー。</desc>
+  <defs>
+    <marker id="lazy-flow-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="25" y="30" width="190" height="100" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="120" y="58" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">1回目</text>
+  <text x="120" y="84" text-anchor="middle" font-size="11" fill="#334155">手順を3行メモする</text>
+  <text x="120" y="104" text-anchor="middle" font-size="11" fill="#334155">未来の自分へ引き継ぎ</text>
+  <line x1="215" y1="80" x2="243" y2="80" stroke="#64748b" stroke-width="2" marker-end="url(#lazy-flow-arrow)"/>
+  <rect x="245" y="30" width="190" height="100" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="340" y="58" text-anchor="middle" font-size="14" font-weight="700" fill="#166534">3回目</text>
+  <text x="340" y="84" text-anchor="middle" font-size="11" fill="#334155">テンプレ化する</text>
+  <text x="340" y="104" text-anchor="middle" font-size="11" fill="#334155">よく使う依頼を型に</text>
+  <line x1="435" y1="80" x2="463" y2="80" stroke="#64748b" stroke-width="2" marker-end="url(#lazy-flow-arrow)"/>
+  <rect x="465" y="30" width="190" height="100" rx="12" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="560" y="58" text-anchor="middle" font-size="14" font-weight="700" fill="#92400e">5回目</text>
+  <text x="560" y="84" text-anchor="middle" font-size="11" fill="#334155">自動化・AIへ委譲する</text>
+  <text x="560" y="104" text-anchor="middle" font-size="11" fill="#334155">スクリプトやプロンプト資産へ</text>
+  <line x1="655" y1="80" x2="683" y2="80" stroke="#64748b" stroke-width="2" marker-end="url(#lazy-flow-arrow)"/>
+  <rect x="685" y="30" width="190" height="100" rx="12" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="780" y="58" text-anchor="middle" font-size="14" font-weight="700" fill="#5b21b6">月1で見直し</text>
+  <text x="780" y="84" text-anchor="middle" font-size="11" fill="#334155">使っていない資産は捨てる</text>
+  <text x="780" y="104" text-anchor="middle" font-size="11" fill="#334155">保守コストも怠けの対象</text>
+  <rect x="25" y="155" width="850" height="42" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+  <text x="450" y="181" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">作り込む前に「発生頻度 × 失敗コスト」を見る。半年に1回の作業を完璧に自動化するのは、怠けではなく趣味</text>
+</svg>
+
 ### 今日（5分）
 
 まず、今日やった作業を3行だけメモします。形式は雑で構いません。

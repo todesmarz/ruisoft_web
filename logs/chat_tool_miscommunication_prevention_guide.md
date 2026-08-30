@@ -36,6 +36,33 @@ Slackは非同期コミュニケーションについて、集中時間や柔軟
 - **判断材料**：背景・リンク・制約は何か
 - **返答形式**：OK/NGだけでいいのか、コメントがほしいのか
 
+<svg id="msg-five" viewBox="0 0 820 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="msgfive-title msgfive-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="msgfive-title">期待値つきメッセージの5要素</title>
+  <desc id="msgfive-desc">目的、依頼内容、期限、判断材料、返答形式の5つのラベルを、メッセージの型として積み上げた図。</desc>
+  <rect x="15" y="30" width="150" height="42" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="90" y="56" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">目的</text>
+  <rect x="175" y="30" width="630" height="42" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="195" y="56" font-size="12" fill="#334155">なぜ送っているのか（社内レビュー前に構成の不整合を潰したい、など）</text>
+  <rect x="15" y="82" width="150" height="42" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="90" y="108" text-anchor="middle" font-size="14" font-weight="700" fill="#166534">依頼内容</text>
+  <rect x="175" y="82" width="630" height="42" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="195" y="108" font-size="12" fill="#334155">相手に何をしてほしいのか（確認・承認・コメント・情報共有のどれか）</text>
+  <rect x="15" y="134" width="150" height="42" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="90" y="160" text-anchor="middle" font-size="14" font-weight="700" fill="#92400e">期限</text>
+  <rect x="175" y="134" width="630" height="42" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="195" y="160" font-size="12" fill="#334155">いつまでに必要か（日付と時刻まで書く。「なる早」は使わない）</text>
+  <rect x="15" y="186" width="150" height="42" rx="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="90" y="212" text-anchor="middle" font-size="14" font-weight="700" fill="#5b21b6">判断材料</text>
+  <rect x="175" y="186" width="630" height="42" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="195" y="212" font-size="12" fill="#334155">背景・リンク・制約は何か（資料のURL、見てよい範囲、見なくてよい範囲）</text>
+  <rect x="15" y="238" width="150" height="42" rx="10" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="90" y="264" text-anchor="middle" font-size="14" font-weight="700" fill="#9d174d">返答形式</text>
+  <rect x="175" y="238" width="630" height="42" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="195" y="264" font-size="12" fill="#334155">OK/NGだけでいいのか、コメントがほしいのか（スレッドに「OK」か「p.番号＋コメント」）</text>
+  <rect x="15" y="292" width="790" height="30" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="410" y="312" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">この5点が揃うと、相手は「何を、いつまでに、どの粒度で返すか」を迷わず判断できる</text>
+</svg>
+
 日常生活で言えば、レストランの注文に近い。「何かおいしいものください」では店員さんも困るが、「辛くないパスタを、昼休み中に食べたいので、10分くらいで出るものはありますか？」なら提案しやすい。チャットも同じで、相手の親切心に期待するより、相手が親切にしやすい形で渡すほうが強い。
 
 ## 検証：悪いメッセージを分解すると、足りないものが見える
