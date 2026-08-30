@@ -22,6 +22,34 @@ date: 2026-08-30
 - **育てる**：利用者教育、相談窓口、部門支援、ナレッジ更新を回す
 - **止める**：危険な利用、予算超過、障害、モデル変更、契約終了時に安全に停止する
 
+<svg id="genai-it-5roles" viewBox="0 0 900 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="it5-title it5-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="it5-title">情シスに求める5つの業務と責任の境界</title>
+  <desc id="it5-desc">守る・つなぐ・測る・育てる・止めるの5つの業務と、情シスが最終判断を担わない領域の境界を示す図。</desc>
+  <rect x="10" y="30" width="164" height="100" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="92" y="62" text-anchor="middle" font-size="17" font-weight="700" fill="#1e3a8a">守る</text>
+  <text x="92" y="88" text-anchor="middle" font-size="11" fill="#334155">認証・権限・入力データ</text>
+  <text x="92" y="108" text-anchor="middle" font-size="11" fill="#334155">監査・インシデント対応</text>
+  <rect x="189" y="30" width="164" height="100" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="271" y="62" text-anchor="middle" font-size="17" font-weight="700" fill="#166534">つなぐ</text>
+  <text x="271" y="88" text-anchor="middle" font-size="11" fill="#334155">承認済みサービスと</text>
+  <text x="271" y="108" text-anchor="middle" font-size="11" fill="#334155">社内システムを最小権限で接続</text>
+  <rect x="368" y="30" width="164" height="100" rx="12" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="450" y="62" text-anchor="middle" font-size="17" font-weight="700" fill="#92400e">測る</text>
+  <text x="450" y="88" text-anchor="middle" font-size="11" fill="#334155">利用量・費用・品質・安全を</text>
+  <text x="450" y="108" text-anchor="middle" font-size="11" fill="#334155">同じ台帳で追う</text>
+  <rect x="547" y="30" width="164" height="100" rx="12" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="629" y="62" text-anchor="middle" font-size="17" font-weight="700" fill="#5b21b6">育てる</text>
+  <text x="629" y="88" text-anchor="middle" font-size="11" fill="#334155">利用者教育・相談窓口</text>
+  <text x="629" y="108" text-anchor="middle" font-size="11" fill="#334155">ナレッジ更新</text>
+  <rect x="726" y="30" width="164" height="100" rx="12" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="808" y="62" text-anchor="middle" font-size="17" font-weight="700" fill="#9d174d">止める</text>
+  <text x="808" y="88" text-anchor="middle" font-size="11" fill="#334155">危険利用・障害・契約終了時に</text>
+  <text x="808" y="108" text-anchor="middle" font-size="11" fill="#334155">安全に停止</text>
+  <rect x="10" y="170" width="880" height="58" rx="12" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+  <text x="450" y="194" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">情シスは「判断の土台と安全装置」を提供する</text>
+  <text x="450" y="216" text-anchor="middle" font-size="12" fill="#475569">出力の採用・顧客への約束・人事評価などの最終判断は、業務責任者が担う</text>
+</svg>
+
 ただし、情シスがすべての業務責任を引き取るわけではありません。AIが出した回答を業務上採用するか、顧客へ何を約束するか、採用や人事評価にどう使うかは、それぞれの業務責任者が判断します。情シスは判断の土台と安全装置を提供する、と考えると役割の境界が見えやすくなります。
 
 ## 😓 動機：「生成AIを活用しろ」だけでは、情シスの仕事が無限になる

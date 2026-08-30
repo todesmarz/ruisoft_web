@@ -242,7 +242,9 @@ header nav ul li:hover > ul {
 .contents .post,
 .contents .post p,
 .contents .post li,
-.contents .post a {
+.contents .post a,
+.contents .post td,
+.contents .post th {
     overflow-wrap: anywhere;
     word-break: break-word
 }
@@ -274,7 +276,7 @@ header nav ul li:hover > ul {
 }
 
 .contents .post h4 {
-    font-size:120%
+    font-size:120%;
     margin: 25px 0 10px;
     padding-left: 10px;
     font-weight:400
@@ -553,6 +555,12 @@ header nav ul li:hover > ul {
     .contents .post table {
         max-width: 100%;
         height: auto
+    }
+
+    .contents .post table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch
     }
 
     .contents .post pre {

@@ -343,6 +343,29 @@ date: 2026-08-30
 
 「避難する」と聞くと指定避難所を思い浮かべますが、安全な親族宅や友人宅、ホテル、在宅避難、指定緊急避難場所など、選択肢は複数あります。大切なのは、名称ではなく危険から離れられることです。
 
+<svg id="evac-options" viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="evac-title evac-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="evac-title">避難先の4つの選択肢</title>
+  <desc id="evac-desc">在宅避難、指定緊急避難場所、指定避難所、福祉避難所・親族宅の4つの避難先と、それぞれの使いどころを示す図。</desc>
+  <rect x="15" y="30" width="425" height="92" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="227" y="58" text-anchor="middle" font-size="15" font-weight="700" fill="#1e3a8a">在宅避難</text>
+  <text x="227" y="82" text-anchor="middle" font-size="11" fill="#334155">自宅が安全なら選択肢。備蓄と在宅で過ごす生活を支える</text>
+  <text x="227" y="102" text-anchor="middle" font-size="11" fill="#334155">給水・支援物資・医療支援の情報を確認</text>
+  <rect x="460" y="30" width="425" height="92" rx="12" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="672" y="58" text-anchor="middle" font-size="15" font-weight="700" fill="#92400e">指定緊急避難場所</text>
+  <text x="672" y="82" text-anchor="middle" font-size="11" fill="#334155">危険から緊急に離れるための場所</text>
+  <text x="672" y="102" text-anchor="middle" font-size="11" fill="#334155">洪水・土砂・津波など、災害種別で対応が違う</text>
+  <rect x="15" y="135" width="425" height="92" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="227" y="163" text-anchor="middle" font-size="15" font-weight="700" fill="#166534">指定避難所</text>
+  <text x="227" y="187" text-anchor="middle" font-size="11" fill="#334155">生活の場として滞在する施設</text>
+  <text x="227" y="207" text-anchor="middle" font-size="11" fill="#334155">「近いから使える」とは限らない。開設状況を確認</text>
+  <rect x="460" y="135" width="425" height="92" rx="12" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="672" y="163" text-anchor="middle" font-size="15" font-weight="700" fill="#5b21b6">福祉避難所・親族宅・ホテル</text>
+  <text x="672" y="187" text-anchor="middle" font-size="11" fill="#334155">要配慮者やペット連れの受け皿。開設時期・対象・手続きは</text>
+  <text x="672" y="207" text-anchor="middle" font-size="11" fill="#334155">自治体・施設ごとに違う。平時に確認</text>
+  <rect x="15" y="245" width="870" height="42" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+  <text x="450" y="271" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">名称より「危険から離れられること」。災害種別ごとの受け入れ可否と経路を、ハザードマップで事前確認する</text>
+</svg>
+
 自宅が倒壊、浸水、土砂災害などの危険にさらされず、安全を維持できるなら在宅避難も選択肢になります。その場合も、自治体の情報、支援物資、給水、医療支援の情報を確認します。避難所は災害種別によって使える施設が異なる場合があるため、「近いから使える」とは限りません。
 
 高齢者、障害のある人、乳幼児、妊産婦、外国人、服薬中の人など、一般の避難所での生活に配慮が必要な人については、個別避難計画や支援者を平時から確認します。福祉避難所は要配慮者向けの施設ですが、直接避難を受け入れるか、開設時期、対象者、手続きは自治体・施設ごとに違います。「発災したら必ず直接入れる」と決めつけず、事前に役所へ確認してください。
