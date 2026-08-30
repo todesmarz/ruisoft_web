@@ -14,9 +14,7 @@ date: 2026-08-30
 
 実務でまず使う式は次のとおりです。
 
-$$
-\mathrm{ROI} = \frac{\mathrm{便益} - \mathrm{投資額}}{\mathrm{投資額}} \times 100
-$$
+> **ROI（%）＝（便益 − 投資額）÷ 投資額 × 100**
 
 ここで重要なのは、**分子の便益を大きく見せることではなく、比較対象と測定方法を固定すること**です。生成AIでは「回答が速くなった」「たくさん文章を作れた」といった活動量が増えやすい一方、売上・処理件数・品質・手戻り時間などの成果に結びつくとは限りません。
 
@@ -77,6 +75,37 @@ NBERの研究では、生成AIベースの対話アシスタントを5,179人の
 - **能力解放便益**：同じ人数で処理件数や対応範囲が増えたもの
 - **品質便益**：再作業、事故、解約、クレームなどの発生確率や損失が下がったもの
 - **戦略便益**：学習速度、ノウハウ共有、顧客への応答力など、短期に金額化しにくいもの
+
+<svg id="roi-benefit-types" viewBox="0 0 900 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="roib-title roib-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="roib-title">便益の4分類と金額化の確実性</title>
+  <desc id="roib-desc">実現便益、能力解放便益、品質便益、戦略便益の4分類を、金額化の確実性が高い順に並べた図。</desc>
+  <defs>
+    <marker id="roib-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="10" y="35" width="205" height="100" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="112" y="65" text-anchor="middle" font-size="14" font-weight="700" fill="#166534">実現便益</text>
+  <text x="112" y="90" text-anchor="middle" font-size="11" fill="#334155">外注費・残業費・採用回避など</text>
+  <text x="112" y="110" text-anchor="middle" font-size="11" fill="#334155">支出が実際に減ったもの</text>
+  <rect x="235" y="35" width="205" height="100" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="337" y="65" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">能力解放便益</text>
+  <text x="337" y="90" text-anchor="middle" font-size="11" fill="#334155">同じ人数で処理件数や</text>
+  <text x="337" y="110" text-anchor="middle" font-size="11" fill="#334155">対応範囲が増えたもの</text>
+  <rect x="460" y="35" width="205" height="100" rx="12" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="562" y="65" text-anchor="middle" font-size="14" font-weight="700" fill="#92400e">品質便益</text>
+  <text x="562" y="90" text-anchor="middle" font-size="11" fill="#334155">再作業・事故・解約などの</text>
+  <text x="562" y="110" text-anchor="middle" font-size="11" fill="#334155">発生確率や損失が下がったもの</text>
+  <rect x="685" y="35" width="205" height="100" rx="12" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="787" y="65" text-anchor="middle" font-size="14" font-weight="700" fill="#5b21b6">戦略便益</text>
+  <text x="787" y="90" text-anchor="middle" font-size="11" fill="#334155">学習速度・ノウハウ共有など</text>
+  <text x="787" y="110" text-anchor="middle" font-size="11" fill="#334155">短期に金額化しにくいもの</text>
+  <line x1="30" y1="175" x2="870" y2="175" stroke="#64748b" stroke-width="2" marker-end="url(#roib-arrow)"/>
+  <text x="120" y="200" text-anchor="middle" font-size="12" font-weight="700" fill="#166534">金額化の確実性が高い</text>
+  <text x="780" y="200" text-anchor="middle" font-size="12" font-weight="700" fill="#5b21b6">金額化が難しい</text>
+  <rect x="10" y="215" width="880" height="30" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="450" y="235" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">最初のROI報告は「実現便益」と「能力解放便益」を分けて書くのが安全</text>
+</svg>
 
 このうち、最初のROI報告では実現便益と能力解放便益を分けて書くのが安全です。「1,000時間削減」と「1,000時間分の人件費削減」は同じではありません。前者は空いた時間、後者は現金支出の変化です。ここを混同すると、数字だけ立派な“架空の利益”ができあがります。
 
