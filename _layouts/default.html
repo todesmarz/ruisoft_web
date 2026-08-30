@@ -96,6 +96,91 @@ $(function() {
     {{ content }}
       </article>
 </section>
+{% if page.url contains '/logs/' %}
+<nav id="floating-toc" class="floating-toc" aria-label="目次" hidden>
+  <button type="button" class="floating-toc-toggle" aria-expanded="false">目次</button>
+  <div class="floating-toc-body">
+    <ul class="floating-toc-list"></ul>
+  </div>
+</nav>
+<script id="module-floating-toc">
+(function($) {
+  $(function() {
+    var nav = document.getElementById("floating-toc");
+    var article = document.querySelector("article.post_article");
+    if (!nav || !article) { return; }
+    var headings = Array.prototype.slice.call(article.querySelectorAll("h2, h3"));
+    if (article.querySelectorAll("h2").length < 3 || headings.length === 0) {
+      nav.parentNode.removeChild(nav);
+      return;
+    }
+
+    var list = nav.querySelector(".floating-toc-list");
+    var links = {};
+
+    function ensureId(h) {
+      if (h.id) { return h.id; }
+      var base = (h.textContent || "section").trim().replace(/\s+/g, "-").slice(0, 40) || "section";
+      var id = base;
+      var n = 2;
+      while (document.getElementById(id)) { id = base + "-" + n; n += 1; }
+      h.id = id;
+      return id;
+    }
+
+    var currentLevel = null;
+    var currentSub = null;
+    headings.forEach(function(h) {
+      var id = ensureId(h);
+      var a = document.createElement("a");
+      a.href = "#" + id;
+      a.textContent = h.textContent.trim();
+      a.addEventListener("click", function(ev) {
+        ev.preventDefault();
+        h.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (history.replaceState) { history.replaceState(null, "", "#" + id); }
+      });
+      var li = document.createElement("li");
+      li.appendChild(a);
+      if (h.tagName === "H2") {
+        list.appendChild(li);
+        currentLevel = li;
+        currentSub = null;
+      } else if (currentLevel) {
+        if (!currentSub) {
+          currentSub = document.createElement("ul");
+          currentLevel.appendChild(currentSub);
+        }
+        currentSub.appendChild(li);
+      }
+      links[id] = a;
+    });
+
+    nav.removeAttribute("hidden");
+
+    var toggle = nav.querySelector(".floating-toc-toggle");
+    toggle.addEventListener("click", function() {
+      var expanded = nav.classList.toggle("expanded");
+      toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+    });
+
+    if ("IntersectionObserver" in window) {
+      var setActive = function(id) {
+        Object.keys(links).forEach(function(key) {
+          links[key].classList.toggle("active", key === id);
+        });
+      };
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) { setActive(entry.target.id); }
+        });
+      }, { rootMargin: "0% 0px -75% 0px" });
+      headings.forEach(function(h) { observer.observe(h); });
+    }
+  });
+})(jQuery);
+</script>
+{% endif %}
 <section class="tablenav">
 </section>
 </section>

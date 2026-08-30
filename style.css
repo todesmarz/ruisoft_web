@@ -917,3 +917,107 @@ a.spritemachine_social_twitter-32:hover, a.spritemachine_social_hatena-32:hover,
 #doc_contents {
     display: none
 }
+
+/* Floating TOC (logs articles only, injected by _layouts/default.html) */
+.floating-toc {
+    position: fixed;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 50;
+    width: 230px;
+    max-width: calc(100vw - 24px);
+    font-size: 12px;
+    line-height: 1.4;
+    background: rgba(255, 255, 255, .88);
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 0 12px -4px rgba(0, 0, 0, .5);
+    opacity: .78;
+    transition: opacity .3s
+}
+
+.floating-toc:hover {
+    opacity: 1
+}
+
+.floating-toc-toggle {
+    display: none;
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 700;
+    color: #1a5c38;
+    padding: 6px 10px;
+    cursor: pointer;
+    text-align: left
+}
+
+.floating-toc-body {
+    max-height: 65vh;
+    overflow-y: auto;
+    padding: 6px 8px
+}
+
+.floating-toc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0
+}
+
+.floating-toc-list ul {
+    list-style: none;
+    margin: 0;
+    padding-left: 12px
+}
+
+.floating-toc-list a {
+    display: block;
+    border-bottom: none;
+    color: #333;
+    padding: 3px 5px;
+    border-radius: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis
+}
+
+.floating-toc-list a:hover {
+    background-color: #e8f2ec;
+    color: #2e8b57
+}
+
+.floating-toc-list a.active {
+    background-color: #2e8b57;
+    color: #fff
+}
+
+.post_article h2,
+.post_article h3 {
+    scroll-margin-top: 10px
+}
+
+@media (max-width: 1199px) and (min-width: 992px) {
+    .floating-toc {
+        width: 150px
+    }
+
+    .floating-toc-toggle {
+        display: block
+    }
+
+    .floating-toc-body {
+        display: none
+    }
+
+    .floating-toc.expanded .floating-toc-body {
+        display: block
+    }
+}
+
+@media (max-width: 991px) {
+    .floating-toc {
+        display: none
+    }
+}
