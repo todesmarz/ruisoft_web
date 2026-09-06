@@ -26,6 +26,37 @@ date: 2026-08-30
 
 一方で、デバイスの数値だけで病気を診断したり、生成AIに服薬や治療の判断を任せたりすることは別問題です。健康管理の第一歩は、測れるものを増やすことではなく、測ったものをどの範囲で使うかを決めることです。
 
+<svg id="health-record-editor-concept" viewBox="0 0 640 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="health-concept-title health-concept-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="health-concept-title">健康データの記録係と振り返りの編集者を分ける概念イラスト</title>
+  <desc id="health-concept-desc">ウェアラブルが生活を記録し、生成AIが記録を整理し、本人が行動を決める。診断や治療の判断は専門家へつなぐ構図を描く。</desc>
+  <rect x="10" y="10" width="620" height="240" rx="22" fill="#f8fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <text x="320" y="34" text-anchor="middle" font-size="14" font-weight="700" fill="#315b78">記録する・整理する・決めるを分ける</text>
+  <rect x="42" y="82" width="110" height="66" rx="22" fill="#dbeafe" stroke="#4d82c4" stroke-width="2"/>
+  <circle cx="77" cy="111" r="8" fill="#26364d"/><circle cx="116" cy="111" r="8" fill="#26364d"/>
+  <path d="M80 130 Q97 141 113 130" fill="none" stroke="#26364d" stroke-width="2.5"/>
+  <rect x="72" y="145" width="50" height="13" rx="6" fill="#ffffff" stroke="#4d82c4"/>
+  <text x="97" y="180" text-anchor="middle" font-size="12" font-weight="700" fill="#285d93">記録係</text>
+  <path d="M160 115 H226" stroke="#7b8794" stroke-width="2.5" marker-end="url(#health-concept-arrow)"/>
+  <defs>
+    <marker id="health-concept-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#7b8794"/>
+    </marker>
+  </defs>
+  <rect x="224" y="76" width="130" height="78" rx="22" fill="#e4d5ff" stroke="#8056b3" stroke-width="2"/>
+  <circle cx="255" cy="104" r="7" fill="#4c3270"/><circle cx="302" cy="104" r="7" fill="#4c3270"/>
+  <path d="M258 127 Q279 140 299 127" fill="none" stroke="#4c3270" stroke-width="2.5"/>
+  <rect x="255" y="133" width="70" height="26" rx="8" fill="#ffffff" stroke="#8056b3"/>
+  <text x="290" y="151" text-anchor="middle" font-size="11" fill="#68458f">要約・質問</text>
+  <text x="289" y="180" text-anchor="middle" font-size="12" font-weight="700" fill="#68458f">振り返りの編集者</text>
+  <path d="M362 115 H431" stroke="#7b8794" stroke-width="2.5" marker-end="url(#health-concept-arrow)"/>
+  <rect x="430" y="76" width="132" height="78" rx="22" fill="#c8f0d7" stroke="#4f9b6c" stroke-width="2"/>
+  <circle cx="462" cy="104" r="7" fill="#235b3b"/><circle cx="510" cy="104" r="7" fill="#235b3b"/>
+  <path d="M465 127 Q486 140 507 127" fill="none" stroke="#235b3b" stroke-width="2.5"/>
+  <text x="496" y="180" text-anchor="middle" font-size="12" font-weight="700" fill="#28724a">本人が小さく試す</text>
+  <rect x="190" y="207" width="260" height="28" rx="14" fill="#fce7e7" stroke="#c86a6a" stroke-width="2"/>
+  <text x="320" y="226" text-anchor="middle" font-size="11" font-weight="700" fill="#7a3030">診断・服薬判断はAIに任せず専門家へ</text>
+</svg>
+
 ## 動機：データを増やすほど健康的な生活になるのか
 
 健康のためにスマートウォッチを買ったのに、毎日スコアを確認することが新しい仕事になる。睡眠の点数が低い日は不安になり、通知を無視できず、充電のために外す時間まで気になる。そんな「健康管理疲れ」は珍しくありません。筆者も、便利なアプリを増やした結果、健康より通知一覧の方を熱心に見ていた時期があります。

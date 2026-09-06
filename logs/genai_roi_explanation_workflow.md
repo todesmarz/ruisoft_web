@@ -27,6 +27,44 @@ date: 2026-08-30
 - **総コストとリスクを引く**：利用料、人の確認、教育、事故対応まで含める
 - **継続判断する**：ROIだけでなく、品質・安全・定着率と一緒に意思決定する
 
+<svg id="roi-kitchen-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="roi-kitchen-title roi-kitchen-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="roi-kitchen-title">料理の元が取れるかを測るようにAIのROIを考える概念イラスト</title>
+  <desc id="roi-kitchen-desc">料理人が便益の皿と投資・確認コストをはかりに載せ、測定してから継続判断するROIの考え方を描く。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#fffaf4" stroke="#efc5a1" stroke-width="2"/>
+  <text x="320" y="34" text-anchor="middle" font-size="14" font-weight="700" fill="#7c4a2b">「便利そう」を、測れる料理の収支に変える</text>
+  <rect x="55" y="83" width="100" height="74" rx="22" fill="#ffd9d2" stroke="#c97970" stroke-width="2"/>
+  <path d="M73 83 Q105 55 137 83" fill="#ffffff" stroke="#c97970" stroke-width="2"/>
+  <circle cx="84" cy="111" r="6" fill="#563b45"/><circle cx="126" cy="111" r="6" fill="#563b45"/>
+  <path d="M87 130 Q105 141 123 130" fill="none" stroke="#563b45" stroke-width="2.5"/>
+  <text x="105" y="181" text-anchor="middle" font-size="12" font-weight="700" fill="#a14e47">業務担当</text>
+  <path d="M174 118 H257" stroke="#8b6b55" stroke-width="3" marker-end="url(#roi-kitchen-arrow)"/>
+  <defs>
+    <marker id="roi-kitchen-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#8b6b55"/>
+    </marker>
+  </defs>
+  <path d="M273 74 L273 166 M367 74 L367 166 M226 86 L414 86 M226 150 L414 150" fill="none" stroke="#8a765d" stroke-width="4"/>
+  <path d="M236 91 L210 139 L262 139 Z" fill="#fff0bd" stroke="#d19a28" stroke-width="2"/>
+  <path d="M378 91 L352 139 L404 139 Z" fill="#e4d5ff" stroke="#8056b3" stroke-width="2"/>
+  <circle cx="236" cy="108" r="6" fill="#6d4d0d"/><circle cx="252" cy="108" r="6" fill="#6d4d0d"/>
+  <path d="M239 122 Q244 126 249 122" fill="none" stroke="#6d4d0d" stroke-width="2"/>
+  <circle cx="378" cy="108" r="6" fill="#4c3270"/><circle cx="394" cy="108" r="6" fill="#4c3270"/>
+  <path d="M381 122 Q386 118 391 122" fill="none" stroke="#4c3270" stroke-width="2"/>
+  <text x="236" y="177" text-anchor="middle" font-size="11" font-weight="700" fill="#9a6e17">便益</text>
+  <text x="378" y="177" text-anchor="middle" font-size="11" font-weight="700" fill="#68458f">投資・確認</text>
+  <path d="M433 118 H492" stroke="#4f9b6c" stroke-width="3" marker-end="url(#roi-kitchen-good-arrow)"/>
+  <defs>
+    <marker id="roi-kitchen-good-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#4f9b6c"/>
+    </marker>
+  </defs>
+  <rect x="493" y="78" width="105" height="74" rx="22" fill="#c8f0d7" stroke="#4f9b6c" stroke-width="2"/>
+  <circle cx="520" cy="105" r="7" fill="#235b3b"/><circle cx="566" cy="105" r="7" fill="#235b3b"/>
+  <path d="M523 128 Q543 143 563 128" fill="none" stroke="#235b3b" stroke-width="3"/>
+  <text x="546" y="177" text-anchor="middle" font-size="12" font-weight="700" fill="#28724a">継続・修正・撤退</text>
+  <text x="320" y="218" text-anchor="middle" font-size="12" font-weight="700" fill="#7c4a2b">材料を測ってから「元が取れた」と言う</text>
+</svg>
+
 ## 😓 動機：なぜ「ROIはいくら？」に答えるのが難しいのか
 
 会議で「生成AIを導入するとROIはいくらですか」と聞かれたとき、つい「作業時間を30％削減できます」と返したくなる。しかし、その数字が実測値なのか、ベンダーの事例なのか、期待値なのかを区別しないまま話すと、次の会議で簡単に崩れます。

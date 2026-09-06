@@ -22,6 +22,43 @@ title: 冷やしすぎず、我慢しない。夏の仕事環境を整えて夏�
 
 ここで先に線引きしておきます。「冷房に慣れきったから夏バテになる」と単純に断定する根拠は確認できません。だるさには、暑さ・湿度・脱水・睡眠不足・食事・活動量・冷気による不快感など、複数の要因が関わり得ます。だからこそ、冷房を切るか、さらに下げるかの二択ではなく、環境を分解して調整します。
 
+<svg id="summer-work-adjustment-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="summer-concept-title summer-concept-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="summer-concept-title">夏の仕事環境を観測して調整する概念イラスト</title>
+  <desc id="summer-concept-desc">仕事中の人が温度計、風、日射、体調を確認し、設定温度の我慢比べではなく小さな調整と休憩で環境を整える様子を描く。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#f8fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <text x="320" y="34" text-anchor="middle" font-size="14" font-weight="700" fill="#315b78">設定温度の我慢比べではなく、観測して調整する</text>
+  <circle cx="151" cy="113" r="34" fill="#ffd9d2" stroke="#c97970" stroke-width="2"/>
+  <circle cx="139" cy="108" r="6" fill="#563b45"/><circle cx="164" cy="108" r="6" fill="#563b45"/>
+  <path d="M140 130 Q151 120 162 130" fill="none" stroke="#563b45" stroke-width="3"/>
+  <path d="M119 73 Q151 49 183 73" fill="#fff0bd" stroke="#d19a28" stroke-width="2"/>
+  <text x="151" y="169" text-anchor="middle" font-size="12" font-weight="700" fill="#a14e47">仕事中の人</text>
+  <rect x="44" y="190" width="84" height="28" rx="14" fill="#dbeafe" stroke="#4d82c4" stroke-width="2"/>
+  <text x="86" y="209" text-anchor="middle" font-size="11" fill="#285d93">温度・湿度</text>
+  <path d="M203 113 H272" stroke="#7b8794" stroke-width="2.5" marker-end="url(#summer-adjust-arrow)"/>
+  <defs>
+    <marker id="summer-adjust-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#7b8794"/>
+    </marker>
+  </defs>
+  <rect x="266" y="73" width="120" height="78" rx="22" fill="#fff0bd" stroke="#d19a28" stroke-width="2"/>
+  <circle cx="295" cy="103" r="7" fill="#6d4d0d"/><circle cx="356" cy="103" r="7" fill="#6d4d0d"/>
+  <path d="M299 128 Q326 141 352 128" fill="none" stroke="#6d4d0d" stroke-width="3"/>
+  <text x="326" y="178" text-anchor="middle" font-size="12" font-weight="700" fill="#9a6e17">小さく調整</text>
+  <text x="326" y="194" text-anchor="middle" font-size="11" fill="#9a6e17">風向き・席・休憩</text>
+  <path d="M409 113 H478" stroke="#4f9b6c" stroke-width="2.5" marker-end="url(#summer-adjust-good-arrow)"/>
+  <defs>
+    <marker id="summer-adjust-good-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#4f9b6c"/>
+    </marker>
+  </defs>
+  <rect x="472" y="73" width="124" height="78" rx="22" fill="#c8f0d7" stroke="#4f9b6c" stroke-width="2"/>
+  <circle cx="503" cy="103" r="7" fill="#235b3b"/><circle cx="553" cy="103" r="7" fill="#235b3b"/>
+  <path d="M507 128 Q528 142 550 128" fill="none" stroke="#235b3b" stroke-width="3"/>
+  <text x="534" y="178" text-anchor="middle" font-size="12" font-weight="700" fill="#28724a">回復して続ける</text>
+  <rect x="225" y="211" width="190" height="25" rx="12" fill="#fce7e7" stroke="#c86a6a" stroke-width="1.5"/>
+  <text x="320" y="228" text-anchor="middle" font-size="11" font-weight="700" fill="#7a3030">症状が出たら仕事を止める</text>
+</svg>
+
 ## 動機：涼しい部屋なのに、なぜ仕事が重くなるのか
 
 朝は冷房の効いた部屋で快適だったのに、昼過ぎから頭がぼんやりする。あるいは、冷気が当たる席で肩がこわばり、温度を上げてほしいと言えないまま仕事を続ける。夏の職場には、こうした「温度の正解が人によって違う」問題があります。

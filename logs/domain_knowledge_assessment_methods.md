@@ -14,6 +14,30 @@ date: 2026-08-22
 
 できることを分解すると、ドメイン知識には少なくとも次の4つがあります。第一に、概念を一言で説明できること。第二に、代替案と比較して選べること。第三に、失敗しやすい境界条件を予測できること。第四に、断言してよい事実と、まだ確認が必要な仮説を分けられることです。ここまで来ると、単なる「物知り」ではなく、現場で使える理解に近づきます。
 
+<svg id="domain-map-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="domain-map-title domain-map-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="domain-map-title">ドメイン知識を土地勘として身につける概念イラスト</title>
+  <desc id="domain-map-desc">学習者が地図と案内役を頼りに、説明、比較、境界条件、事実確認、応用という5つの道標を進む様子を描く。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#f8fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <text x="320" y="34" text-anchor="middle" font-size="14" font-weight="700" fill="#315b78">単語を覚えるだけでなく、危ない道を見分ける</text>
+  <path d="M95 183 C170 120 225 202 293 142 C360 83 420 172 500 96" fill="none" stroke="#8bb7d5" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="93" cy="177" r="22" fill="#ffd9d2" stroke="#c97970" stroke-width="2"/>
+  <circle cx="85" cy="173" r="5" fill="#563b45"/><circle cx="101" cy="173" r="5" fill="#563b45"/>
+  <path d="M86 185 Q93 190 100 185" fill="none" stroke="#563b45" stroke-width="2"/>
+  <text x="93" y="218" text-anchor="middle" font-size="11" fill="#a14e47">学ぶ人</text>
+  <rect x="149" y="111" width="72" height="42" rx="14" fill="#dbeafe" stroke="#4d82c4" stroke-width="2"/>
+  <text x="185" y="137" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">一言定義</text>
+  <rect x="244" y="154" width="72" height="42" rx="14" fill="#c8f0d7" stroke="#4f9b6c" stroke-width="2"/>
+  <text x="280" y="180" text-anchor="middle" font-size="11" font-weight="700" fill="#28724a">比較</text>
+  <rect x="335" y="90" width="94" height="42" rx="14" fill="#fff0bd" stroke="#d19a28" stroke-width="2"/>
+  <text x="382" y="116" text-anchor="middle" font-size="11" font-weight="700" fill="#9a6e17">境界条件</text>
+  <path d="M446 150 l10 18 20 3-15 14 4 20-19-9-18 9 4-20-15-14 20-3z" fill="#f1b84b"/>
+  <text x="456" y="218" text-anchor="middle" font-size="11" font-weight="700" fill="#9a6e17">事実確認</text>
+  <rect x="500" y="59" width="104" height="54" rx="18" fill="#e4d5ff" stroke="#8056b3" stroke-width="2"/>
+  <circle cx="527" cy="83" r="6" fill="#4c3270"/><circle cx="568" cy="83" r="6" fill="#4c3270"/>
+  <path d="M530 98 Q548 109 565 98" fill="none" stroke="#4c3270" stroke-width="2.5"/>
+  <text x="552" y="134" text-anchor="middle" font-size="12" font-weight="700" fill="#68458f">応用・設計</text>
+</svg>
+
 ## 動機：わかったつもり問題は、思ったよりしぶとい
 
 技術記事を読んだ直後は、誰でも少し賢くなった気がします。筆者も何度もあります。「なるほど、完全に理解した」と言った翌日に、環境構築で半日溶かす例のやつです。

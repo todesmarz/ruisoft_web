@@ -11,6 +11,46 @@ WebアプリへのAI組み込みを一言で言えば、**人が毎回手で判�
 
 この記事では、一般的なWebアプリでよく出るケースを「生成AI向き」と「予測モデル向き」に整理し、実装の雛形コードまでまとめます。読了後には、どの課題にどのAI方式を当てるべきかを判断し、最小構成で導入を始められるようになるはずです。
 
+<svg id="web-ai-integration-concept" viewBox="0 0 640 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="web-ai-title web-ai-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="web-ai-title">Webアプリの課題に合うAI方式を選ぶ概念イラスト</title>
+  <desc id="web-ai-desc">Webアプリの相談窓口から、会話を作るAI、未来を予測するAI、画像や音声を読むAIへ、課題の種類に応じて振り分ける様子を示す。</desc>
+  <rect x="10" y="10" width="620" height="250" rx="22" fill="#f8fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <text x="320" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="#315b78">AIを入れる前に、課題の種類を見分ける</text>
+  <rect x="35" y="91" width="126" height="82" rx="22" fill="#dbeafe" stroke="#4d82c4" stroke-width="2"/>
+  <circle cx="70" cy="119" r="8" fill="#26364d"/>
+  <circle cx="124" cy="119" r="8" fill="#26364d"/>
+  <path d="M73 143 Q97 157 121 143" fill="none" stroke="#26364d" stroke-width="3" stroke-linecap="round"/>
+  <rect x="58" y="151" width="80" height="28" rx="10" fill="#ffffff" stroke="#4d82c4"/>
+  <text x="98" y="170" text-anchor="middle" font-size="11" fill="#285d93">Webアプリ</text>
+  <path d="M165 132 C207 82 225 73 270 73" fill="none" stroke="#7b8794" stroke-width="2.5" marker-end="url(#web-ai-arrow)"/>
+  <path d="M165 132 C215 132 225 132 278 132" fill="none" stroke="#7b8794" stroke-width="2.5" marker-end="url(#web-ai-arrow)"/>
+  <path d="M165 132 C207 182 225 191 270 191" fill="none" stroke="#7b8794" stroke-width="2.5" marker-end="url(#web-ai-arrow)"/>
+  <defs>
+    <marker id="web-ai-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#7b8794"/>
+    </marker>
+  </defs>
+  <rect x="263" y="47" width="128" height="58" rx="20" fill="#c8f0d7" stroke="#4f9b6c" stroke-width="2"/>
+  <circle cx="292" cy="72" r="7" fill="#235b3b"/>
+  <circle cx="332" cy="72" r="7" fill="#235b3b"/>
+  <path d="M295 88 Q312 99 329 88" fill="none" stroke="#235b3b" stroke-width="2.5"/>
+  <text x="327" y="124" text-anchor="middle" font-size="12" font-weight="700" fill="#28724a">生成・対話</text>
+  <text x="327" y="140" text-anchor="middle" font-size="11" fill="#28724a">文章・FAQ・要約</text>
+  <rect x="284" y="143" width="128" height="58" rx="20" fill="#fff0bd" stroke="#d19a28" stroke-width="2"/>
+  <circle cx="313" cy="168" r="7" fill="#6d4d0d"/>
+  <circle cx="353" cy="168" r="7" fill="#6d4d0d"/>
+  <path d="M316 184 Q333 195 350 184" fill="none" stroke="#6d4d0d" stroke-width="2.5"/>
+  <text x="348" y="220" text-anchor="middle" font-size="12" font-weight="700" fill="#9a6e17">予測・スコア</text>
+  <text x="348" y="236" text-anchor="middle" font-size="11" fill="#9a6e17">需要・離脱・異常</text>
+  <rect x="448" y="87" width="148" height="58" rx="20" fill="#e4d5ff" stroke="#8056b3" stroke-width="2"/>
+  <circle cx="480" cy="112" r="7" fill="#4c3270"/>
+  <circle cx="523" cy="112" r="7" fill="#4c3270"/>
+  <path d="M483 128 Q501 139 520 128" fill="none" stroke="#4c3270" stroke-width="2.5"/>
+  <path d="M555 70 l6 11 12 2-9 8 2 12-11-6-11 6 2-12-9-8 12-2z" fill="#f1b84b"/>
+  <text x="522" y="166" text-anchor="middle" font-size="12" font-weight="700" fill="#68458f">画像・音声・時系列</text>
+  <text x="522" y="182" text-anchor="middle" font-size="11" fill="#68458f">高次元の推論</text>
+</svg>
+
 ## 動機
 「AIを入れたい」と言われたとき、最初にありがちなのは「とりあえずLLM APIをつなぐ」ことです。もちろんこれは悪くありません。ですが、購買予測や離脱予測のように**正解ラベルがある問題**は、生成AIよりも監督学習モデルの方が安定して強い場面が多いです。
 

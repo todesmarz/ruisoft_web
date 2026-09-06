@@ -26,6 +26,61 @@ LayerXが2026年6月に発表した実態調査でも、**企業の7割超が「
 
 これは、100tトラックで買い物1個を運ぶようなものです。運べることには変わりありませんが、燃費（コスト）と維持費（レイテンシ・管理負荷）は桁違いです。
 
+<svg id="cost-routing-concept" viewBox="0 0 640 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="cost-routing-title cost-routing-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="cost-routing-title">タスクの難易度に合わせてモデルを振り分ける概念イラスト</title>
+  <desc id="cost-routing-desc">定型メールを大型モデルへ運ぶ無駄と、タスクの難易度に合う小型・中型・高性能モデルへ振り分ける様子を、表情のあるトラックと荷物で示す。</desc>
+  <rect x="10" y="10" width="620" height="250" rx="22" fill="#fffaf2" stroke="#f0c98b" stroke-width="2"/>
+  <text x="160" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="#9a5b16">全部を大型モデルへ</text>
+  <text x="480" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="#28724a">難易度で振り分け</text>
+
+  <rect x="42" y="76" width="78" height="58" rx="14" fill="#dbeafe" stroke="#4d82c4" stroke-width="2"/>
+  <circle cx="64" cy="99" r="7" fill="#26364d"/>
+  <circle cx="98" cy="99" r="7" fill="#26364d"/>
+  <path d="M67 116 Q81 125 95 116" fill="none" stroke="#26364d" stroke-width="3" stroke-linecap="round"/>
+  <text x="81" y="151" text-anchor="middle" font-size="11" fill="#334155">定型メール</text>
+  <line x1="122" y1="105" x2="165" y2="105" stroke="#c47a28" stroke-width="2.5" marker-end="url(#cost-route-arrow)"/>
+  <defs>
+    <marker id="cost-route-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#c47a28"/>
+    </marker>
+  </defs>
+  <rect x="165" y="73" width="126" height="72" rx="18" fill="#f8d6a2" stroke="#c47a28" stroke-width="2"/>
+  <rect x="261" y="91" width="38" height="54" rx="12" fill="#f8d6a2" stroke="#c47a28" stroke-width="2"/>
+  <circle cx="270" cy="105" r="5" fill="#6b3f1c"/>
+  <circle cx="288" cy="105" r="5" fill="#6b3f1c"/>
+  <path d="M272 122 Q279 116 286 122" fill="none" stroke="#6b3f1c" stroke-width="2.5"/>
+  <circle cx="191" cy="148" r="16" fill="#72503a"/>
+  <circle cx="267" cy="148" r="16" fill="#72503a"/>
+  <path d="M242 54 l6 10 11 2-8 8 2 11-11-5-10 5 2-11-8-8 11-2z" fill="#f3a6a6"/>
+  <text x="228" y="169" text-anchor="middle" font-size="11" font-weight="700" fill="#7b4517">大型モデル</text>
+  <text x="228" y="190" text-anchor="middle" font-size="12" fill="#9a5b16">「その荷物、重すぎるよ…」</text>
+
+  <rect x="338" y="58" width="74" height="50" rx="16" fill="#c8f0d7" stroke="#4f9b6c" stroke-width="2"/>
+  <circle cx="360" cy="79" r="6" fill="#235b3b"/>
+  <circle cx="390" cy="79" r="6" fill="#235b3b"/>
+  <path d="M363 94 Q375 101 387 94" fill="none" stroke="#235b3b" stroke-width="2.5"/>
+  <text x="375" y="126" text-anchor="middle" font-size="11" font-weight="700" fill="#28724a">小型</text>
+  <rect x="432" y="78" width="78" height="58" rx="18" fill="#cfe8ff" stroke="#4d82c4" stroke-width="2"/>
+  <circle cx="455" cy="101" r="6" fill="#26364d"/>
+  <circle cx="487" cy="101" r="6" fill="#26364d"/>
+  <path d="M458 117 Q471 124 484 117" fill="none" stroke="#26364d" stroke-width="2.5"/>
+  <text x="471" y="154" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">中型</text>
+  <rect x="530" y="99" width="76" height="68" rx="20" fill="#e4d5ff" stroke="#8056b3" stroke-width="2"/>
+  <circle cx="553" cy="123" r="6" fill="#4c3270"/>
+  <circle cx="583" cy="123" r="6" fill="#4c3270"/>
+  <path d="M555 141 Q568 151 581 141" fill="none" stroke="#4c3270" stroke-width="2.5"/>
+  <text x="568" y="185" text-anchor="middle" font-size="11" font-weight="700" fill="#68458f">高性能</text>
+  <path d="M126 213 C220 195 270 198 338 84" fill="none" stroke="#4f9b6c" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#cost-route-good-arrow)"/>
+  <defs>
+    <marker id="cost-route-good-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#4f9b6c"/>
+    </marker>
+  </defs>
+  <rect x="38" y="204" width="112" height="34" rx="17" fill="#dbeafe" stroke="#4d82c4" stroke-width="2"/>
+  <text x="94" y="226" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">定型→小型</text>
+  <text x="470" y="226" text-anchor="middle" font-size="12" font-weight="700" fill="#28724a">必要な仕事に、必要な計算だけ</text>
+</svg>
+
 ### 大手企業がこぞって「脱・最高性能モデル」へ
 
 2026年6〜7月、米国大手企業の動きがこの問題を如実に物語っています。

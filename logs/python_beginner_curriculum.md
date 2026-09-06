@@ -34,6 +34,41 @@ Python初学者の離脱ポイントは、だいたい次の3つに集中しま�
 
 つまり、抽象的な文法項目が「何に使うか」という文脈を持つため、理解が浅いまま暗記に流れるリスクを減らせます。
 
+<svg id="python-curriculum-concept" viewBox="0 0 640 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="python-curriculum-title python-curriculum-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="python-curriculum-title">小さくゲームを作ってPythonを学ぶ概念イラスト</title>
+  <desc id="python-curriculum-desc">Python初学者が、小さなゲームを作り、エラーを直し、8週間のチェックポイントを越えて完成へ進む様子を描く。</desc>
+  <rect x="10" y="10" width="620" height="240" rx="22" fill="#f7fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <text x="320" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="#315b78">文法を覚えるだけでなく、作って直して進む</text>
+  <path d="M95 187 C205 116 295 211 397 135 C470 80 530 110 575 70" fill="none" stroke="#8bb7d5" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="120" cy="173" r="22" fill="#dbeafe" stroke="#4d82c4" stroke-width="2"/>
+  <circle cx="113" cy="169" r="5" fill="#26364d"/>
+  <circle cx="128" cy="169" r="5" fill="#26364d"/>
+  <path d="M113 181 Q120 187 127 181" fill="none" stroke="#26364d" stroke-width="2"/>
+  <rect x="90" y="202" width="62" height="28" rx="9" fill="#ffffff" stroke="#4d82c4"/>
+  <text x="121" y="220" text-anchor="middle" font-size="11" fill="#285d93">1週</text>
+  <rect x="246" y="137" width="92" height="57" rx="17" fill="#c8f0d7" stroke="#4f9b6c" stroke-width="2"/>
+  <circle cx="269" cy="160" r="6" fill="#235b3b"/>
+  <circle cx="310" cy="160" r="6" fill="#235b3b"/>
+  <path d="M272 176 Q289 186 306 176" fill="none" stroke="#235b3b" stroke-width="2.5"/>
+  <rect x="255" y="201" width="74" height="28" rx="9" fill="#ffffff" stroke="#4f9b6c"/>
+  <text x="292" y="219" text-anchor="middle" font-size="11" fill="#28724a">4週：試す</text>
+  <path d="M365 113 l8 15 17 2-12 11 3 17-16-8-15 8 3-17-12-11 17-2z" fill="#f1b84b"/>
+  <rect x="420" y="104" width="72" height="48" rx="16" fill="#ffd9d2" stroke="#c97970" stroke-width="2"/>
+  <circle cx="440" cy="124" r="5" fill="#563b45"/>
+  <circle cx="472" cy="124" r="5" fill="#563b45"/>
+  <path d="M442 138 Q456 132 470 138" fill="none" stroke="#563b45" stroke-width="2.5"/>
+  <path d="M490 95 l6 7" stroke="#4d82c4" stroke-width="3" stroke-linecap="round"/>
+  <path d="M505 89 l6 7" stroke="#4d82c4" stroke-width="3" stroke-linecap="round"/>
+  <text x="456" y="169" text-anchor="middle" font-size="11" font-weight="700" fill="#a14e47">エラーも教材</text>
+  <rect x="522" y="45" width="88" height="58" rx="18" fill="#e4d5ff" stroke="#8056b3" stroke-width="2"/>
+  <circle cx="545" cy="69" r="6" fill="#4c3270"/>
+  <circle cx="586" cy="69" r="6" fill="#4c3270"/>
+  <path d="M548 85 Q565 96 582 85" fill="none" stroke="#4c3270" stroke-width="2.5"/>
+  <rect x="522" y="111" width="88" height="28" rx="9" fill="#ffffff" stroke="#8056b3"/>
+  <text x="566" y="129" text-anchor="middle" font-size="11" fill="#68458f">8週：公開</text>
+  <text x="320" y="239" text-anchor="middle" font-size="12" font-weight="700" fill="#315b78">小さな完成を積み重ねると、自走の入口に立てる</text>
+</svg>
+
 ---
 
 ## 2. 本カリキュラムの設計原則

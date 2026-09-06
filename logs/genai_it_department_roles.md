@@ -50,6 +50,33 @@ date: 2026-08-30
   <text x="450" y="216" text-anchor="middle" font-size="12" fill="#475569">出力の採用・顧客への約束・人事評価などの最終判断は、業務責任者が担う</text>
 </svg>
 
+<svg id="genai-it-kitchen-concept" viewBox="0 0 640 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="it-kitchen-title it-kitchen-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="it-kitchen-title">情シスが社内AI厨房を運営する概念イラスト</title>
+  <desc id="it-kitchen-desc">情シスの運営者が、守る・つなぐ・測る・育てる・止めるという5つの皿を整え、社員が安全にAIを使える厨房を運営する比喩を描く。</desc>
+  <rect x="10" y="10" width="620" height="240" rx="22" fill="#fffaf4" stroke="#efc5a1" stroke-width="2"/>
+  <text x="320" y="34" text-anchor="middle" font-size="14" font-weight="700" fill="#7c4a2b">AIツールを配るだけでなく、安全な厨房を運営する</text>
+  <rect x="248" y="76" width="144" height="90" rx="20" fill="#ffd9d2" stroke="#c97970" stroke-width="2"/>
+  <path d="M270 75 Q320 42 370 75" fill="#ffffff" stroke="#c97970" stroke-width="2"/>
+  <circle cx="292" cy="108" r="8" fill="#563b45"/><circle cx="348" cy="108" r="8" fill="#563b45"/>
+  <path d="M298 133 Q320 148 342 133" fill="none" stroke="#563b45" stroke-width="3" stroke-linecap="round"/>
+  <rect x="275" y="153" width="90" height="28" rx="10" fill="#ffffff" stroke="#c97970"/>
+  <text x="320" y="172" text-anchor="middle" font-size="11" font-weight="700" fill="#a14e47">情シス厨房</text>
+  <rect x="44" y="63" width="120" height="56" rx="18" fill="#dbeafe" stroke="#4d82c4" stroke-width="2"/>
+  <circle cx="70" cy="88" r="6" fill="#26364d"/><circle cx="105" cy="88" r="6" fill="#26364d"/>
+  <path d="M73 103 Q88 112 102 103" fill="none" stroke="#26364d" stroke-width="2.5"/>
+  <text x="104" y="143" text-anchor="middle" font-size="12" font-weight="700" fill="#285d93">守る</text>
+  <rect x="476" y="63" width="120" height="56" rx="18" fill="#c8f0d7" stroke="#4f9b6c" stroke-width="2"/>
+  <circle cx="502" cy="88" r="6" fill="#235b3b"/><circle cx="537" cy="88" r="6" fill="#235b3b"/>
+  <path d="M505 103 Q520 112 534 103" fill="none" stroke="#235b3b" stroke-width="2.5"/>
+  <text x="536" y="143" text-anchor="middle" font-size="12" font-weight="700" fill="#28724a">つなぐ</text>
+  <rect x="44" y="177" width="120" height="48" rx="18" fill="#fff0bd" stroke="#d19a28" stroke-width="2"/>
+  <text x="104" y="207" text-anchor="middle" font-size="12" font-weight="700" fill="#9a6e17">測る</text>
+  <rect x="476" y="177" width="120" height="48" rx="18" fill="#e4d5ff" stroke="#8056b3" stroke-width="2"/>
+  <text x="536" y="207" text-anchor="middle" font-size="12" font-weight="700" fill="#68458f">育てる</text>
+  <rect x="250" y="202" width="140" height="30" rx="15" fill="#fce7f3" stroke="#db7aa5" stroke-width="2"/>
+  <text x="320" y="222" text-anchor="middle" font-size="12" font-weight="700" fill="#9d174d">止めるスイッチ</text>
+</svg>
+
 ただし、情シスがすべての業務責任を引き取るわけではありません。AIが出した回答を業務上採用するか、顧客へ何を約束するか、採用や人事評価にどう使うかは、それぞれの業務責任者が判断します。情シスは判断の土台と安全装置を提供する、と考えると役割の境界が見えやすくなります。
 
 ## 😓 動機：「生成AIを活用しろ」だけでは、情シスの仕事が無限になる

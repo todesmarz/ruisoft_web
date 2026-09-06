@@ -27,6 +27,45 @@ date: 2026-06-17
 
 これだけのことができるのだから、「どれも同じでしょ」と選ぶのはもったいない。それぞれのサービスが「何が得意で、何が苦手か」を知ることが、プロジェクトの成否を分ける。
 
+<svg id="ai-service-selection-concept" viewBox="0 0 640 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="service-selection-title service-selection-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="service-selection-title">得意分野の違う生成AIサービスから外注先を選ぶ概念イラスト</title>
+  <desc id="service-selection-desc">依頼人が、日本語、長文、安全性という異なる得意分野を持つ翻訳者型のAIサービスを比較して選ぶ様子を示す。</desc>
+  <rect x="10" y="10" width="620" height="250" rx="22" fill="#fff9f4" stroke="#efc5a1" stroke-width="2"/>
+  <text x="320" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="#7c4a2b">「有名だから」ではなく、仕事に合う外注先を選ぶ</text>
+  <rect x="40" y="92" width="110" height="78" rx="22" fill="#dbeafe" stroke="#4d82c4" stroke-width="2"/>
+  <circle cx="70" cy="119" r="8" fill="#26364d"/>
+  <circle cx="120" cy="119" r="8" fill="#26364d"/>
+  <path d="M73 142 Q95 156 117 142" fill="none" stroke="#26364d" stroke-width="3" stroke-linecap="round"/>
+  <rect x="60" y="150" width="70" height="28" rx="10" fill="#ffffff" stroke="#4d82c4"/>
+  <text x="95" y="169" text-anchor="middle" font-size="11" fill="#285d93">選ぶ人</text>
+  <path d="M155 132 C185 90 207 78 240 78" fill="none" stroke="#7b8794" stroke-width="2" marker-end="url(#service-select-arrow)"/>
+  <path d="M155 132 C205 132 218 132 268 132" fill="none" stroke="#7b8794" stroke-width="2" marker-end="url(#service-select-arrow)"/>
+  <path d="M155 132 C185 176 207 190 240 190" fill="none" stroke="#7b8794" stroke-width="2" marker-end="url(#service-select-arrow)"/>
+  <defs>
+    <marker id="service-select-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#7b8794"/>
+    </marker>
+  </defs>
+  <rect x="235" y="51" width="120" height="58" rx="20" fill="#c8f0d7" stroke="#4f9b6c" stroke-width="2"/>
+  <circle cx="263" cy="76" r="7" fill="#235b3b"/>
+  <circle cx="300" cy="76" r="7" fill="#235b3b"/>
+  <path d="M266 92 Q281 102 297 92" fill="none" stroke="#235b3b" stroke-width="2.5"/>
+  <text x="295" y="128" text-anchor="middle" font-size="12" font-weight="700" fill="#28724a">日本語が得意</text>
+  <rect x="268" y="133" width="120" height="58" rx="20" fill="#e4d5ff" stroke="#8056b3" stroke-width="2"/>
+  <circle cx="296" cy="158" r="7" fill="#4c3270"/>
+  <circle cx="333" cy="158" r="7" fill="#4c3270"/>
+  <path d="M299 174 Q314 184 330 174" fill="none" stroke="#4c3270" stroke-width="2.5"/>
+  <text x="328" y="210" text-anchor="middle" font-size="12" font-weight="700" fill="#68458f">長文が得意</text>
+  <rect x="400" y="87" width="120" height="58" rx="20" fill="#fff0bd" stroke="#d19a28" stroke-width="2"/>
+  <circle cx="428" cy="112" r="7" fill="#6d4d0d"/>
+  <circle cx="465" cy="112" r="7" fill="#6d4d0d"/>
+  <path d="M431 128 Q446 138 462 128" fill="none" stroke="#6d4d0d" stroke-width="2.5"/>
+  <path d="M486 77 l5 9 10 2-7 7 2 10-10-5-9 5 2-10-7-7 10-2z" fill="#f1b84b"/>
+  <text x="460" y="163" text-anchor="middle" font-size="12" font-weight="700" fill="#9a6e17">安全・管理が得意</text>
+  <rect x="530" y="198" width="78" height="28" rx="14" fill="#fce7f3" stroke="#db7aa5" stroke-width="1.5"/>
+  <text x="569" y="217" text-anchor="middle" font-size="11" fill="#9d174d">要件で決める</text>
+</svg>
+
 ---
 
 ## 😓 動機：なぜ「とりあえずOpenAIで」は後悔するのか

@@ -24,6 +24,41 @@ title: 怠惰なエンジニアが生成AI時代に正しく怠ける方法 - Ru
 
 ここで大事なのは、怠ける対象を間違えないことです。考えることまで丸投げすると、あとで不具合・手戻り・説明不能という名の請求書が届きます。生成AIは優秀な後輩というより、超高速なインターン兼検索係兼壁打ち相手です。任せる範囲を設計できる人ほど、気持ちよく怠けられます。
 
+<svg id="lazy-engineer-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="lazy-concept-title lazy-concept-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="lazy-concept-title">仕組みを作って未来の自分を楽にする概念イラスト</title>
+  <desc id="lazy-concept-desc">エンジニアが繰り返し作業をAIインターンへ渡し、チェック付きの仕組みを作ることで、未来の自分が余裕を持てる様子を描く。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#f8fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <text x="320" y="34" text-anchor="middle" font-size="14" font-weight="700" fill="#315b78">一度だけ仕組み化して、未来の自分に仕事を返す</text>
+  <rect x="43" y="82" width="118" height="74" rx="22" fill="#ffd9d2" stroke="#c97970" stroke-width="2"/>
+  <circle cx="75" cy="110" r="7" fill="#563b45"/><circle cx="126" cy="110" r="7" fill="#563b45"/>
+  <path d="M78 132 Q101 120 124 132" fill="none" stroke="#563b45" stroke-width="3" stroke-linecap="round"/>
+  <text x="102" y="182" text-anchor="middle" font-size="12" font-weight="700" fill="#a14e47">今の自分</text>
+  <text x="102" y="198" text-anchor="middle" font-size="11" fill="#a14e47">「また同じ作業…」</text>
+  <path d="M171 119 H242" stroke="#7b8794" stroke-width="3" marker-end="url(#lazy-concept-arrow)"/>
+  <defs>
+    <marker id="lazy-concept-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#7b8794"/>
+    </marker>
+  </defs>
+  <rect x="235" y="74" width="140" height="88" rx="22" fill="#c8f0d7" stroke="#4f9b6c" stroke-width="2"/>
+  <circle cx="270" cy="104" r="8" fill="#235b3b"/><circle cx="335" cy="104" r="8" fill="#235b3b"/>
+  <path d="M274 130 Q302 145 331 130" fill="none" stroke="#235b3b" stroke-width="3"/>
+  <rect x="265" y="142" width="80" height="28" rx="9" fill="#ffffff" stroke="#4f9b6c"/>
+  <text x="305" y="161" text-anchor="middle" font-size="11" fill="#28724a">型＋検査</text>
+  <text x="305" y="188" text-anchor="middle" font-size="12" font-weight="700" fill="#28724a">AIインターン</text>
+  <path d="M385 119 H454" stroke="#4f9b6c" stroke-width="3" marker-end="url(#lazy-concept-good-arrow)"/>
+  <defs>
+    <marker id="lazy-concept-good-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#4f9b6c"/>
+    </marker>
+  </defs>
+  <rect x="447" y="74" width="145" height="88" rx="22" fill="#e4d5ff" stroke="#8056b3" stroke-width="2"/>
+  <circle cx="484" cy="104" r="8" fill="#4c3270"/><circle cx="550" cy="104" r="8" fill="#4c3270"/>
+  <path d="M488 130 Q517 146 546 130" fill="none" stroke="#4c3270" stroke-width="3"/>
+  <text x="520" y="188" text-anchor="middle" font-size="12" font-weight="700" fill="#68458f">未来の自分</text>
+  <text x="320" y="222" text-anchor="middle" font-size="12" font-weight="700" fill="#315b78">楽をする前に、判断と検査の仕切りを作る</text>
+</svg>
+
 ## 🎯 動機：なぜ今、「怠け方」がスキルになるのか
 
 昔からエンジニアには「面倒なことは自動化しろ」という文化がありました。ただ、生成AIの登場で、その対象がコードだけではなく、文章・調査・設計・レビュー・運用メモまで広がりました。

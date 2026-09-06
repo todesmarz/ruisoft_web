@@ -23,6 +23,38 @@ date: 2026-08-30
 
 なお、この記事でいう「安全」は、特定の温度や数値を満たせば熱中症にならない、という意味ではありません。環境省は、熱中症が室内でも起きること、暑さを避けてエアコンを適切に使うことを案内しています。換気は空気のこもりを改善するために行いますが、暑さを感じたら換気の達成感より冷房・休憩を優先します。持病、服薬、妊娠、年齢などによっても注意点は変わるため、数値は判断材料として扱います。
 
+<svg id="summer-home-room-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="summer-home-title summer-home-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="summer-home-title">換気と遮熱を役割分担させる概念イラスト</title>
+  <desc id="summer-home-desc">窓から空気を入れ替えながら、カーテンで日射を抑え、冷房で回復する在宅ワークの部屋を描く。暑さや体調不良時は冷房と休憩を優先する。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#fffaf4" stroke="#efc5a1" stroke-width="2"/>
+  <text x="320" y="34" text-anchor="middle" font-size="14" font-weight="700" fill="#7c4a2b">空気は入れ替え、熱は抑える。窓に全部を任せない</text>
+  <rect x="54" y="70" width="170" height="115" rx="10" fill="#dff1ff" stroke="#4d82c4" stroke-width="2"/>
+  <rect x="73" y="87" width="132" height="80" fill="#ffffff" stroke="#4d82c4" stroke-width="2"/>
+  <path d="M140 88 V166" stroke="#4d82c4" stroke-width="2"/>
+  <path d="M73 105 H205" stroke="#4d82c4" stroke-width="2"/>
+  <path d="M30 117 C52 105 57 105 76 117" fill="none" stroke="#4f9b6c" stroke-width="3" marker-end="url(#summer-room-arrow)"/>
+  <path d="M205 141 C227 129 236 129 258 141" fill="none" stroke="#4f9b6c" stroke-width="3" marker-end="url(#summer-room-arrow)"/>
+  <text x="139" y="207" text-anchor="middle" font-size="12" font-weight="700" fill="#285d93">窓・換気</text>
+  <defs>
+    <marker id="summer-room-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#4f9b6c"/>
+    </marker>
+  </defs>
+  <circle cx="174" cy="58" r="22" fill="#ffd77d" stroke="#d19a28" stroke-width="2"/>
+  <path d="M174 30 V20 M174 96 V86 M146 58 H136 M212 58 H202" stroke="#d19a28" stroke-width="3" stroke-linecap="round"/>
+  <path d="M73 87 Q94 105 113 87 M165 87 Q184 105 205 87" fill="none" stroke="#e09b6c" stroke-width="5"/>
+  <rect x="288" y="80" width="92" height="72" rx="20" fill="#fff0bd" stroke="#d19a28" stroke-width="2"/>
+  <path d="M311 110 C330 91 348 91 366 110 C348 129 330 129 311 110Z" fill="#ffffff" stroke="#d19a28" stroke-width="2"/>
+  <path d="M334 99 V121 M322 110 H346" stroke="#d19a28" stroke-width="2"/>
+  <text x="334" y="178" text-anchor="middle" font-size="12" font-weight="700" fill="#9a6e17">遮熱・冷房</text>
+  <rect x="439" y="70" width="145" height="115" rx="22" fill="#c8f0d7" stroke="#4f9b6c" stroke-width="2"/>
+  <circle cx="472" cy="106" r="7" fill="#235b3b"/><circle cx="548" cy="106" r="7" fill="#235b3b"/>
+  <path d="M476 133 Q510 151 544 133" fill="none" stroke="#235b3b" stroke-width="3"/>
+  <rect x="465" y="153" width="92" height="24" rx="12" fill="#ffffff" stroke="#4f9b6c"/>
+  <text x="511" y="170" text-anchor="middle" font-size="11" fill="#28724a">仕事と休憩</text>
+  <text x="511" y="207" text-anchor="middle" font-size="12" font-weight="700" fill="#28724a">体調を優先</text>
+</svg>
+
 ## 動機：換気したいのに、窓を開けると部屋が暑くなる
 
 在宅勤務の真夏には、少し奇妙な二択が現れます。空気がこもるから窓を開けたい。しかし窓を開けると、熱気と湿気が入り、冷房の効きが落ちる。閉め切れば今度はCO₂が上がり、会議のあとに頭が重い。ここで換気のモチベーションまで失うと、必要な空気の入れ替えが後回しになります。窓は悪くありません。ただ、窓に「換気」と「冷却」と「遮熱」の仕事を全部任せると、さすがに忙しすぎます。

@@ -16,6 +16,37 @@ date: 2026-08-22
 
 この記事で扱うゴールはシンプルだ。あなたが明日から、チャットで依頼・相談・共有をするときに、相手が「何を、いつまでに、どの粒度で返せばいいか」を迷わない状態を作る。少し地味だが、ここを整えるだけで会議の手戻り、確認DM、謎の沈黙がかなり減る。謎の沈黙はチャット界のホラー演出なので、できれば業務時間内に成仏させたい。
 
+<svg id="chat-delivery-label-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="chat-delivery-title chat-delivery-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="chat-delivery-title">チャットに配送ラベルを貼って期待値を伝える概念イラスト</title>
+  <desc id="chat-delivery-desc">ラベルのない荷物に困る受信者と、目的・期限・返答形式を貼った荷物を笑顔で受け取る受信者を対比する。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#fffaf4" stroke="#efc5a1" stroke-width="2"/>
+  <text x="320" y="34" text-anchor="middle" font-size="14" font-weight="700" fill="#7c4a2b">短文より、相手が動ける配送ラベル</text>
+  <text x="160" y="60" text-anchor="middle" font-size="12" font-weight="700" fill="#a14e47">ラベルなし</text>
+  <text x="480" y="60" text-anchor="middle" font-size="12" font-weight="700" fill="#28724a">期待値つき</text>
+  <circle cx="79" cy="104" r="23" fill="#ffd9d2" stroke="#c97970" stroke-width="2"/>
+  <circle cx="72" cy="100" r="5" fill="#563b45"/><circle cx="87" cy="100" r="5" fill="#563b45"/>
+  <path d="M72 119 Q80 112 88 119" fill="none" stroke="#563b45" stroke-width="2.5"/>
+  <rect x="110" y="88" width="74" height="58" rx="8" fill="#e8d1b0" stroke="#b9854d" stroke-width="2"/>
+  <text x="147" y="123" text-anchor="middle" font-size="13" font-weight="700" fill="#7b5129">？</text>
+  <text x="147" y="166" text-anchor="middle" font-size="11" fill="#a14e47">「何をすれば？」</text>
+  <path d="M196 116 H260" stroke="#c97970" stroke-width="2.5" marker-end="url(#chat-delivery-arrow)"/>
+  <defs>
+    <marker id="chat-delivery-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#c97970"/>
+    </marker>
+  </defs>
+  <circle cx="382" cy="104" r="23" fill="#c8f0d7" stroke="#4f9b6c" stroke-width="2"/>
+  <circle cx="375" cy="100" r="5" fill="#235b3b"/><circle cx="390" cy="100" r="5" fill="#235b3b"/>
+  <path d="M375 116 Q382 124 390 116" fill="none" stroke="#235b3b" stroke-width="2.5"/>
+  <rect x="413" y="78" width="116" height="78" rx="8" fill="#e8d1b0" stroke="#b9854d" stroke-width="2"/>
+  <rect x="425" y="89" width="92" height="54" rx="6" fill="#fffdf8" stroke="#d19a28"/>
+  <text x="471" y="105" text-anchor="middle" font-size="10" fill="#9a6e17">目的・期限</text>
+  <text x="471" y="120" text-anchor="middle" font-size="10" fill="#9a6e17">材料・返答形式</text>
+  <text x="471" y="176" text-anchor="middle" font-size="11" fill="#28724a">「これなら返せる」</text>
+  <rect x="258" y="205" width="124" height="28" rx="14" fill="#eaf8ef" stroke="#72b68b" stroke-width="1.5"/>
+  <text x="320" y="224" text-anchor="middle" font-size="11" font-weight="700" fill="#28724a">配送ラベル＝期待値</text>
+</svg>
+
 ## 動機：なぜ「ちゃんと送ったのに伝わらない」が起きるのか
 
 チャットの怖さは、送信ボタンを押した瞬間に「伝達が完了した気分」になれるところにある。

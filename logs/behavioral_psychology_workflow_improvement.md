@@ -19,6 +19,47 @@ date: 2026-05-04
 
 「気合いで回す」から「仕組みで回る」への転換こそ、行動心理学の価値です。
 
+<svg id="behavior-workflow-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="behavior-concept-title behavior-concept-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="behavior-concept-title">環境設計で行動を始めやすくする概念イラスト</title>
+  <desc id="behavior-concept-desc">迷って動けない人の前に、見えるきっかけ、楽な手順、すぐ返る達成フィードバックを置くと行動が始まる様子を描く。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#f7fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <text x="160" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="#7b5a2b">気合いだけに頼る</text>
+  <text x="480" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="#28724a">環境を整える</text>
+  <circle cx="115" cy="105" r="37" fill="#ffd9d2" stroke="#c97970" stroke-width="2"/>
+  <circle cx="101" cy="101" r="6" fill="#563b45"/>
+  <circle cx="129" cy="101" r="6" fill="#563b45"/>
+  <path d="M104 122 Q115 114 126 122" fill="none" stroke="#563b45" stroke-width="3" stroke-linecap="round"/>
+  <path d="M88 67 Q98 52 106 67 M126 67 Q137 52 145 67" fill="none" stroke="#c97970" stroke-width="4" stroke-linecap="round"/>
+  <text x="115" y="164" text-anchor="middle" font-size="12" fill="#7b5a2b">「あとでやろう…」</text>
+  <path d="M92 184 l8 8 16-18" fill="none" stroke="#c97970" stroke-width="3" stroke-linecap="round"/>
+  <text x="120" y="210" text-anchor="middle" font-size="11" fill="#7b5a2b">行動の入口が見えない</text>
+  <path d="M205 112 C260 112 285 112 328 112" fill="none" stroke="#c9a35d" stroke-width="3" marker-end="url(#behavior-arrow)"/>
+  <defs>
+    <marker id="behavior-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#c9a35d"/>
+    </marker>
+  </defs>
+  <rect x="315" y="72" width="82" height="48" rx="16" fill="#fff0bd" stroke="#d19a28" stroke-width="2"/>
+  <circle cx="337" cy="92" r="6" fill="#6d4d0d"/>
+  <circle cx="375" cy="92" r="6" fill="#6d4d0d"/>
+  <path d="M340 107 Q356 115 372 107" fill="none" stroke="#6d4d0d" stroke-width="2.5"/>
+  <text x="356" y="139" text-anchor="middle" font-size="11" font-weight="700" fill="#9a6e17">きっかけ</text>
+  <rect x="416" y="68" width="82" height="48" rx="16" fill="#cfe8ff" stroke="#4d82c4" stroke-width="2"/>
+  <circle cx="438" cy="88" r="6" fill="#26364d"/>
+  <circle cx="476" cy="88" r="6" fill="#26364d"/>
+  <path d="M441 103 Q457 111 473 103" fill="none" stroke="#26364d" stroke-width="2.5"/>
+  <text x="457" y="136" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">楽にする</text>
+  <rect x="517" y="64" width="82" height="52" rx="16" fill="#c8f0d7" stroke="#4f9b6c" stroke-width="2"/>
+  <circle cx="539" cy="85" r="6" fill="#235b3b"/>
+  <circle cx="577" cy="85" r="6" fill="#235b3b"/>
+  <path d="M542 101 Q558 111 574 101" fill="none" stroke="#235b3b" stroke-width="2.5"/>
+  <text x="558" y="136" text-anchor="middle" font-size="11" font-weight="700" fill="#28724a">すぐ報酬</text>
+  <path d="M443 47 l5 10 11 1-8 7 2 11-10-5-10 5 2-11-8-7 11-1z" fill="#f1b84b"/>
+  <text x="480" y="184" text-anchor="middle" font-size="12" font-weight="700" fill="#28724a">「次の一歩」が自然に出てくる</text>
+  <rect x="362" y="198" width="236" height="28" rx="14" fill="#eaf8ef" stroke="#72b68b" stroke-width="1.5"/>
+  <text x="480" y="217" text-anchor="middle" font-size="11" fill="#28724a">Prompt × Ability × Feedback</text>
+</svg>
+
 ## 動機
 
 業務フロー改善というと、つい新しいツール導入やルール追加に目が向きます。でも現場では、ルールを増やすほど読むべき文書が増え、運用が重くなることも多いです。筆者も「完璧な手順書を作ったのに誰も見ない」という、ちょっと切ない経験があります。

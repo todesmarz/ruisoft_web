@@ -24,6 +24,40 @@ date: 2026-08-30
 
 なお、この記事は一般的な情報の整理です。発災時は、気象庁、自治体、消防、警察、道路・鉄道事業者などの最新情報と現地の指示を優先してください。
 
+<svg id="disaster-action-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="disaster-concept-title disaster-concept-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="disaster-concept-title">防災を行動の設計として考える概念イラスト</title>
+  <desc id="disaster-concept-desc">家族が危険を確認し、安全な場所へ移動し、周囲へ知らせる順番を、避難袋と安全ルートで表現する。災害時は現地の指示を優先する。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#f8fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <text x="320" y="34" text-anchor="middle" font-size="14" font-weight="700" fill="#315b78">非常袋だけでなく、迷わない順番を準備する</text>
+  <circle cx="91" cy="111" r="28" fill="#ffd9d2" stroke="#c97970" stroke-width="2"/>
+  <circle cx="81" cy="106" r="5" fill="#563b45"/><circle cx="101" cy="106" r="5" fill="#563b45"/>
+  <path d="M83 121 Q91 127 99 121" fill="none" stroke="#563b45" stroke-width="2.5"/>
+  <circle cx="139" cy="125" r="21" fill="#cfe8ff" stroke="#4d82c4" stroke-width="2"/>
+  <circle cx="132" cy="122" r="4" fill="#26364d"/><circle cx="146" cy="122" r="4" fill="#26364d"/>
+  <path d="M133 134 Q139 139 145 134" fill="none" stroke="#26364d" stroke-width="2"/>
+  <rect x="65" y="148" width="92" height="44" rx="12" fill="#e8d1b0" stroke="#b9854d" stroke-width="2"/>
+  <text x="111" y="175" text-anchor="middle" font-size="12" font-weight="700" fill="#7b5129">非常袋</text>
+  <path d="M180 120 C235 80 260 80 300 80" fill="none" stroke="#65758a" stroke-width="2.5" marker-end="url(#disaster-route-arrow)"/>
+  <defs>
+    <marker id="disaster-route-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#65758a"/>
+    </marker>
+  </defs>
+  <rect x="284" y="55" width="106" height="52" rx="18" fill="#fff0bd" stroke="#d19a28" stroke-width="2"/>
+  <circle cx="310" cy="78" r="6" fill="#6d4d0d"/><circle cx="344" cy="78" r="6" fill="#6d4d0d"/>
+  <path d="M313 93 Q327 101 341 93" fill="none" stroke="#6d4d0d" stroke-width="2.5"/>
+  <text x="337" y="132" text-anchor="middle" font-size="12" font-weight="700" fill="#9a6e17">危険を見る</text>
+  <rect x="296" y="151" width="102" height="52" rx="18" fill="#c8f0d7" stroke="#4f9b6c" stroke-width="2"/>
+  <text x="347" y="181" text-anchor="middle" font-size="12" font-weight="700" fill="#28724a">安全へ離れる</text>
+  <path d="M405 177 C450 177 465 136 500 112" fill="none" stroke="#4f9b6c" stroke-width="2.5" marker-end="url(#disaster-route-arrow)"/>
+  <rect x="487" y="62" width="112" height="60" rx="18" fill="#e4d5ff" stroke="#8056b3" stroke-width="2"/>
+  <circle cx="514" cy="87" r="6" fill="#4c3270"/><circle cx="551" cy="87" r="6" fill="#4c3270"/>
+  <path d="M517 102 Q532 112 548 102" fill="none" stroke="#4c3270" stroke-width="2.5"/>
+  <text x="543" y="143" text-anchor="middle" font-size="12" font-weight="700" fill="#68458f">知らせる</text>
+  <rect x="460" y="176" width="140" height="34" rx="17" fill="#fce7e7" stroke="#c86a6a" stroke-width="2"/>
+  <text x="530" y="198" text-anchor="middle" font-size="11" font-weight="700" fill="#7a3030">現地の指示を優先</text>
+</svg>
+
 ## 🤔 動機：災害時に人が迷うのは、知識より「順番」が足りないから
 
 災害が起きたとき、多くの人は「何を買うか」より先に、「今ここにいてよいのか」「外へ出るべきか」「家族へ連絡すべきか」で迷います。しかも、地震の揺れの最中に外へ飛び出すのと、津波から海岸を離れるのとでは、正しい初動が違います。
