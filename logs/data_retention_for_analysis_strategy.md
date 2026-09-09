@@ -35,6 +35,39 @@ date: 2026-05-04
 
 > リード文：分析できるデータ基盤を作るには、保存先より先に「何をどの粒度で、どれくらいの期間、どの目的で保持するか」を決めるのが最短ルートです。
 
+<svg id="retention-four-layers-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="retention-title retention-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="retention-title">データ保持設計は冷蔵庫の作り置きのように層ごとに粒度と期限を分ける</title>
+  <desc id="retention-desc">左に全部を同じ容器で同じ日数保存すると破綻する冷蔵庫の比喩を置き、右に生データ層、正規化層、集計層、公開層の4層それぞれに保持期間と削除ルールを定める構造を示す図。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#f7fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <rect x="40" y="55" width="200" height="150" rx="14" fill="#fdf9f0" stroke="#a08a6a" stroke-width="2"/>
+  <text x="140" y="82" text-anchor="middle" font-size="12" font-weight="700" fill="#5f4c33">冷蔵庫の作り置き</text>
+  <text x="140" y="110" text-anchor="middle" font-size="11" fill="#5f4c33">全部を同じ容器で</text>
+  <text x="140" y="128" text-anchor="middle" font-size="11" fill="#5f4c33">同じ日数保存すると…</text>
+  <text x="140" y="155" text-anchor="middle" font-size="10" fill="#a13a34">腐る・使えない・場所を取る</text>
+  <text x="140" y="185" text-anchor="middle" font-size="10" fill="#8a7a5f">データも同じ扱いだと</text>
+  <text x="140" y="200" text-anchor="middle" font-size="10" fill="#8a7a5f">重い・高い・危ないの三重苦</text>
+  <path d="M245 130 L285 130" fill="none" stroke="#4d82c4" stroke-width="3" marker-end="url(#retention-arrow)"/>
+  <defs>
+    <marker id="retention-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#4d82c4"/>
+    </marker>
+  </defs>
+  <text x="455" y="50" text-anchor="middle" font-size="12" font-weight="700" fill="#285d93">4層に分けて管理する</text>
+  <rect x="300" y="60" width="310" height="32" rx="8" fill="#e3f2fd" stroke="#4d82c4" stroke-width="2"/>
+  <text x="318" y="81" font-size="11" font-weight="700" fill="#285d93">生データ層（Raw）</text>
+  <text x="600" y="81" text-anchor="end" font-size="9" fill="#285d93">粒度を残す・長期</text>
+  <rect x="300" y="97" width="310" height="32" rx="8" fill="#e8f5e9" stroke="#4f9b6c" stroke-width="2"/>
+  <text x="318" y="118" font-size="11" font-weight="700" fill="#28724a">正規化層（Clean）</text>
+  <text x="600" y="118" text-anchor="end" font-size="9" fill="#28724a">定義を統一・中期</text>
+  <rect x="300" y="134" width="310" height="32" rx="8" fill="#fff8e1" stroke="#d19a28" stroke-width="2"/>
+  <text x="318" y="155" font-size="11" font-weight="700" fill="#9a6e17">集計層（Mart）</text>
+  <text x="600" y="155" text-anchor="end" font-size="9" fill="#9a6e17">指標として高速・短期</text>
+  <rect x="300" y="171" width="310" height="32" rx="8" fill="#f3e8ff" stroke="#8a6fc0" stroke-width="2"/>
+  <text x="318" y="192" font-size="11" font-weight="700" fill="#5d3f96">公開層（BI/API）</text>
+  <text x="600" y="192" text-anchor="end" font-size="9" fill="#5d3f96">権限を絞る</text>
+  <text x="320" y="228" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">層ごとに「粒度・期限・削除ルール・権限」を固定する</text>
+</svg>
+
 ## データ保持設計の主役（最初にここだけ押さえる）
 
 データ保持設計を一言でいうと、**「未来の意思決定に使える形で、コストとリスクを管理しながらデータを残す設計」**です。冷蔵庫の作り置きに例えるとわかりやすく、全部を同じ容器で同じ日数保存すると、腐るもの・使えないもの・場所を取るものが混ざって破綻します。分析データも同じで、イベントログ・集計済み指標・個人情報を同じ扱いにすると、いずれ「重い・高い・危ない」の三重苦になります。

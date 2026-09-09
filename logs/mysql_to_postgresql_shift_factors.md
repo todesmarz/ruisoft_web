@@ -46,6 +46,36 @@ title: MySQLからPostgreSQLへ移行判断を最適化する：歴史から読�
 - JSON/型/制約を活かしたアプリ整合性の強化
 - 将来の拡張（レプリケーション設計、検索、地理情報など）の選択肢拡大
 
+<svg id="db-kitchen-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="db-kitchen-title db-kitchen-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="db-kitchen-title">MySQL→PostgreSQL移行は「キッチンのコンロ替え」の概念イラスト</title>
+  <desc id="db-kitchen-desc">鍋（アプリ）は同じでも、コンロを替えると火加減・掃除方法・安全装置が変わり、料理手順（データモデルと運用）の見直しが必要になることを示す。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#f7fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <text x="150" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="#7b5a2b">IHコンロ = MySQL</text>
+  <text x="480" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="#28724a">ガスコンロ = PostgreSQL</text>
+  <rect x="70" y="60" width="160" height="70" rx="10" fill="#e8e8ec" stroke="#7a7a88" stroke-width="2"/>
+  <circle cx="115" cy="95" r="16" fill="#c8c8d4" stroke="#7a7a88" stroke-width="2"/>
+  <circle cx="185" cy="95" r="16" fill="#c8c8d4" stroke="#7a7a88" stroke-width="2"/>
+  <text x="150" y="122" text-anchor="middle" font-size="10" fill="#4a4a58">電気式・決まった火力</text>
+  <rect x="410" y="60" width="160" height="70" rx="10" fill="#dfeee2" stroke="#4f9b6c" stroke-width="2"/>
+  <circle cx="455" cy="95" r="16" fill="#b8dcc4" stroke="#4f9b6c" stroke-width="2"/>
+  <circle cx="525" cy="95" r="16" fill="#b8dcc4" stroke="#4f9b6c" stroke-width="2"/>
+  <path d="M449 90 Q455 84 461 90 M519 90 Q525 84 531 90" fill="none" stroke="#2d6b45" stroke-width="2" stroke-linecap="round"/>
+  <text x="490" y="122" text-anchor="middle" font-size="10" fill="#2d6b45">火加減を細かく調整</text>
+  <path d="M245 95 L395 95" fill="none" stroke="#c9a35d" stroke-width="3" marker-end="url(#db-kitchen-arrow)"/>
+  <defs>
+    <marker id="db-kitchen-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#c9a35d"/>
+    </marker>
+  </defs>
+  <rect x="262" y="70" width="116" height="50" rx="12" fill="#fff0bd" stroke="#d19a28" stroke-width="2"/>
+  <text x="320" y="91" text-anchor="middle" font-size="11" font-weight="700" fill="#9a6e17">鍋 = アプリ</text>
+  <text x="320" y="110" text-anchor="middle" font-size="10" fill="#9a6e17">そのまま使える</text>
+  <rect x="70" y="150" width="500" height="52" rx="12" fill="#eef7ff" stroke="#4d82c4" stroke-width="2"/>
+  <text x="320" y="171" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">替わるもの（ここを見直す）</text>
+  <text x="320" y="192" text-anchor="middle" font-size="10" fill="#285d93">火加減＝実行計画 ／ 掃除＝運用・監視 ／ 安全装置＝制約・権限</text>
+  <text x="320" y="226" text-anchor="middle" font-size="12" font-weight="700" fill="#28724a">エンジン替えではなく「データモデルと運用思想の再設計」</text>
+</svg>
+
 ## 🎬 動機：「流行ってるから」ではなく「将来の変更コスト」で決めたい
 
 2026年の現場でよくあるのは、次の状況です。プロダクト初期はMySQLで高速に立ち上げ、機能が増えてくると「帳票」「検索」「分析」「監査要件」が後付けで入ってくる。するとSQLは長文化し、アプリ側で整合性を吸収し、夜中の障害対応で「この制約、DBに寄せておけばよかった……」となるわけです。私もこれで週末を溶かしたことがあります。

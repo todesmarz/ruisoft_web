@@ -42,6 +42,38 @@ title: レガシーコード保守は生成AIでどう変わるのか？COBOL変
 
 この領域でできることは、主に4つあります。第一に、COBOLなどの既存コードの説明生成。第二に、依存関係の可視化。第三に、Java等への変換と差分検証。第四に、テスト観点やドキュメントの自動生成です。逆に、業務仕様の最終判断とリスク受容は、まだ人間の責任です。
 
+<svg id="legacy-house-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="legacy-house-title legacy-house-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="legacy-house-title">レガシー保守×生成AIは「築40年の家のリフォーム」の概念イラスト</title>
+  <desc id="legacy-house-desc">いきなり全解体すると住めなくなるため、図面を起こし危険箇所を見つけ、一部屋ずつ改修する段階アプローチをAIが加速することを示す。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#f7fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <text x="150" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="#7b5a2b">いきなり全解体</text>
+  <text x="480" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="#28724a">一部屋ずつ改修</text>
+  <rect x="85" y="60" width="130" height="90" rx="6" fill="#efe7dd" stroke="#a08a6a" stroke-width="2"/>
+  <path d="M80 60 L150 30 L220 60" fill="none" stroke="#a08a6a" stroke-width="2.5"/>
+  <path d="M100 80 L200 80 M100 100 L200 100 M100 120 L200 120" stroke="#c97970" stroke-width="2" stroke-dasharray="4 3"/>
+  <text x="150" y="172" text-anchor="middle" font-size="11" fill="#a04a42">止められない・どこが危険か不明</text>
+  <path d="M235 105 L290 105" fill="none" stroke="#c9a35d" stroke-width="3" marker-end="url(#legacy-house-arrow)"/>
+  <defs>
+    <marker id="legacy-house-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#c9a35d"/>
+    </marker>
+  </defs>
+  <rect x="300" y="55" width="300" height="100" rx="14" fill="#eef7ff" stroke="#4d82c4" stroke-width="2"/>
+  <text x="450" y="76" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">生成AIが加速する工程</text>
+  <rect x="315" y="86" width="88" height="24" rx="12" fill="#cfe8ff" stroke="#4d82c4" stroke-width="1.5"/>
+  <text x="359" y="102" text-anchor="middle" font-size="10" fill="#285d93">図面起こし</text>
+  <rect x="411" y="86" width="88" height="24" rx="12" fill="#fff0bd" stroke="#d19a28" stroke-width="1.5"/>
+  <text x="455" y="102" text-anchor="middle" font-size="10" fill="#9a6e17">危険箇所特定</text>
+  <rect x="507" y="86" width="78" height="24" rx="12" fill="#c8f0d7" stroke="#4f9b6c" stroke-width="1.5"/>
+  <text x="546" y="102" text-anchor="middle" font-size="10" fill="#28724a">段階改修</text>
+  <rect x="315" y="118" width="270" height="24" rx="12" fill="#e6dcf5" stroke="#8a6fc0" stroke-width="1.5"/>
+  <text x="450" y="134" text-anchor="middle" font-size="10" fill="#5d3f96">並行稼働で同値確認（Dual Run）</text>
+  <text x="480" y="180" text-anchor="middle" font-size="12" font-weight="700" fill="#28724a">全面置換ではなく「増幅器」として使う</text>
+  <rect x="362" y="192" width="236" height="24" rx="12" fill="#eaf8ef" stroke="#72b68b" stroke-width="1.5"/>
+  <text x="480" y="208" text-anchor="middle" font-size="11" fill="#28724a">理解 → 変換 → 検証のボトルネック圧縮</text>
+  <text x="480" y="228" text-anchor="middle" font-size="10" fill="#285d93">最終判断とリスク受容は人間の責任</text>
+</svg>
+
 ## 🤔 動機：なぜ今、レガシー保守が再び注目されるのか
 
 「モダン化しよう」と言われ続けて10年以上、まだ多くの基幹システムがCOBOLやメインフレーム上に残っています。理由はシンプルで、止められないからです。勘定系・保険・公共系は、1時間止まるだけで事業インパクトが大きすぎる。

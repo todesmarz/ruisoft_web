@@ -35,6 +35,38 @@ date: 2026-04-25
 
 > この記事を読めば、CSVを読み込んで「売上を改善するための仮説」をPythonで検証するまでの流れを、手を動かしながら再現できます。
 
+<svg id="python-analysis-pipeline-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="pipeline-title pipeline-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="pipeline-title">Pythonデータ分析はデータを取り込み整え計算し説明できる形で出す工場ライン</title>
+  <desc id="pipeline-desc">読み込み、前処理、集計と検定、可視化とレポートの4工程が矢印でつながった工場ラインの図。分析の8割は集計前の前処理で勝負が決まることを示す。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#f7fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <text x="320" y="45" text-anchor="middle" font-size="12" font-weight="700" fill="#285d93">データが意図どおりに流れる「工場ライン」を作る力が本体</text>
+  <rect x="35" y="70" width="130" height="80" rx="12" fill="#e3f2fd" stroke="#4d82c4" stroke-width="2"/>
+  <text x="100" y="98" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">① 読み込み</text>
+  <text x="100" y="118" text-anchor="middle" font-size="10" fill="#285d93">CSV / Excel / DB</text>
+  <text x="100" y="136" text-anchor="middle" font-size="9" fill="#4d82c4">包丁と食材を用意</text>
+  <rect x="185" y="70" width="130" height="80" rx="12" fill="#fff8e1" stroke="#d19a28" stroke-width="2"/>
+  <text x="250" y="98" text-anchor="middle" font-size="11" font-weight="700" fill="#9a6e17">② 前処理</text>
+  <text x="250" y="118" text-anchor="middle" font-size="10" fill="#9a6e17">欠損・型変換・重複</text>
+  <text x="250" y="136" text-anchor="middle" font-size="9" fill="#d19a28">★ ここで8割が決まる</text>
+  <rect x="335" y="70" width="130" height="80" rx="12" fill="#e8f5e9" stroke="#4f9b6c" stroke-width="2"/>
+  <text x="400" y="98" text-anchor="middle" font-size="11" font-weight="700" fill="#28724a">③ 集計・検定</text>
+  <text x="400" y="118" text-anchor="middle" font-size="10" fill="#28724a">指標づくり・仮説検証</text>
+  <text x="400" y="136" text-anchor="middle" font-size="9" fill="#4f9b6c">鍋で煮込む</text>
+  <rect x="485" y="70" width="130" height="80" rx="12" fill="#f3e8ff" stroke="#8a6fc0" stroke-width="2"/>
+  <text x="550" y="98" text-anchor="middle" font-size="11" font-weight="700" fill="#5d3f96">④ 可視化・報告</text>
+  <text x="550" y="118" text-anchor="middle" font-size="10" fill="#5d3f96">グラフ・レポート化</text>
+  <text x="550" y="136" text-anchor="middle" font-size="9" fill="#8a6fc0">味見して出す</text>
+  <path d="M167 110 L183 110 M317 110 L333 110 M467 110 L483 110" fill="none" stroke="#4d82c4" stroke-width="3" marker-end="url(#pipeline-arrow)"/>
+  <defs>
+    <marker id="pipeline-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#4d82c4"/>
+    </marker>
+  </defs>
+  <rect x="35" y="170" width="580" height="30" rx="8" fill="#fdecea" stroke="#c0564f" stroke-width="2"/>
+  <text x="325" y="190" text-anchor="middle" font-size="10" fill="#a13a34">順番を間違えると「可視化に2時間、欠損修正に2日」に</text>
+  <text x="320" y="228" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">文法の暗記より、パイプラインを組み上げる練習が学習効率を上げる</text>
+</svg>
+
 ## 🧭 Pythonデータ分析とは何か——「エクセル作業を自動化する工場ライン」
 
 データ分析におけるPythonを一言で言うと、**「データを取り込んで、整えて、計算して、説明できる形で出すための汎用エンジン」**です。料理で例えるなら、包丁（前処理）、鍋（集計）、味見（可視化）、レシピ化（再利用）までを同じキッチンで回せる感じです。

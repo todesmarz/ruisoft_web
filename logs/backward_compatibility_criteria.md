@@ -35,6 +35,39 @@ date: 2026-04-16
 
 > **この記事を読み終えると、「この変更は互換性を維持すべきか」をチームで議論するための具体的な軸が手に入る。**
 
+<svg id="compat-three-choices-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="compat-title compat-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="compat-title">下位互換の判断は「担保・変換・切り捨て」の3択</title>
+  <desc id="compat-desc">左に古い冷蔵庫が同じコンセントで動く後方互換性の比喩を置き、右に旧資産を新バージョンへどう扱うかの3択、そのまま担保する、形を変換する、明示して切り捨てるを示す図。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#f7fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <rect x="40" y="60" width="170" height="140" rx="14" fill="#fdf9f0" stroke="#a08a6a" stroke-width="2"/>
+  <text x="125" y="88" text-anchor="middle" font-size="12" font-weight="700" fill="#5f4c33">冷蔵庫のコンセント</text>
+  <text x="125" y="115" text-anchor="middle" font-size="11" fill="#5f4c33">10年前の冷蔵庫も</text>
+  <text x="125" y="133" text-anchor="middle" font-size="11" fill="#5f4c33">同じコンセントで動く</text>
+  <text x="125" y="160" text-anchor="middle" font-size="10" fill="#8a7a5f">電力会社は</text>
+  <text x="125" y="178" text-anchor="middle" font-size="10" fill="#8a7a5f">「古い家電は対応しません」と言わない</text>
+  <path d="M215 130 L255 130" fill="none" stroke="#4d82c4" stroke-width="3" marker-end="url(#compat-arrow)"/>
+  <defs>
+    <marker id="compat-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#4d82c4"/>
+    </marker>
+  </defs>
+  <text x="300" y="52" text-anchor="middle" font-size="12" font-weight="700" fill="#285d93">旧資産を新バージョンでどう扱うか</text>
+  <rect x="255" y="65" width="115" height="55" rx="10" fill="#e8f5e9" stroke="#4f9b6c" stroke-width="2"/>
+  <text x="312" y="88" text-anchor="middle" font-size="12" font-weight="700" fill="#28724a">担保</text>
+  <text x="312" y="107" text-anchor="middle" font-size="10" fill="#28724a">そのまま動く</text>
+  <rect x="382" y="65" width="115" height="55" rx="10" fill="#fff8e1" stroke="#d19a28" stroke-width="2"/>
+  <text x="439" y="88" text-anchor="middle" font-size="12" font-weight="700" fill="#9a6e17">変換</text>
+  <text x="439" y="107" text-anchor="middle" font-size="10" fill="#9a6e17">形を整えて動く</text>
+  <rect x="509" y="65" width="115" height="55" rx="10" fill="#fdecea" stroke="#c0564f" stroke-width="2"/>
+  <text x="566" y="88" text-anchor="middle" font-size="12" font-weight="700" fill="#a13a34">切り捨て</text>
+  <text x="566" y="107" text-anchor="middle" font-size="10" fill="#a13a34">明示して終了</text>
+  <text x="312" y="145" text-anchor="middle" font-size="10" fill="#28724a">利用者は無意識に安心</text>
+  <text x="439" y="145" text-anchor="middle" font-size="10" fill="#9a6e17">移行コストは低く抑える</text>
+  <text x="566" y="145" text-anchor="middle" font-size="10" fill="#a13a34">移行期間と代替を告知</text>
+  <text x="412" y="185" text-anchor="middle" font-size="10" fill="#5a6470">破壊的変更は悪ではない ―― 「どれを選ぶか」を根拠とともに決める</text>
+  <text x="320" y="222" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">「場合による」で終わらせず、3択のどれかをチームで言語化する</text>
+</svg>
+
 ---
 
 ## 📌 「下位互換」とは何か――冷蔵庫のコンセントで考える

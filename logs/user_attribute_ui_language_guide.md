@@ -35,6 +35,37 @@ date: 2026-04-26
 
 > デザインレビューで「これは誰向けのUIですか？」と聞かれ、言葉に詰まった経験はないか。この記事では、ユーザー属性を4項目で定義し、それをUIの設計根拠として言語化し、5秒テストで検証するまでの一連の手順を具体的に解説する。レビューや合意形成の場で「なぜこのデザインか」を説明できるデザイナーになるための実践ガイドだ。
 
+<svg id="ui-attribute-flow-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="uiflow-title uiflow-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="uiflow-title">ユーザー属性を4項目で定義しUI判断に変換し5秒テストで検証する流れ</title>
+  <desc id="uiflow-desc">職種、年齢層、デバイス、ITリテラシーの4項目を定義し、それをUIの設計判断の根拠に変換し、5秒テストで属性別に検証する3段階の流れを示す図。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#f7fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <text x="320" y="45" text-anchor="middle" font-size="12" font-weight="700" fill="#285d93">「誰向けか」を言語化して、なぜこのデザインかを説明できるようにする</text>
+  <rect x="35" y="65" width="170" height="90" rx="12" fill="#e3f2fd" stroke="#4d82c4" stroke-width="2"/>
+  <text x="120" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">① 属性を4項目で定義</text>
+  <text x="120" y="108" text-anchor="middle" font-size="10" fill="#285d93">職種・年齢層（幅）</text>
+  <text x="120" y="126" text-anchor="middle" font-size="10" fill="#285d93">デバイス・ITリテラシー</text>
+  <text x="120" y="145" text-anchor="middle" font-size="9" fill="#4d82c4">50項目のペルソナは不要</text>
+  <rect x="235" y="65" width="170" height="90" rx="12" fill="#e8f5e9" stroke="#4f9b6c" stroke-width="2"/>
+  <text x="320" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#28724a">② UI判断に変換</text>
+  <text x="320" y="108" text-anchor="middle" font-size="10" fill="#28724a">文字サイズ・入力方式</text>
+  <text x="320" y="126" text-anchor="middle" font-size="10" fill="#28724a">導線の複雑さを根拠づけ</text>
+  <text x="320" y="145" text-anchor="middle" font-size="9" fill="#4f9b6c">「作ったが使っていない」を防ぐ</text>
+  <rect x="435" y="65" width="170" height="90" rx="12" fill="#fff8e1" stroke="#d19a28" stroke-width="2"/>
+  <text x="520" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#9a6e17">③ 5秒テストで検証</text>
+  <text x="520" y="108" text-anchor="middle" font-size="10" fill="#9a6e17">属性別に見え方を確認</text>
+  <text x="520" y="126" text-anchor="middle" font-size="10" fill="#9a6e17">仮説を実測で補強</text>
+  <text x="520" y="145" text-anchor="middle" font-size="9" fill="#d19a28">年齢はヒント、結果が根拠</text>
+  <path d="M207 110 L233 110 M407 110 L433 110" fill="none" stroke="#4d82c4" stroke-width="3" marker-end="url(#uiflow-arrow)"/>
+  <defs>
+    <marker id="uiflow-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#4d82c4"/>
+    </marker>
+  </defs>
+  <rect x="35" y="175" width="570" height="30" rx="8" fill="#fdecea" stroke="#c0564f" stroke-width="2"/>
+  <text x="320" y="195" text-anchor="middle" font-size="10" fill="#a13a34">「30代のビジネスパーソン」だけでは何も言っていないのと同じ</text>
+  <text x="320" y="228" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">定義 → 判断根拠 → 検証のループで、レビューで詰まらない</text>
+</svg>
+
 ---
 
 ## なぜデザインレビューで「誰向け？」に答えられないのか——属性定義が後回しになる構造的な理由

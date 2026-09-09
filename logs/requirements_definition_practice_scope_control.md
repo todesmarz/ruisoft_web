@@ -35,6 +35,38 @@ date: 2026-04-12
 
 > リード文：要件定義で本当にやるべきことを、**目的の明確化→業務理解→要件化→モック検証→優先順位化→合意形成**の順で整理し、スコープ肥大と業務漏れを同時に抑える実践手順としてまとめます。
 
+<svg id="requirements-translation-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="req-title req-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="req-title">要件定義は業務課題を作るべき仕様に翻訳する工程、3層を混ぜない</title>
+  <desc id="req-desc">左に家づくりのように壁紙の前に住まい方を決める比喩を置き、右にWhy層の目的、How-business層の業務、How-system層のシステムの3層を順に翻訳していく構造を示す図。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#f7fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <rect x="40" y="55" width="200" height="150" rx="14" fill="#fdf9f0" stroke="#a08a6a" stroke-width="2"/>
+  <text x="140" y="82" text-anchor="middle" font-size="12" font-weight="700" fill="#5f4c33">家づくりの翻訳工程</text>
+  <text x="140" y="110" text-anchor="middle" font-size="11" fill="#5f4c33">壁紙を選ぶ前に</text>
+  <text x="140" y="128" text-anchor="middle" font-size="11" fill="#5f4c33">「何人で住むのか」</text>
+  <text x="140" y="146" text-anchor="middle" font-size="11" fill="#5f4c33">「在宅勤務はあるか」を決める</text>
+  <text x="140" y="180" text-anchor="middle" font-size="10" fill="#8a7a5f">業務課題 → 作るべき仕様へ翻訳</text>
+  <path d="M245 130 L285 130" fill="none" stroke="#4d82c4" stroke-width="3" marker-end="url(#req-arrow)"/>
+  <defs>
+    <marker id="req-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#4d82c4"/>
+    </marker>
+  </defs>
+  <text x="455" y="50" text-anchor="middle" font-size="12" font-weight="700" fill="#285d93">3層モデルで崩れなくする</text>
+  <rect x="300" y="60" width="310" height="40" rx="9" fill="#e3f2fd" stroke="#4d82c4" stroke-width="2"/>
+  <text x="318" y="78" font-size="11" font-weight="700" fill="#285d93">Why層（目的）</text>
+  <text x="600" y="78" text-anchor="end" font-size="9" fill="#285d93">何を改善し、成功指標は何か</text>
+  <text x="318" y="93" font-size="9" fill="#4d82c4">ここでDB比較を始めるとカオス</text>
+  <rect x="300" y="108" width="310" height="40" rx="9" fill="#e8f5e9" stroke="#4f9b6c" stroke-width="2"/>
+  <text x="318" y="126" font-size="11" font-weight="700" fill="#28724a">How-business層（業務）</text>
+  <text x="600" y="126" text-anchor="end" font-size="9" fill="#28724a">現行業務の流れと詰まりどころ</text>
+  <text x="318" y="141" font-size="9" fill="#4f9b6c">例外・承認・障害時を聞き逃さない</text>
+  <rect x="300" y="156" width="310" height="40" rx="9" fill="#fff8e1" stroke="#d19a28" stroke-width="2"/>
+  <text x="318" y="174" font-size="11" font-weight="700" fill="#9a6e17">How-system層（システム）</text>
+  <text x="600" y="174" text-anchor="end" font-size="9" fill="#9a6e17">技術・構成・実装範囲</text>
+  <text x="318" y="189" font-size="9" fill="#d19a28">モックで前倒し検証する</text>
+  <text x="320" y="228" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">WishとMustを分け、「やらないこと」も明示する</text>
+</svg>
+
 ## 🧭 テーマの主役：要件定義とは何か（30秒で説明）
 
 要件定義を一言でいうと、**「解くべき業務課題を、作るべき仕様に翻訳する工程」**です。家づくりで言えば、いきなり壁紙を選ぶのではなく、まず「何人で住むのか」「在宅勤務はあるのか」「駐車場は必要か」を決めるフェーズに近いです。

@@ -34,6 +34,33 @@ date: 2026-04-09
 
 > 先に結論を言うと、メタバースは「会議ツールとしての夢」からは後退しつつあり、デジタルツインは「AIで速く回す実務基盤」としてむしろ本番フェーズに入っています。この記事では、生成AIによる大まかな推論シミュレーションとの住み分けまで整理します。
 
+<svg id="twin-showroom-simulator-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="twin-title twin-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="twin-title">メタバースはショールーム、デジタルツインは試運転専用シミュレータと目的が違う</title>
+  <desc id="twin-desc">左に人間が入って体験する共有3D空間メタバースをショールームとして示し、右に現実の設備を仮想空間に写して検証するデジタルツインを試運転シミュレータとして示し、下に生成AI推論と物理シミュレーションの粗から精への二段構えを示す図。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#f7fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <rect x="40" y="45" width="270" height="105" rx="14" fill="#f3e8ff" stroke="#8a6fc0" stroke-width="2"/>
+  <text x="175" y="70" text-anchor="middle" font-size="12" font-weight="700" fill="#5d3f96">メタバース = ショールーム</text>
+  <text x="175" y="95" text-anchor="middle" font-size="10" fill="#5d3f96">人間が入って体験する共有3D空間</text>
+  <text x="175" y="115" text-anchor="middle" font-size="10" fill="#8a6fc0">“体験”は縮小傾向</text>
+  <text x="175" y="135" text-anchor="middle" font-size="10" fill="#8a6fc0">会議ツールの夢は後退</text>
+  <rect x="330" y="45" width="270" height="105" rx="14" fill="#e8f5e9" stroke="#4f9b6c" stroke-width="2"/>
+  <text x="465" y="70" text-anchor="middle" font-size="12" font-weight="700" fill="#28724a">デジタルツイン = 試運転シミュレータ</text>
+  <text x="465" y="95" text-anchor="middle" font-size="10" fill="#28724a">現実の設備・物流を仮想に写して検証</text>
+  <text x="465" y="115" text-anchor="middle" font-size="10" fill="#4f9b6c">“運用”は拡大中</text>
+  <text x="465" y="135" text-anchor="middle" font-size="10" fill="#4f9b6c">産業領域は本番フェーズ</text>
+  <path d="M320 158 L320 172" fill="none" stroke="#c9a35d" stroke-width="3" marker-end="url(#twin-arrow)"/>
+  <defs>
+    <marker id="twin-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#c9a35d"/>
+    </marker>
+  </defs>
+  <rect x="40" y="178" width="270" height="34" rx="9" fill="#e3f2fd" stroke="#4d82c4" stroke-width="2"/>
+  <text x="175" y="200" text-anchor="middle" font-size="10" font-weight="700" fill="#285d93">生成AI推論：仮説を大量に出す一次フィルタ（粗）</text>
+  <rect x="330" y="178" width="270" height="34" rx="9" fill="#fff8e1" stroke="#d19a28" stroke-width="2"/>
+  <text x="465" y="200" text-anchor="middle" font-size="10" font-weight="700" fill="#9a6e17">物理シミュレーション：最終ゲート（精）</text>
+  <text x="320" y="230" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">競合ではなく「粗 → 精」の二段ロケットで設計する</text>
+</svg>
+
 ## 🎯 テーマの主役：メタバース／デジタルツインとは何か
 
 このテーマの主役は、キラキラした3D空間そのものではなく、**現実の意思決定をどれだけ早く・安全に改善できるか**という「実務の道具としての価値」です。

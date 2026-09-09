@@ -35,6 +35,36 @@ title: 「AI=生成AI」時代をどう捉えるか - Rui Software
 
 > この記事では、「AIと言えば生成AI」という空気感を前提に、**省エネルギーな独自AI（小型モデル・最適化モデル）**をどこまで武器にできるかを、実データと実装観点で整理します。
 
+<svg id="genai-expectation-shift-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="expectation-title expectation-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="expectation-title">「AI搭載」の期待値は分類・予測から会話・生成へ再定義された</title>
+  <desc id="expectation-desc">上段の昔はAI搭載の看板に分類や予測の中身で十分許容されたが、下段の今は会話、要約、生成が暗黙の期待となり、裏側の制御や判定は軽量AIが担う分担を示す図。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#f7fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <rect x="40" y="40" width="120" height="52" rx="10" fill="#eceff3" stroke="#9aa5b1" stroke-width="2"/>
+  <text x="100" y="62" text-anchor="middle" font-size="11" font-weight="700" fill="#5a6470">昔の看板</text>
+  <text x="100" y="80" text-anchor="middle" font-size="10" fill="#5a6470">「AI搭載」</text>
+  <rect x="185" y="40" width="200" height="52" rx="10" fill="#f5f5f5" stroke="#b0b0b0" stroke-width="2"/>
+  <text x="285" y="62" text-anchor="middle" font-size="11" fill="#666">分類・予測・レコメンド</text>
+  <text x="285" y="80" text-anchor="middle" font-size="10" fill="#888">それで十分と許された時代</text>
+  <text x="445" y="72" text-anchor="middle" font-size="11" fill="#4caf50">✓ 納得</text>
+  <path d="M320 100 L320 122" fill="none" stroke="#c9a35d" stroke-width="3" marker-end="url(#expectation-arrow)"/>
+  <defs>
+    <marker id="expectation-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#c9a35d"/>
+    </marker>
+  </defs>
+  <rect x="40" y="130" width="120" height="52" rx="10" fill="#fff8e1" stroke="#d19a28" stroke-width="2"/>
+  <text x="100" y="152" text-anchor="middle" font-size="11" font-weight="700" fill="#9a6e17">今の看板</text>
+  <text x="100" y="170" text-anchor="middle" font-size="10" fill="#9a6e17">「AI搭載」</text>
+  <rect x="185" y="130" width="200" height="52" rx="10" fill="#e3f2fd" stroke="#4d82c4" stroke-width="2"/>
+  <text x="285" y="152" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">会話・要約・生成</text>
+  <text x="285" y="170" text-anchor="middle" font-size="10" fill="#285d93">自然文で期待される時代</text>
+  <text x="445" y="162" text-anchor="middle" font-size="11" fill="#e07b00">↑ 期待値が上がった</text>
+  <rect x="470" y="130" width="140" height="52" rx="10" fill="#e8f5e9" stroke="#4f9b6c" stroke-width="2"/>
+  <text x="540" y="152" text-anchor="middle" font-size="10" font-weight="700" fill="#28724a">裏側は軽量AIが担当</text>
+  <text x="540" y="170" text-anchor="middle" font-size="10" fill="#28724a">制御・判定・省電力推論</text>
+  <text x="320" y="222" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">入口は生成AI、裏側は軽量AI ―― 期待値の再定義に合わせて分担する</text>
+</svg>
+
 ## 🧭 テーマの主役：「AI=生成AI」現象とは何か
 
 いま市場で起きているのは、単なる流行ではなく**期待値の再定義**です。ユーザーは「AI機能あり」と書かれていると、分類器やレコメンダーより先に、自然文で対話できる生成AIを思い浮かべます。

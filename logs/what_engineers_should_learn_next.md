@@ -34,6 +34,35 @@ title: 何を学ぶべきか迷うエンジニアへ：3つのペルソナ別「
 
 > AI時代の学習は「全部やる」ではなく「役割に合う順番で積む」が正解です。この記事では、ペルソナ別に“明日から動ける学習戦略”を具体化します。
 
+<svg id="learning-menu-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="learning-title learning-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="learning-title">学習投資は冷蔵庫の食材で献立を決めるように順番を設計する</title>
+  <desc id="learning-desc">左に全部を同時に使うと破綻するが主菜と副菜と作り置きを決めると安定する冷蔵庫の献立の比喩を置き、右に共通基盤の上に役割別の深掘りを積む構造を示す図。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#f7fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <rect x="40" y="55" width="200" height="150" rx="14" fill="#fdf9f0" stroke="#a08a6a" stroke-width="2"/>
+  <text x="140" y="82" text-anchor="middle" font-size="12" font-weight="700" fill="#5f4c33">冷蔵庫の食材で献立決め</text>
+  <text x="140" y="108" text-anchor="middle" font-size="10" fill="#a13a34">全部同時に使う → 破綻</text>
+  <text x="140" y="132" text-anchor="middle" font-size="10" fill="#28724a">主菜・副菜・作り置きを決める</text>
+  <text x="140" y="150" text-anchor="middle" font-size="10" fill="#28724a">→ 生活が安定する</text>
+  <text x="140" y="185" text-anchor="middle" font-size="10" fill="#8a7a5f">学習も基礎・応用・実戦の順番設計</text>
+  <path d="M245 130 L285 130" fill="none" stroke="#4d82c4" stroke-width="3" marker-end="url(#learning-arrow)"/>
+  <defs>
+    <marker id="learning-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#4d82c4"/>
+    </marker>
+  </defs>
+  <text x="455" y="52" text-anchor="middle" font-size="12" font-weight="700" fill="#285d93">共通基盤 ＋ 役割別の勝ち筋</text>
+  <rect x="300" y="62" width="310" height="34" rx="9" fill="#e3f2fd" stroke="#4d82c4" stroke-width="2"/>
+  <text x="455" y="84" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">共通基盤：AI活用・セキュリティ・観測性</text>
+  <rect x="300" y="104" width="150" height="42" rx="9" fill="#e8f5e9" stroke="#4f9b6c" stroke-width="2"/>
+  <text x="375" y="122" text-anchor="middle" font-size="10" font-weight="700" fill="#28724a">役割Aの深掘り</text>
+  <text x="375" y="138" text-anchor="middle" font-size="9" fill="#28724a">成果物で市場価値を可視化</text>
+  <rect x="460" y="104" width="150" height="42" rx="9" fill="#f3e8ff" stroke="#8a6fc0" stroke-width="2"/>
+  <text x="535" y="122" text-anchor="middle" font-size="10" font-weight="700" fill="#5d3f96">役割Bの深掘り</text>
+  <text x="535" y="138" text-anchor="middle" font-size="9" fill="#5d3f96">同じ基盤の上で方向が違う</text>
+  <text x="455" y="180" text-anchor="middle" font-size="10" fill="#5a6470">全員同じロードマップは最適ではない ―― リターンの高い順に配分</text>
+  <text x="320" y="228" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">流行ワードに振り回されず、優先順位を固定する</text>
+</svg>
+
 ## 🎯 テーマの主役：「次に何を学ぶか」を決める学習戦略とは
 
 ここでの主役は、単なる技術トレンド紹介ではなく**学習投資の意思決定フレーム**です。ひと言でいえば、「時間・体力・集中力という有限リソースを、最もリターンの高い順で配分する設計図」です。

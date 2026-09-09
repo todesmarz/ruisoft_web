@@ -34,6 +34,32 @@ title: エージェントハーネス入門：なぜ注目されるのか、ど�
 
 > 「エージェントを作ったけど、運用が不安…」という方向けに、エージェントハーネスの考え方をやさしく整理します。
 
+<svg id="harness-brain-engine-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="harness-concept-title harness-concept-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="harness-concept-title">エージェントハーネスは「考える脳」と「安全装置つき実行エンジン」の組み合わせ</title>
+  <desc id="harness-concept-desc">左のLLMモデルが考える脳として文章生成と推論を担い、右のハーネスが安全装置つきの実行エンジンとしてツール呼び出し制御、リトライ、ログ記録、危険操作のブロックを担う対比図。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#f7fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <rect x="40" y="55" width="250" height="150" rx="14" fill="#f3e8ff" stroke="#8a6fc0" stroke-width="2"/>
+  <text x="165" y="85" text-anchor="middle" font-size="13" font-weight="700" fill="#5d3f96">LLMモデル = 考える脳</text>
+  <text x="165" y="115" text-anchor="middle" font-size="11" fill="#5d3f96">・文章を生成する</text>
+  <text x="165" y="133" text-anchor="middle" font-size="11" fill="#5d3f96">・状況を推論する</text>
+  <text x="165" y="151" text-anchor="middle" font-size="11" fill="#5d3f96">・次の一手を判断する</text>
+  <text x="165" y="185" text-anchor="middle" font-size="10" fill="#8a6fc0">単体では外の世界に動けない</text>
+  <path d="M295 130 L340 130" fill="none" stroke="#4d82c4" stroke-width="3" marker-end="url(#harness-concept-arrow)"/>
+  <defs>
+    <marker id="harness-concept-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#4d82c4"/>
+    </marker>
+  </defs>
+  <rect x="345" y="55" width="255" height="150" rx="14" fill="#e8f5e9" stroke="#4f9b6c" stroke-width="2"/>
+  <text x="472" y="85" text-anchor="middle" font-size="13" font-weight="700" fill="#28724a">ハーネス = 実行エンジン</text>
+  <text x="472" y="110" text-anchor="middle" font-size="11" fill="#28724a">・ツールをいつ呼ぶか決める</text>
+  <text x="472" y="128" text-anchor="middle" font-size="11" fill="#28724a">・失敗時はリトライ/停止/確認</text>
+  <text x="472" y="146" text-anchor="middle" font-size="11" fill="#28724a">・ログとトレースに記録</text>
+  <text x="472" y="164" text-anchor="middle" font-size="11" fill="#28724a">・危険な操作をブロック</text>
+  <text x="472" y="192" text-anchor="middle" font-size="10" fill="#4f9b6c">安全装置つきで安定稼働</text>
+  <text x="320" y="228" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">脳だけでは動かず、エンジンだけでは賢くない ―― 両方で1つのエージェント</text>
+</svg>
+
 ## 1. まず「エージェントハーネス」って何？
 
 ひとことで言うと、**LLMエージェントを安全に・安定して動かすための制御層**です。  

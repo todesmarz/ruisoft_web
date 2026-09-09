@@ -35,6 +35,36 @@ title: 生成AI駆動開発のデザインパターンと実践プラクティ�
 
 > この記事を読むと、**生成AIを使った開発を「雰囲気運用」から卒業**し、設計・評価・運用まで一貫した実装パターンとしてチーム導入できるようになります。
 
+<svg id="genai-dev-loop-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="devloop-title devloop-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="devloop-title">生成AI駆動開発は優秀な新人と同じで、曖昧な指示なら迷走し明確な役割と評価なら伸びる</title>
+  <desc id="devloop-desc">左に曖昧な指示で迷走する様子と明確な役割で伸びる様子の新人比喩を置き、右に設計、実装、検証、評価のループに生成AIを組み込む構造を示す図。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#f7fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <rect x="40" y="55" width="200" height="150" rx="14" fill="#fdf9f0" stroke="#a08a6a" stroke-width="2"/>
+  <text x="140" y="82" text-anchor="middle" font-size="12" font-weight="700" fill="#5f4c33">優秀な新人が隣にいる状態</text>
+  <rect x="58" y="95" width="164" height="42" rx="8" fill="#fdecea" stroke="#c0564f" stroke-width="2"/>
+  <text x="140" y="113" text-anchor="middle" font-size="10" font-weight="700" fill="#a13a34">指示が曖昧 → 迷走</text>
+  <text x="140" y="129" text-anchor="middle" font-size="9" fill="#a13a34">毎回成果物がぶれる</text>
+  <rect x="58" y="148" width="164" height="42" rx="8" fill="#e8f5e9" stroke="#4f9b6c" stroke-width="2"/>
+  <text x="140" y="166" text-anchor="middle" font-size="10" font-weight="700" fill="#28724a">役割と評価基準が明確 → 伸びる</text>
+  <text x="140" y="182" text-anchor="middle" font-size="9" fill="#28724a">オンボーディングと同じ構造</text>
+  <path d="M245 130 L285 130" fill="none" stroke="#4d82c4" stroke-width="3" marker-end="url(#devloop-arrow)"/>
+  <defs>
+    <marker id="devloop-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#4d82c4"/>
+    </marker>
+  </defs>
+  <text x="455" y="52" text-anchor="middle" font-size="12" font-weight="700" fill="#285d93">開発ループに組み込む</text>
+  <rect x="310" y="65" width="290" height="34" rx="9" fill="#e3f2fd" stroke="#4d82c4" stroke-width="2"/>
+  <text x="455" y="87" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">設計：要件 → 役割と制約を明示</text>
+  <rect x="310" y="106" width="290" height="34" rx="9" fill="#e8f5e9" stroke="#4f9b6c" stroke-width="2"/>
+  <text x="455" y="128" text-anchor="middle" font-size="11" font-weight="700" fill="#28724a">実装：コード生成・リファクタ提案</text>
+  <rect x="310" y="147" width="290" height="34" rx="9" fill="#fff8e1" stroke="#d19a28" stroke-width="2"/>
+  <text x="455" y="169" text-anchor="middle" font-size="11" font-weight="700" fill="#9a6e17">検証：テスト案・レビュー観点の抽出</text>
+  <path d="M455 181 L455 196 M330 196 L580 196 M330 196 L330 82" fill="none" stroke="#4d82c4" stroke-width="2" marker-end="url(#devloop-arrow)"/>
+  <text x="455" y="212" text-anchor="middle" font-size="10" fill="#5a6470">評価で回す ―― モデルの賢さよりシステム設計が成果を決める</text>
+  <text x="320" y="232" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">「1回聞いて終わり」ではなく、反復構造を設計する</text>
+</svg>
+
 ## 生成AI駆動開発とは何か（主役の紹介）
 「生成AI駆動開発」は、LLMを単なる補助ツールではなく、**設計・実装・検証・運用のループに組み込む開発様式**です。たとえるなら、優秀な新人が毎日隣に座っている状態に近いです。指示が曖昧なら迷走し、役割と評価基準が明確なら驚くほど伸びる——まさに人間のオンボーディングと同じ構造です。
 

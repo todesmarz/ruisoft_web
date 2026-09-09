@@ -47,6 +47,39 @@ Slack・Telegram・Discordの比較は、つい「どれが最強か？」とい
 - 外部コミュニティや速報配信はTelegram/Discordに逃がす
 - OpenClawのようなマルチチャネル運用では、入口を複数にしつつ、重要ログだけ業務系に集約する
 
+<svg id="chat-rooms-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="chat-rooms-title chat-rooms-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="chat-rooms-title">チャットのマルチチャネル戦略は「家の部屋割り」の概念イラスト</title>
+  <desc id="chat-rooms-desc">勝ち抜き戦ではなく部屋割りの発想で、リビング・会議室・作業部屋のように目的ごとに会話空間を割り当て、外線は別チャネルへ逃がすことを示す。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#f7fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <rect x="40" y="45" width="380" height="160" rx="14" fill="#fdf9f0" stroke="#a08a6a" stroke-width="2"/>
+  <text x="230" y="38" text-anchor="middle" font-size="13" font-weight="700" fill="#5f4c33">家の部屋割り = チャネル設計</text>
+  <rect x="58" y="62" width="165" height="58" rx="10" fill="#cfe8ff" stroke="#4d82c4" stroke-width="2"/>
+  <text x="140" y="85" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">リビング = Slack</text>
+  <text x="140" y="104" text-anchor="middle" font-size="10" fill="#285d93">全体連携・日報・監査</text>
+  <rect x="238" y="62" width="165" height="58" rx="10" fill="#c8f0d7" stroke="#4f9b6c" stroke-width="2"/>
+  <text x="320" y="85" text-anchor="middle" font-size="11" font-weight="700" fill="#28724a">会議室 = Slack</text>
+  <text x="320" y="104" text-anchor="middle" font-size="10" fill="#28724a">意思決定・承認</text>
+  <rect x="58" y="132" width="165" height="58" rx="10" fill="#fff0bd" stroke="#d19a28" stroke-width="2"/>
+  <text x="140" y="155" text-anchor="middle" font-size="11" font-weight="700" fill="#9a6e17">作業部屋 = Discord</text>
+  <text x="140" y="174" text-anchor="middle" font-size="10" fill="#9a6e17">実験・音声共在</text>
+  <rect x="238" y="132" width="165" height="58" rx="10" fill="#e6dcf5" stroke="#8a6fc0" stroke-width="2"/>
+  <text x="320" y="155" text-anchor="middle" font-size="11" font-weight="700" fill="#5d3f96">玄関 = Telegram</text>
+  <text x="320" y="174" text-anchor="middle" font-size="10" fill="#5d3f96">外部・配信・ボット</text>
+  <path d="M430 125 L470 125" fill="none" stroke="#c9a35d" stroke-width="3" marker-end="url(#chat-rooms-arrow)"/>
+  <defs>
+    <marker id="chat-rooms-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#c9a35d"/>
+    </marker>
+  </defs>
+  <rect x="478" y="60" width="132" height="130" rx="14" fill="#eef7ff" stroke="#4d82c4" stroke-width="2"/>
+  <text x="544" y="85" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">目的で分ける</text>
+  <text x="544" y="108" text-anchor="middle" font-size="10" fill="#285d93">内線網と外線網を</text>
+  <text x="544" y="126" text-anchor="middle" font-size="10" fill="#285d93">混同しない</text>
+  <text x="544" y="150" text-anchor="middle" font-size="10" fill="#285d93">重要ログだけ</text>
+  <text x="544" y="168" text-anchor="middle" font-size="10" fill="#285d93">業務系に集約</text>
+  <text x="320" y="228" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">「どれが最強か」ではなく「どの部屋に何を置くか」で決める</text>
+</svg>
+
 ## 🤔 動機：Slackが定着しても「全部Slackで良い」とは限らない
 
 Slackが定着した組織ほど、次の壁にぶつかります。社内は快適なのに、採用候補者コミュニティ・OSSユーザー・地域コミュニティ・匿名性の高い相談窓口など、**Slackの文脈外**の人たちと繋がる導線が弱い、という壁です。

@@ -35,6 +35,41 @@ date: 2026-04-20
 
 > この記事では、**「どの現場職でも通用する体力の土台」を、今日から実行できる手順に落として**解説します。技術はもちろん必要ですが、最後にものを言うのは「疲れても動ける体」と「ケガを避ける習慣」です。
 
+<svg id="fitness-four-legs-concept" viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="fitness-title fitness-desc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="fitness-title">現場で使える体力はバッテリーのように高出力と長持ちの両立、その土台は4本脚の椅子</title>
+  <desc id="fitness-desc">左に瞬間出力だけではすぐ枯渇するバッテリーの比喩を置き、右に心肺持久力、全身筋力、体幹安定性、可動域と回復力の4本脚で支える椅子を示した図。</desc>
+  <rect x="10" y="10" width="620" height="230" rx="22" fill="#f7fbff" stroke="#b7d7ee" stroke-width="2"/>
+  <rect x="40" y="55" width="200" height="150" rx="14" fill="#fff8e1" stroke="#d19a28" stroke-width="2"/>
+  <text x="140" y="82" text-anchor="middle" font-size="12" font-weight="700" fill="#9a6e17">体力 = バッテリー</text>
+  <rect x="70" y="95" width="140" height="34" rx="6" fill="#fdecea" stroke="#c0564f" stroke-width="2"/>
+  <text x="140" y="117" text-anchor="middle" font-size="10" fill="#a13a34">瞬間100%でも即0%は使えない</text>
+  <rect x="70" y="140" width="140" height="34" rx="6" fill="#e8f5e9" stroke="#4f9b6c" stroke-width="2"/>
+  <text x="140" y="162" text-anchor="middle" font-size="10" fill="#28724a">高出力 × 長持ち が現場仕様</text>
+  <text x="140" y="192" text-anchor="middle" font-size="10" fill="#8a7a5f">疲れても動ける体が最後の武器</text>
+  <path d="M245 130 L285 130" fill="none" stroke="#4d82c4" stroke-width="3" marker-end="url(#fitness-arrow)"/>
+  <defs>
+    <marker id="fitness-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#4d82c4"/>
+    </marker>
+  </defs>
+  <text x="455" y="52" text-anchor="middle" font-size="12" font-weight="700" fill="#285d93">土台は「4本脚の椅子」</text>
+  <rect x="300" y="65" width="145" height="42" rx="9" fill="#e3f2fd" stroke="#4d82c4" stroke-width="2"/>
+  <text x="372" y="84" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">心肺持久力</text>
+  <text x="372" y="99" text-anchor="middle" font-size="9" fill="#285d93">息切れしにくさ</text>
+  <rect x="460" y="65" width="145" height="42" rx="9" fill="#e8f5e9" stroke="#4f9b6c" stroke-width="2"/>
+  <text x="532" y="84" text-anchor="middle" font-size="11" font-weight="700" fill="#28724a">全身筋力</text>
+  <text x="532" y="99" text-anchor="middle" font-size="9" fill="#28724a">押す・引く・持つ</text>
+  <rect x="300" y="118" width="145" height="42" rx="9" fill="#fff8e1" stroke="#d19a28" stroke-width="2"/>
+  <text x="372" y="137" text-anchor="middle" font-size="11" font-weight="700" fill="#9a6e17">体幹安定性</text>
+  <text x="372" y="152" text-anchor="middle" font-size="9" fill="#9a6e17">腰を守る</text>
+  <rect x="460" y="118" width="145" height="42" rx="9" fill="#f3e8ff" stroke="#8a6fc0" stroke-width="2"/>
+  <text x="532" y="137" text-anchor="middle" font-size="11" font-weight="700" fill="#5d3f96">可動域・回復力</text>
+  <text x="532" y="152" text-anchor="middle" font-size="9" fill="#5d3f96">ケガを避ける</text>
+  <path d="M330 165 L330 185 M530 165 L530 185 M330 185 L530 185" fill="none" stroke="#9aa5b1" stroke-width="2"/>
+  <text x="430" y="200" text-anchor="middle" font-size="10" fill="#5a6470">1本でも短いと体はグラつく ―― 4つを同時に伸ばす</text>
+  <text x="320" y="228" text-anchor="middle" font-size="11" font-weight="700" fill="#285d93">「採用されてから作る」は遅い ―― 就職前から土台を積む</text>
+</svg>
+
 ## 🎯 テーマの主役：ブルーカラー向け体力とは何か
 
 「ブルーカラー向け体力」を一言で言うなら、**重い作業・長時間作業・繰り返し作業を、ケガなく継続できる身体能力**です。
