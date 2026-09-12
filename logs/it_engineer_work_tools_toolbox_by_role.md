@@ -402,4 +402,340 @@ date: 2026-09-12
 
 この図のポイントは、**左側が「悪い人」の話ではない**ということです。個人の道具を磨くのは良いことです。問題は、それがチームの必須手順に混ざった瞬間に、他の人が扉を開けられなくなることです。**個人の道具は学習の場、チームの道具は再現の場**。役割が違うので、置き場所も分けたほうがうまくいきます。
 
-<!-- NEXT -->
+## 📊 結果：道具は19個になり、迷う回数が半分になった
+
+4つの検証を並べたので、最後に数字を置きます。先に断っておくと、**以下は統計ではなく、道具箱の棚卸しを1回行った場合の想定記録**です。数値そのものより、どの項目が動いて、どの項目が動かなかったかに意味があります。
+
+<table>
+  <thead>
+    <tr><th>項目</th><th>棚卸し前</th><th>棚卸し後</th><th>動いた理由</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>登録していた道具の数</td><td>31</td><td>19</td><td>役割が重複していた12個を外した</td></tr>
+    <tr><td>正本が2つ以上あった情報</td><td>9件</td><td>0件</td><td>役割ごとに1つへ寄せた</td></tr>
+    <tr><td>出口テストが1つも通らない道具</td><td>6</td><td>1</td><td>正本から作業用に降格した</td></tr>
+    <tr><td>「これ、どこでやるんだっけ」の回数（1日）</td><td>平均4回</td><td>平均1回</td><td>棚が決まり、置き場所を考えなくなった</td></tr>
+    <tr><td>ツール乗り換えの見積もり</td><td>不明（毎回調査）</td><td>半日</td><td>出口が分かるので作業量を答えられる</td></tr>
+    <tr><td>新しい道具を覚える時間（週）</td><td>約4時間</td><td>約4時間</td><td><strong>変わらない</strong>。ここは減らない</td></tr>
+  </tbody>
+</table>
+
+最後の行をわざと残したのは、正直さのためです。**棚卸しをしても、道具を覚える時間は減りません。**減ったのは、探す時間と迷う時間です。ここを混同すると、「整理したのに速くならない」という誤った結論に着きます。速くなるのは手を動かす速度ではなく、**動き出すまでの速度**のほうです。
+
+<svg viewBox="0 0 780 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="tlbResTitle tlbResDesc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="tlbResTitle">棚卸しで変わったもの・変わらないもの</title>
+  <desc id="tlbResDesc">左側ではマスコットが軽くなった鞄を持って余裕のある表情をしており、右側では同じマスコットが本を読んで学んでいる。探す時間は減るが、学ぶ時間は減らないことを表したイラスト。</desc>
+  <rect x="8" y="8" width="764" height="284" rx="24" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="390" y="40" text-anchor="middle" font-size="16" font-weight="700" fill="#334155">減るものと、減らないものを取り違えない</text>
+
+  <rect x="30" y="58" width="344" height="214" rx="18" fill="#eef6ff" stroke="#7fa9d8" stroke-width="2"/>
+  <text x="202" y="84" text-anchor="middle" font-size="13" font-weight="700" fill="#255a8c">減った：探す・迷う・二重管理</text>
+  <circle cx="176" cy="146" r="27" fill="#ffe0cf" stroke="#d59a76" stroke-width="2.5"/>
+  <circle cx="167" cy="142" r="4.6" fill="#4a3227"/>
+  <circle cx="185" cy="142" r="4.6" fill="#4a3227"/>
+  <circle cx="165" cy="139" r="1.7" fill="#ffffff"/>
+  <circle cx="183" cy="139" r="1.7" fill="#ffffff"/>
+  <circle cx="156" cy="155" r="5" fill="#f7a98c" opacity="0.6"/>
+  <circle cx="196" cy="155" r="5" fill="#f7a98c" opacity="0.6"/>
+  <path d="M167 160 q9 9 18 0" fill="none" stroke="#4a3227" stroke-width="2.4" stroke-linecap="round"/>
+  <ellipse cx="176" cy="206" rx="25" ry="23" fill="#cfe6ff" stroke="#7fa9d8" stroke-width="2.5"/>
+  <path d="M200 186 l22 -10" stroke="#7fa9d8" stroke-width="5" stroke-linecap="round"/>
+  <rect x="214" y="164" width="34" height="26" rx="8" fill="#e7eef7" stroke="#93a9c2" stroke-width="2"/>
+  <path d="M214 172 h34" stroke="#93a9c2" stroke-width="2"/>
+  <text x="231" y="184" text-anchor="middle" font-size="8.5" fill="#5b7291">軽い</text>
+  <text x="264" y="128" font-size="15" fill="#f2c14e">✦</text>
+  <text x="122" y="126" font-size="12" fill="#9dc4e8">✦</text>
+  <text x="202" y="252" text-anchor="middle" font-size="11.5" fill="#1e3a8a">探す時間が消えると、考え始めが速くなる</text>
+
+  <rect x="406" y="58" width="344" height="214" rx="18" fill="#fffdf5" stroke="#e6c98a" stroke-width="2"/>
+  <text x="578" y="84" text-anchor="middle" font-size="13" font-weight="700" fill="#8a6420">残った：学ぶ・考える・確かめる</text>
+  <circle cx="542" cy="150" r="27" fill="#ffe0cf" stroke="#d59a76" stroke-width="2.5"/>
+  <circle cx="533" cy="146" r="4.6" fill="#4a3227"/>
+  <circle cx="551" cy="146" r="4.6" fill="#4a3227"/>
+  <path d="M533 162 q9 6 18 0" fill="none" stroke="#4a3227" stroke-width="2.4" stroke-linecap="round"/>
+  <ellipse cx="542" cy="206" rx="25" ry="23" fill="#ffe8c9" stroke="#d8a964" stroke-width="2.5"/>
+  <path d="M566 186 l20 -8" stroke="#d8a964" stroke-width="5" stroke-linecap="round"/>
+  <rect x="576" y="158" width="42" height="30" rx="6" fill="#ffffff" stroke="#c9a768" stroke-width="2"/>
+  <path d="M597 158 v30" stroke="#c9a768" stroke-width="2"/>
+  <path d="M580 166 h13 M580 173 h13 M601 166 h13 M601 173 h13" stroke="#d8c9a4" stroke-width="1.6"/>
+  <circle cx="636" cy="112" r="14" fill="#fff6d8" stroke="#e8c85c" stroke-width="2"/>
+  <path d="M636 118 v10" stroke="#e8c85c" stroke-width="3" stroke-linecap="round"/>
+  <path d="M630 108 q6 -8 12 0" fill="none" stroke="#e8c85c" stroke-width="2.4" stroke-linecap="round"/>
+  <text x="578" y="252" text-anchor="middle" font-size="11.5" fill="#8a6420">ここに時間を残すのが、棚卸しの目的</text>
+</svg>
+
+この図で言いたいのは、**削って軽くすることが目的ではない**ということです。空けた時間をどこに回すかを決めないまま道具を減らすと、ただ手元が寂しくなるだけです。
+
+## 📌 注目ポイント：記事の結論を5点に絞る
+
+ここまでの内容を、先に短く並べます。どれも「道具を買い替える」話ではなく、**置き場所を決める**話です。
+
+<table>
+  <thead>
+    <tr><th>#</th><th>結論</th><th>効く理由</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>道具の速度は、機能ではなく切替コストと出口で決まる</td><td>能力は足し算で増え、切替は掛け算で増えるから</td></tr>
+    <tr><td>2</td><td>役割は7つで足りる（読む・書く・動かす・確かめる・残す・つなぐ・任せる）</td><td>棚の数が仕事の責任の数に対応するから</td></tr>
+    <tr><td>3</td><td>選ぶ基準は出口（全量エクスポート・自動化の入口・ローカルで開ける）</td><td>値上げ・終了・方針変更は必ず来るから</td></tr>
+    <tr><td>4</td><td>個人の道具とチームの道具は「自分が消えたら止まるか」で分ける</td><td>混ぜると属人化と自由度の喪失が同時に起きるから</td></tr>
+    <tr><td>5</td><td>道具は減らすより、戻り先を決めるほうが効く</td><td>中断のコストは、戻る場所を探す時間に宿るから</td></tr>
+  </tbody>
+</table>
+
+この5点は、どれも地味です。地味ですが、**同じ棚卸しを半年後にもう一度やったときに、同じ結論が出る**のがこの考え方の強みです。流行のツール名を並べた記事は半年で古びますが、棚と出口の話は古びません。
+
+## 💭 考察：棚割りは「減らす」技術ではなく「戻れる場所を作る」技術
+
+ここで一段深く考えます。棚卸しというと、まず「道具を減らす」ことだと思われがちです。しかし実際に効いていたのは、減らすことではありません。**思考が中断したときに、戻ってこられる場所を決めておくこと**です。
+
+理由は、中断のコストの構造にあります。Gloria Markらの研究では、作業を中断された後、元の作業に戻るまでに長い時間がかかると報告されています。ここで失われているのは、作業そのものの時間より、**「いま何をしていたか」を再構築する時間**です。だとすれば、切替をゼロにしようとするより、**戻り先を一意にしておく**ほうが効きます。「調べ物はブラウザのあの場所、記録はあの1ファイル、タスクはあの1画面」。戻り先が決まっていれば、再構築が「開くだけ」になります。
+
+この考え方から、棚割りの原則が4つ導けます。
+
+<table>
+  <thead>
+    <tr><th>原則</th><th>内容</th><th>破ったときに起きること</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>① 1棚1正本</td><td>同じ役割の正本は1つに決める</td><td>どちらが最新かの確認が毎回発生する</td></tr>
+    <tr><td>② 出口のない道具に正本を預けない</td><td>取り出せない形式を最終置き場にしない</td><td>値上げ・終了のたびに人質になる</td></tr>
+    <tr><td>③ 棚が増えたら責任を確認する</td><td>棚は仕事の責任と対応させる</td><td>責任のない道具は、いつか誰も使わなくなる</td></tr>
+    <tr><td>④ 個人とチームの正本を分ける</td><td>学習は個人、再現はチームに置く</td><td>属人化と自由度の喪失が同時に起きる</td></tr>
+  </tbody>
+</table>
+
+もう1つ、期待値を正しく持つための話を書いておきます。仮に道具が2倍速くなっても、仕事全体が2倍速くなることはありません。たとえば仕事の半分が「手を動かす作業」で、残りの半分が「考える・確かめる・人に渡す」だとします。作業の速度が2倍になっても、全体は次の式のとおりです。
+
+> **全体の速さ ＝ 1 ÷（0.5 ＋ 0.5 ÷ 2）＝ 約1.33倍**
+
+つまり、**半分を2倍にしても全体は3割しか速くならない**。この計算の形は、並列化の効果の上限を論じたアムダールの法則と同じです。ここから言えるのは、道具の選定で追えるのは最後の3割だということです。残りの7割は、考える速さ、確かめる速さ、渡す速さで決まります。**道具箱を整えるのは、その7割を削るためではなく、7割に時間を回すため**なのです。
+
+## 💡 活用事例：3つの現場で、道具箱をどう整えたか
+
+ここからは3つの物語です。特定企業の実績ではなく、**再現しやすい想定シナリオ**として書きます。数値は現実に起こりうる想定値です。
+
+<table>
+  <thead>
+    <tr><th>現場</th><th>詰まっていたこと</th><th>やったこと</th><th>変化（想定値）</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>受託開発の個人事業主（契約3社）</td><td>請求・見積もり・議事録の置き場所が3社ばらばら</td><td>「残す」棚の正本を表計算1枚と1フォルダに固定。作業用ツールは自由のまま</td><td>月末の事務作業 6時間 → 3時間</td></tr>
+    <tr><td>5人の開発チーム</td><td>新メンバーの環境構築が口伝。手順書が古い</td><td>開発環境をコンテナ定義ファイルで共有し、手順を機械が実行する形へ</td><td>初回セットアップ 2日 → 半日</td></tr>
+    <tr><td>情シス担当（従業員80名）</td><td>異動・退職時のアカウント棚卸しが漏れる</td><td>「残す」棚の道具だけを対象に、権限一覧を四半期ごとに更新する運用へ</td><td>未使用SaaS 12本を解約、棚卸し作業 8時間 → 2時間</td></tr>
+  </tbody>
+</table>
+
+1つ目の話で効いたのは、**作業用ツールを縛らなかったこと**です。正本を1つに固定しただけで、日々の道具は自由にしたまま事務の迷いが消えました。整える対象は「正本」だけであり、それ以外は触らない。これが棚卸しの成功率を上げます。全部を一気に統一しようとすると、途中で必ず止まります。
+
+2つ目の話の土台になっているのは、**開発環境を定義ファイルとして共有する**という、いま広く使われているやり方です。Docker社のComposeや、Microsoft社が提唱し仕様が公開されているDevelopment Containers（開発環境の構成を定義ファイルで宣言する仕組み）を使うと、「環境の作り方」を人間が読む文書から機械が実行するファイルへ移せます。12要素アプリとして知られる設計の指針でも、開発環境と本番環境の差を小さく保つことが勧められています。**環境の差はバグの温床であり、同時に引き継ぎのコスト**だからです。ここで効くのは、手順書を丁寧に書き直すことではなく、手順そのものを実行可能な形に置き換えることでした。
+
+3つ目の話は、道具箱の考え方がセキュリティの運用にも効く例です。「残す」棚に入っている道具は、たいてい顧客データや認証情報に触れます。だから棚卸しの対象は、道具の数ではなく**権限の一覧**であるべきです。逆に「読む」「書く」の棚の道具は、失われても仕事が止まりにくいので、管理の重さを下げられます。**全部を同じ強さで管理すると、管理そのものが破綻する。**棚が分かれていると、力の入れどころも分かれます。
+
+最後に、実在する取り組みから1つ。Thoughtworks社が半年ごとに公開しているTechnology Radarは、技術やツールをAdopt（採用）・Trial（試用）・Assess（評価）・Hold（保留）の4つのリングに分類し、**半年ごとに位置を見直す**という運用を続けています。これは組織レベルで行われている棚卸しそのものです。注目したいのは、リングの位置が「良い・悪い」ではなく「いまどう関わるか」を示している点です。**Holdは失敗の烙印ではなく、いまは触らないという配置**にすぎません。個人の道具箱でも同じで、外した道具は捨てるのではなく、いまの棚から降ろすだけと考えれば気楽です。
+
+## ✅ 要点まとめ：持ち帰るならこの6つ
+
+道具箱の話は、つい「おすすめの道具一覧」に流れがちです。そうではなく、**自分の道具をどう配置するか**という視点で持ち帰ってください。ここまでの内容を、別の言い方で圧縮します。
+
+- 道具が増えて遅くなるのは、能力ではなく切替が増えるから。まず「どの切替を消すか」で考える
+- 棚は7つ（読む・書く・動かす・確かめる・残す・つなぐ・任せる）。増やすときは責任が増えたかを確認する
+- 道具を選ぶときは機能表ではなく出口を見る。取り出せない形式は最終置き場にしない
+- 個人の道具は磨いてよい。ただしチームの必須手順に混ぜない。止まるかどうかが線引きの基準
+- 中断のコストは「戻り先を探す時間」に宿る。だから正本を1つに決めるだけで効く
+- 道具で速くできるのは仕事の一部。残りは考える・確かめる・渡す時間に残しておく
+
+<svg viewBox="0 0 780 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="tlbChkTitle tlbChkDesc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="tlbChkTitle">要点チェックリストのイラスト</title>
+  <desc id="tlbChkDesc">マスコットがクリップボードを持ち、棚・正本・出口・線引きの4項目にチェックを入れて満足そうな表情をしているイラスト。</desc>
+  <rect x="8" y="8" width="764" height="284" rx="24" fill="#f6fbf7" stroke="#c9e2cd" stroke-width="2"/>
+  <text x="390" y="40" text-anchor="middle" font-size="16" font-weight="700" fill="#2f6b46">棚卸しのチェックは4つで足りる</text>
+
+  <rect x="56" y="72" width="330" height="200" rx="16" fill="#ffffff" stroke="#a9cfb2" stroke-width="2.5"/>
+  <rect x="196" y="62" width="50" height="20" rx="7" fill="#dfe7f2" stroke="#93a9c2" stroke-width="2"/>
+  <path d="M78 112 l10 12 l18 -20" fill="none" stroke="#4f9b6c" stroke-width="3.2" stroke-linecap="round"/>
+  <text x="122" y="118" font-size="12.5" fill="#2f6b46">棚は7つに収まっているか</text>
+  <path d="M78 152 l10 12 l18 -20" fill="none" stroke="#4f9b6c" stroke-width="3.2" stroke-linecap="round"/>
+  <text x="122" y="158" font-size="12.5" fill="#2f6b46">1棚に正本が1つか</text>
+  <path d="M78 192 l10 12 l18 -20" fill="none" stroke="#4f9b6c" stroke-width="3.2" stroke-linecap="round"/>
+  <text x="122" y="198" font-size="12.5" fill="#2f6b46">出口が1つ以上あるか</text>
+  <path d="M78 232 l10 12 l18 -20" fill="none" stroke="#4f9b6c" stroke-width="3.2" stroke-linecap="round"/>
+  <text x="122" y="238" font-size="12.5" fill="#2f6b46">個人とチームが混ざっていないか</text>
+
+  <circle cx="560" cy="146" r="30" fill="#ffe0cf" stroke="#d59a76" stroke-width="2.5"/>
+  <circle cx="550" cy="142" r="5" fill="#4a3227"/>
+  <circle cx="570" cy="142" r="5" fill="#4a3227"/>
+  <circle cx="548" cy="139" r="1.8" fill="#ffffff"/>
+  <circle cx="568" cy="139" r="1.8" fill="#ffffff"/>
+  <circle cx="539" cy="155" r="5.5" fill="#f7a98c" opacity="0.6"/>
+  <circle cx="581" cy="155" r="5.5" fill="#f7a98c" opacity="0.6"/>
+  <path d="M550 162 q10 9 20 0" fill="none" stroke="#4a3227" stroke-width="2.5" stroke-linecap="round"/>
+  <ellipse cx="560" cy="208" rx="27" ry="25" fill="#dff0e4" stroke="#8fbf9c" stroke-width="2.5"/>
+  <path d="M528 186 l-24 -14" stroke="#8fbf9c" stroke-width="5" stroke-linecap="round"/>
+  <path d="M510 172 l-26 -14" stroke="#8fbf9c" stroke-width="5" stroke-linecap="round"/>
+  <text x="628" y="122" font-size="15" fill="#f2c14e">✦</text>
+  <text x="654" y="180" font-size="12" fill="#9ac4b5">✦</text>
+  <text x="636" y="242" font-size="12" fill="#e8b93f">✦</text>
+</svg>
+
+## 🚀 取り込み方：今日5分、今週1ファイル、今月1回の見直し
+
+ここからは、明日から使うための段階です。道具箱の整理は「時間ができたらやる」ものに見えて、実際に効くのは**対象を絞った小さな一歩**です。だから今日の5分から始められます。
+
+<svg viewBox="0 0 780 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="tlbStepTitle tlbStepDesc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="tlbStepTitle">取り込み3ステップのイラスト</title>
+  <desc id="tlbStepDesc">今日は道具を7つの棚に書き出す、今週は道具台帳を1ファイル作る、今月は乗り換えを1つ試すという3段の階段を、マスコットが登っていく様子を表したイラスト。</desc>
+  <rect x="8" y="8" width="764" height="284" rx="24" fill="#f5f7ff" stroke="#c7cfe8" stroke-width="2"/>
+  <text x="390" y="42" text-anchor="middle" font-size="16" font-weight="700" fill="#3b4a7a">書き出す → 台帳にする → 1つ試す</text>
+
+  <path d="M60 250 h180 v-56 h180 v-56 h180 v-56 h120" fill="none" stroke="#c3cce8" stroke-width="4"/>
+  <rect x="60" y="250" width="180" height="26" fill="#eef1fb" stroke="#c3cce8" stroke-width="2"/>
+  <rect x="240" y="194" width="180" height="82" fill="#e4e9f9" stroke="#b4c0e2" stroke-width="2"/>
+  <rect x="420" y="138" width="180" height="138" fill="#d9e0f6" stroke="#a5b3dd" stroke-width="2"/>
+
+  <text x="150" y="234" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3b4a7a">今日：7つの棚に書き出す</text>
+  <text x="330" y="178" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3b4a7a">今週：台帳を1ファイル作る</text>
+  <text x="510" y="122" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3b4a7a">今月：乗り換えを1つ試す</text>
+
+  <circle cx="580" cy="86" r="24" fill="#ffe0cf" stroke="#d59a76" stroke-width="2.5"/>
+  <circle cx="572" cy="82" r="4.2" fill="#4a3227"/>
+  <circle cx="588" cy="82" r="4.2" fill="#4a3227"/>
+  <circle cx="590" cy="79" r="1.5" fill="#ffffff"/>
+  <path d="M573 98 q8 7 16 0" fill="none" stroke="#4a3227" stroke-width="2.3" stroke-linecap="round"/>
+  <ellipse cx="580" cy="118" rx="20" ry="16" fill="#cfe6ff" stroke="#7fa9d8" stroke-width="2.5"/>
+  <text x="672" y="66" font-size="17" fill="#f2c14e">✦</text>
+  <text x="700" y="88" font-size="12" fill="#e8b93f">✦</text>
+  <text x="640" y="52" font-size="12" fill="#a5b3dd">✦</text>
+</svg>
+
+**今日（5分でできること）**：いま使っている道具を、紙でもテキストでもよいので7つの棚に振り分けて書き出します。道具名だけで十分です。書き出した瞬間に「確かめる」の棚が空いている、といった偏りが見えます。**偏りを見つけることが今日の目的**で、直すのは後回しでかまいません。
+
+**今週（1ファイル作る）**：書き出した道具を、`tools.yml` のような1つのファイルに移します。項目は名前・棚・出口・代替手段・見直し時期の5つだけ。これが道具台帳になります。あわせて、**出口テストで1つも通らない道具を1つだけ選び、正本から外して作業用に降格**します。ここで全部を直そうとしないことが、続けるコツです。
+
+**今月（乗り換えを1つ試す）**：台帳を見て、いちばん出口が狭い道具を1つ選び、代替へ移す練習をします。移す対象は、仕事のクリティカルパスから外れたものでかまいません。目的は引っ越し自体ではなく、**「乗り換えられる」という状態を一度体験しておくこと**です。加えて、チームで使っている道具については、開発環境や手順がファイルとして共有されているかを確認します。個人のPCの履歴にしか手順がない項目が1つでもあれば、それが今月の宿題です。
+
+## 🔥 ハマりポイント：道具箱が崩れる5つのパターン
+
+ここからは、実際に崩れる場面を並べます。どれも「知らないうちに起きる」タイプの失敗で、原因は意志の弱さではなく**配置の設計**にあります。まず1枚の絵で、この状態を表しておきます。
+
+<svg viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="tlbTrapTitle tlbTrapDesc" style="max-width:100%;height:auto;display:block;margin:1rem auto;font-family:sans-serif;">
+  <title id="tlbTrapTitle">道具箱が崩れる状態の概念イラスト</title>
+  <desc id="tlbTrapDesc">マスコットが絡まったケーブルの束を抱えて困った表情をしており、その脇で本来使うはずの小さな道具が埋もれている様子を表したイラスト。</desc>
+  <rect x="8" y="8" width="764" height="264" rx="24" fill="#fff7f7" stroke="#f0c2c2" stroke-width="2"/>
+  <text x="390" y="40" text-anchor="middle" font-size="16" font-weight="700" fill="#9b4a4a">増えた道具は、絡まったまま固まる</text>
+
+  <circle cx="250" cy="140" r="30" fill="#ffe0cf" stroke="#d59a76" stroke-width="2.5"/>
+  <circle cx="240" cy="136" r="5" fill="#4a3227"/>
+  <circle cx="260" cy="136" r="5" fill="#4a3227"/>
+  <path d="M240 152 q10 -8 20 0" fill="none" stroke="#4a3227" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="222" cy="150" r="5.5" fill="#f7a98c" opacity="0.6"/>
+  <circle cx="278" cy="150" r="5.5" fill="#f7a98c" opacity="0.6"/>
+  <ellipse cx="250" cy="200" rx="27" ry="25" fill="#cfe6ff" stroke="#7fa9d8" stroke-width="2.5"/>
+  <path d="M222 186 q-16 -6 -14 -22" fill="none" stroke="#7fa9d8" stroke-width="5" stroke-linecap="round"/>
+  <path d="M278 186 q16 -6 14 -22" fill="none" stroke="#7fa9d8" stroke-width="5" stroke-linecap="round"/>
+
+  <path d="M186 150 q-22 12 -8 30 q14 18 -8 26" fill="none" stroke="#c98fa8" stroke-width="4" stroke-linecap="round"/>
+  <path d="M206 176 q-20 16 -4 32 q14 14 -6 22" fill="none" stroke="#8fb8d0" stroke-width="4" stroke-linecap="round"/>
+  <path d="M314 150 q22 12 8 30 q-14 18 8 26" fill="none" stroke="#d0b48f" stroke-width="4" stroke-linecap="round"/>
+  <path d="M294 176 q20 16 4 32 q-14 14 6 22" fill="none" stroke="#a8c99a" stroke-width="4" stroke-linecap="round"/>
+  <text x="168" y="112" font-size="15" fill="#c86a6a">💦</text>
+  <text x="330" y="112" font-size="13" fill="#c86a6a">💦</text>
+
+  <rect x="468" y="92" width="250" height="128" rx="16" fill="#ffffff" stroke="#e3c9c9" stroke-width="2"/>
+  <text x="593" y="118" text-anchor="middle" font-size="12.5" font-weight="700" fill="#8a4a4a">本当はやりたいこと</text>
+  <text x="593" y="146" text-anchor="middle" font-size="11.5" fill="#6b4a4a">新しい道具を試して、学ぶ</text>
+  <text x="593" y="172" text-anchor="middle" font-size="11.5" fill="#6b4a4a">目の前の仕事に集中する</text>
+  <text x="593" y="200" text-anchor="middle" font-size="11.5" fill="#6b4a4a">人に渡せる形で残す</text>
+  <circle cx="440" cy="156" r="11" fill="#fff6d8" stroke="#e8c85c" stroke-width="2"/>
+  <path d="M440 162 v8" stroke="#e8c85c" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="404" y="128" font-size="12" fill="#e8b93f">✦</text>
+  <text x="418" y="206" font-size="12" fill="#e8b93f">✦</text>
+</svg>
+
+この図のポイントは、**道具の数が問題なのではなく、絡まりが問題**だということです。道具は1本ずつは良いものです。絡まるのは、置き場所が決まっていないからです。
+
+**その1：オールインワンに寄せれば解決すると思い込む**
+
+症状は、1つのサービスに寄せたとたん、代わりになるものがなくなること。原因は、統合が「切替の削減」と「出口の喪失」を同時に起こすからです。対処は、寄せてよい棚と寄せてはいけない棚を分けること。**記録の正本は寄せてよいが、出口のない形式には寄せない**。統合の便利さは、やめる自由と引き換えになっていることを覚えておきます。
+
+**その2：無料枠が積み上がり、いつの間にか有料化している**
+
+症状は、クレジットカードの請求を見て初めて気づく。原因は、道具が「無料で試す」段階のまま台帳に載っていないこと。対処は、試す段階の道具も台帳に「評価中」として載せること。棚卸しの対象から外れた道具は、たいてい評価中のまま残ります。**評価中は棚ではなく状態**なので、状態を書く場所を決めておくのが正解です。
+
+**その3：手順書を丁寧に書き直して満足する**
+
+症状は、半年後にその手順書が誰にも読まれず、内容も古くなっている。原因は、手順が人間の記憶と文書に依存していること。対処は、実行できる形に移すこと。設定ファイル、コンテナ定義、スクリプト。**文書は「なぜ」を書き、手順は「実行できる形」に置く**。この分担にすると、更新すべき箇所が減ります。
+
+**その4：道具を減らすこと自体を目的にする**
+
+症状は、手元が寂しくなったのに仕事は速くならない。原因は、削ることで学習の機会まで削っていること。対処は、**削る対象を「正本と重複」に限定する**こと。試すための道具は、棚の外に置いてかまいません。個人の道具は学習の場なので、数を絞る必要はないのです。
+
+**その5：チームの道具を個人の判断で置き換える**
+
+症状は、ある日ほかのメンバーの環境で動かなくなる。原因は、チームの必須手順に個人の道具が混ざること。対処は、置き換える前に「これは止まるかどうか」を確認すること。止まるなら、置き換えではなく提案として扱います。**個人の道具は自分の机の上、チームの道具は共有の棚**。この線を越えるときは、必ず一言添える習慣をつけておくと事故が減ります。
+
+## 🔄 他の選択肢との比較：道具箱の整え方は4通り
+
+最後に、整え方そのものを比べます。棚割りは唯一の正解ではありません。
+
+<table>
+  <thead>
+    <tr><th>整え方</th><th>強み</th><th>弱み</th><th>向いているケース</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>役割ごとに1つへ絞る（本記事）</td><td>切替が減る。乗り換えやすさが残る</td><td>棚を決める手間がかかる。最初の1回が重い</td><td>道具が増えすぎて迷いが増えた人</td></tr>
+    <tr><td>1社のサービスに統合する</td><td>連携が滑らか。管理が1か所で済む</td><td>出口が狭くなりやすい。値上げに弱い</td><td>小規模で、データを長期に持ち出さない場合</td></tr>
+    <tr><td>自作スクリプトで統一する</td><td>自由度が高い。自分の手に完全に合う</td><td>保守が自分に集中する。渡せない</td><td>個人の作業で、再現性を他人に求めない場合</td></tr>
+    <tr><td>何も変えず、増やす一方にする</td><td>学習の機会は最大。試す速度は速い</td><td>切替コストが積み上がり、後で必ず効いてくる</td><td>探索の時期と割り切れている場合（期限を決めて）</td></tr>
+  </tbody>
+</table>
+
+正直に書くと、**探索の時期に「何も変えない」は正しい選択**です。新しい道具を試す量がそのまま学習量になる段階では、整理は後回しでよい。危ないのは、探索の時期が終わったのに気づかず、同じ勢いで増やし続けることです。判断の目安は、**「新しい道具を試すとき、既存のどの道具が置き換わるかを言えるか」**。言えなくなったら、それが棚卸しの合図です。
+
+## 📅 今後の展望：道具は「人を介さず使われる」方向へ動いている
+
+道具箱の話は、いま少しずつ前提が変わりつつあります。理由は、道具を使うのが人間だけではなくなったからです。Anthropic社が2024年に公開し、その後に業界で広く採用が進んだModel Context Protocol（AIモデルと外部ツールをつなぐための共通仕様）のように、**AIに道具を使わせるための共通の口**が整備されてきました。CLIやAPIを持つ道具はAIからも扱えますが、GUIしか持たない道具は扱いにくい。つまり、**出口テストの②「自動化の入口」が、人間の利便性だけでなく、AIから使えるかどうかの条件にもなりつつあります**。
+
+依存関係の扱いも厳しくなっています。ソフトウェア部品表（SBOM）の整備が進み、EUではサイバーレジリエンス法のような製品のセキュリティ要件を定める枠組みが成立し、段階的に適用が進むとされています。加えて、2023年にHashiCorp社がTerraformなどのライセンスを変更したことをきっかけに、OpenTofuのようなフォークが生まれた出来事は、**道具は突然変わる**という現実を広く知らしめました。
+
+<table>
+  <thead>
+    <tr><th>問い</th><th>いまの答え</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>流行の道具を追う価値はあるか</td><td>ある。ただし棚の外で試す（正本にはしない）</td></tr>
+    <tr><td>いま棚卸しを採用する価値はあるか</td><td><strong>ある</strong>。AIに道具を渡す前提として、棚と出口の情報が必要になったから</td></tr>
+    <tr><td>揃えるべき最小のものは何か</td><td>道具台帳1枚（名前・棚・出口・代替・見直し時期）</td></tr>
+    <tr><td>やらなくてよいことは何か</td><td>全部の道具を1つのサービスに統合すること</td></tr>
+  </tbody>
+</table>
+
+とくに2つ目の問いが、この記事を書いた理由です。AIに仕事を任せる流れが進むほど、**「どの道具に、何を、どこまで任せるか」を人間が説明できる必要**が出てきます。任せる相手は、棚と出口が見えている道具箱のほうが扱いやすい。自動化は、人間が決めた構造を機械に渡す作業です。**構造がないまま自動化すると、速いだけの無秩序ができあがります。**だから、道具箱を整えるのは、AI時代の準備でもあるのです。
+
+## まとめ
+
+仕事道具は、増やすほど強くなるように見えて、実際は**置き場所が決まっているほど速く**なります。プロの厨房が速いのは高い包丁を持っているからではなく、包丁の場所が決まっているからでした。同じことがエンジニアの道具箱にも起きます。
+
+だから、まず道具を7つの棚に振り分ける。正本を1棚に1つだけ置く。選ぶときは機能表ではなく出口を見る。個人の道具とチームの道具は、自分が消えたときに止まるかどうかで分ける。この4つを決めておけば、道具が値上げしても、終了しても、AIに渡すことになっても、あなたは落ち着いて次の一手を選べます。
+
+これを読んだあなたは、次に新しいツールを試したくなったとき、「これまでのどの道具が置き換わるか」を先に言えるようになるはずです。そして、道具箱を開けたときに、どこに何があるかを迷わず答えられるようになります。
+
+## 参考文献
+
+1. [The Twelve-Factor App](https://12factor.net/) — 設定をコードに置く考え方（III. Config）と、開発環境と本番環境の差を小さく保つ指針（X. Dev/prod parity）を確認（2026年9月12日参照）
+2. [Development Containers](https://containers.dev/) — 開発環境の構成を定義ファイルで宣言し、チームで共有する仕様（2026年9月12日参照）
+3. [Docker Docs](https://docs.docker.com/) — コンテナによる環境の再現、Composeによる複数コンテナの定義方法（2026年9月12日参照）
+4. [NixOS](https://nixos.org/) — 環境と依存関係を宣言的に固定し、再現可能にする仕組み（2026年9月12日参照）
+5. [Thoughtworks Technology Radar](https://www.thoughtworks.com/radar) — Adopt・Trial・Assess・Holdの4リングで技術を定期評価する運用（2026年9月12日参照）
+6. [Model Context Protocol](https://modelcontextprotocol.io/) — AIモデルと外部ツール・データを接続するための共通仕様（2026年9月12日参照）
+7. [Git](https://git-scm.com/) — 設定・手順・環境定義をバージョン管理下に置くための基本（2026年9月12日参照）
+8. [Semantic Versioning](https://semver.org/) — 依存する道具の更新がどの種類の変更かを判断する基準（2026年9月12日参照）
+9. [Keep a Changelog](https://keepachangelog.com/) — 道具や自作物の変更履歴を残す書式（2026年9月12日参照）
+10. [Open Source Initiative](https://opensource.org/) — ライセンスの違いと、道具の利用条件を確認するための基本情報（2026年9月12日参照）
+11. [SPDX](https://spdx.dev/) — ソフトウェア部品表（SBOM）で用いられるライセンス表記の標準（2026年9月12日参照）
+12. [CycloneDX](https://cyclonedx.org/) — SBOMを生成・共有するための仕様（2026年9月12日参照）
+13. [NIST SP 800-218（Secure Software Development Framework）](https://csrc.nist.gov/) — 開発に組み込むセキュリティ実践の整理（2026年9月12日参照）
+14. [HashiCorp](https://www.hashicorp.com/) — ライセンス変更の告知と、その後の方針に関する公式情報（2026年9月12日参照）
+15. [OpenTofu](https://opentofu.org/) — ライセンス変更をきっかけに生まれたオープンソースのフォーク（2026年9月12日参照）
+16. [IPA（情報処理推進機構）](https://www.ipa.go.jp/) — 情報セキュリティ10大脅威や、組織におけるIT利用の注意点（2026年9月12日参照）
+17. [総務省](https://www.soumu.go.jp/) — テレワークやクラウドサービス利用に関する調査・ガイドライン（2026年9月12日参照）
