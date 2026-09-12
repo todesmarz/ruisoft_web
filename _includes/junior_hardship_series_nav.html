@@ -1,0 +1,80 @@
+{% comment %}
+  ジュニアエンジニア向け 理不尽との付き合い方シリーズ（全8回）の前後ナビゲーション。
+  「コンピュータサイエンス入門」（junior_cs_*）「開発フロー入門」（junior_dev_*）の姉妹シリーズ。
+
+  使い方（記事の先頭と末尾に1回ずつ）:
+    {% include junior_hardship_series_nav.html current=1 mode="top" %}
+    {% include junior_hardship_series_nav.html current=1 mode="bottom" %}
+
+  current: 1〜8 の回番号
+  mode:    "top"（コンパクトな前後リンク） / "bottom"（全8回の一覧つき）
+{% endcomment %}
+
+{%- assign cur = include.current | plus: 0 -%}
+{%- assign cur_idx = cur | minus: 1 -%}
+{%- assign files = "junior_hardship_01_irrationality_map,junior_hardship_02_external_spec_change_eol,junior_hardship_03_scope_change_upstream,junior_hardship_04_office_politics,junior_hardship_05_harassment_boundary,junior_hardship_06_evaluation_promotion,junior_hardship_07_legacy_debt_archaeology,junior_hardship_08_not_being_consumed" | split: "," -%}
+{%- assign labels = "全体地図：理不尽は「型」で見れば予測できる|外部起因の仕様変更：昨日動いたものが、今日動かなくなる|内部起因の仕様変更：「ついで」に現場が壊される理由|社内政治：正しいだけでは通らない意思決定の作法|パワハラ：境界線の引き方と、記録という盾|評価と処遇：頑張りが反映されない構造を分解する|過去の負債：前任者の遺産を、壊さずに直す|総括：理不尽に飲まれないための4つの資本" | split: "|" -%}
+{%- assign prev_i = cur | minus: 1 -%}
+{%- assign next_i = cur | plus: 1 -%}
+{%- assign prev_idx = prev_i | minus: 1 -%}
+{%- assign next_idx = next_i | minus: 1 -%}
+{%- assign cur_label = labels[cur_idx] -%}
+{%- assign prev_file = files[prev_idx] -%}
+{%- assign next_file = files[next_idx] -%}
+{%- assign prev_label = labels[prev_idx] -%}
+{%- assign next_label = labels[next_idx] -%}
+
+{%- if include.mode == "bottom" -%}
+<div style="margin:2rem 0 1.5rem;padding:18px 20px;border:2px solid #fde68a;border-radius:16px;background:#fffbeb;font-family:sans-serif;">
+  <div style="font-size:14px;font-weight:700;color:#92400e;">ジュニアエンジニア向け 理不尽との付き合い方 ── 全8回の一覧</div>
+  <div style="margin-top:4px;font-size:12px;color:#b45309;">いま読んでいるのは <strong>第{{ cur }}回</strong> です。読みたい回から始めても構いません。</div>
+  <ol style="margin:14px 0 0;padding-left:0;list-style:none;font-size:13px;line-height:1.7;">
+    {%- for f in files -%}
+      {%- assign i = forloop.index -%}
+      {%- assign lab = labels[forloop.index0] -%}
+      {%- if i == cur -%}
+    <li style="margin:6px 0;padding:8px 12px;border-radius:10px;background:#fef3c7;border:2px solid #f59e0b;font-weight:700;color:#78350f;">
+      ▶ 第{{ i }}回：{{ lab }}<span style="margin-left:8px;font-size:11px;font-weight:400;color:#b45309;">（この記事）</span>
+    </li>
+      {%- else -%}
+    <li style="margin:6px 0;padding:8px 12px;border-radius:10px;background:#ffffff;border:1px solid #fde68a;">
+      <a href="{{ site.baseurl }}/logs/{{ f }}.html" style="color:#92400e;text-decoration:none;">第{{ i }}回：{{ lab }}</a>
+    </li>
+      {%- endif -%}
+    {%- endfor -%}
+  </ol>
+  <div style="margin-top:16px;padding-top:14px;border-top:1px dashed #fbbf24;font-size:13px;">
+    {%- if cur > 1 %}
+    <a href="{{ site.baseurl }}/logs/{{ prev_file }}.html" style="color:#92400e;font-weight:700;text-decoration:none;">← 第{{ prev_i }}回：{{ prev_label }}</a>
+    {%- else %}
+    <span style="color:#94a3b8;">← これが最初の回です</span>
+    {%- endif %}
+    <br style="line-height:2;" />
+    {%- if cur < 8 %}
+    <a href="{{ site.baseurl }}/logs/{{ next_file }}.html" style="color:#92400e;font-weight:700;text-decoration:none;">第{{ next_i }}回：{{ next_label }} →</a>
+    {%- else %}
+    <span style="color:#94a3b8;">これが最終回です →</span>
+    {%- endif %}
+  </div>
+</div>
+{%- else -%}
+<div style="margin:1.2rem 0 1.5rem;padding:14px 18px;border:2px solid #fde68a;border-radius:14px;background:#fffbeb;font-family:sans-serif;">
+  <div style="font-size:12px;font-weight:700;color:#b45309;letter-spacing:.02em;">ジュニアエンジニア向け 理不尽との付き合い方シリーズ（全8回）</div>
+  <div style="margin-top:6px;font-size:14px;font-weight:700;color:#1e293b;">第{{ cur }}回：{{ cur_label }}</div>
+  <div style="margin-top:10px;font-size:12.5px;line-height:2;">
+    {%- if cur > 1 %}
+    <a href="{{ site.baseurl }}/logs/{{ prev_file }}.html" style="color:#92400e;font-weight:700;text-decoration:none;">← 前の回（第{{ prev_i }}回）</a>
+    {%- else %}
+    <span style="color:#94a3b8;">← 前の回はありません</span>
+    {%- endif %}
+    <span style="color:#cbd5e1;margin:0 8px;">|</span>
+    {%- if cur < 8 %}
+    <a href="{{ site.baseurl }}/logs/{{ next_file }}.html" style="color:#92400e;font-weight:700;text-decoration:none;">次の回（第{{ next_i }}回） →</a>
+    {%- else %}
+    <span style="color:#94a3b8;">次の回はありません →</span>
+    {%- endif %}
+    <span style="color:#cbd5e1;margin:0 8px;">|</span>
+    <a href="{{ site.baseurl }}/logs/" style="color:#b45309;text-decoration:none;">記事一覧</a>
+  </div>
+</div>
+{%- endif -%}
