@@ -1,9 +1,18 @@
 <!DOCTYPE html>
-<html prefix="og: http://ogp.me/ns# fb: http://www.facebook.com/2008/fbml">
+<html lang="ja" prefix="og: https://ogp.me/ns#">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>{{page.title}}</title>
+{% assign page_title = page.title | default: site.title %}
+{% assign page_description = page.description | default: site.description | strip_html | strip_newlines %}
+{% assign canonical_url = page.url | replace: 'index.html', '' | absolute_url %}
+{% assign og_type = 'website' %}
+{% if page.url contains '/logs/' and page.url != '/logs/' %}
+{% assign og_type = 'article' %}
+{% endif %}
+<title>{{ page_title | escape }}</title>
+<meta name="description" content="{{ page_description | escape }}" />
+<link rel="canonical" href="{{ canonical_url }}" />
 <link href="//res.primasm.com/css/bootstrap.min.css" rel="stylesheet">
 <link href="//res.primasm.com/css/bootstrap-theme.min.css" rel="stylesheet">
 <link rel="stylesheet" href="{{site.baseurl}}/style.css" type="text/css" media="screen" />
@@ -18,13 +27,12 @@
 <link rel='dns-prefetch' href='//res.primasm.com' />
 <link rel='dns-prefetch' href='//s.w.org' />
 <script type='text/javascript' src='//res.primasm.com/js/jquery.min.js' id='jquery-js'></script>
-<meta property="og:title" content="Rui Software" />
-<meta property="og:type" content="blog" />
-<meta property="og:url" content="http://rui.primasm.com/" />
-<meta property="og:site_name" content="Rui Software" />
-<meta property="og:description" content="黙り虫、壁を破る" />
-<meta property="og:image" content="//res.primasm.com/favicon.ico" />
-<meta property="fb:app_id" content="Rui Software blog" />
+<meta property="og:title" content="{{ page_title | escape }}" />
+<meta property="og:type" content="{{ og_type }}" />
+<meta property="og:url" content="{{ canonical_url }}" />
+<meta property="og:site_name" content="{{ site.title | escape }}" />
+<meta property="og:description" content="{{ page_description | escape }}" />
+<meta property="og:image" content="{{ '/images/top_page_image.png' | absolute_url }}" />
 </head>
 <body>
 <script type="text/javascript">
