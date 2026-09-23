@@ -631,8 +631,41 @@ function normalizeTextForTTS(text){
   return (container.textContent || text).replace(/\s+/g,' ').replace(/《[^》]*》/g,'').trim();
 }
 
-function splitSentences(text){ return text.split(/(?<=[。！？.!?])\s+/).map(s=>s.trim()).filter(Boolean); }
-function toChunks(text, maxLen=220){ const sents=splitSentences(text); const chunks=[]; let buf=''; for(const x of sents){ if((buf+' '+x).trim().length>maxLen){ if(buf) chunks.push(buf.trim()); buf=x; } else { buf += ' '+x; } } if(buf.trim()) chunks.push(buf.trim()); return chunks.length?chunks:[text]; }
+function splitSentences(text){
+  // ePubの日本語本文は句点後に空白がないことが多いため、空白の有無に依存しない。
+  return text.match(/[^。！？.!?]+[。！？.!?]+|[^。！？.!?]+$/gu)?.map(s=>s.trim()).filter(Boolean) || [];
+}
+function splitLongText(text, maxLen){
+  const chunks = [];
+  let rest = text.trim();
+  while(rest.length > maxLen){
+    // 上限付近の読点・空白を優先し、見つからなくても必ず上限で分割する。
+    const head = rest.slice(0, maxLen + 1);
+    const candidates = [head.lastIndexOf('、'), head.lastIndexOf(','), head.lastIndexOf(' ')];
+    const boundary = Math.max(...candidates.filter(i=>i >= Math.floor(maxLen * 0.6)));
+    const cut = boundary >= 0 ? boundary + 1 : maxLen;
+    chunks.push(rest.slice(0, cut).trim());
+    rest = rest.slice(cut).trim();
+  }
+  if(rest) chunks.push(rest);
+  return chunks;
+}
+function toChunks(text, maxLen=220){
+  const units = splitSentences(text).flatMap(sentence=>splitLongText(sentence, maxLen));
+  const chunks=[];
+  let buf='';
+  for(const unit of units){
+    const combined=(buf+' '+unit).trim();
+    if(combined.length>maxLen){
+      if(buf) chunks.push(buf.trim());
+      buf=unit;
+    } else {
+      buf=combined;
+    }
+  }
+  if(buf.trim()) chunks.push(buf.trim());
+  return chunks.length ? chunks : splitLongText(text, maxLen);
+}
 
 async function buildNarrationPlanFromCurrentPage(){
   const maxLen = 260;
