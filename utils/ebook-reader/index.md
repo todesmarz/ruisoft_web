@@ -264,43 +264,6 @@ function updateMediaSessionState(){
   navigator.mediaSession.playbackState = state.isNarrating && !state.isPaused ? 'playing' : 'paused';
 }
 
-// --- AudioContext keep-alive to prevent browser audio subsystem suspension ---
-let keepAliveCtx = null;
-let keepAliveInterval = null;
-function startAudioKeepAlive(){
-  if (keepAliveInterval) return;
-  try {
-    if (!keepAliveCtx) {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (AudioContext) keepAliveCtx = new AudioContext();
-    }
-    if (keepAliveCtx && keepAliveCtx.state === 'suspended') {
-      keepAliveCtx.resume().catch(()=>{});
-    }
-    keepAliveInterval = setInterval(()=>{
-      try {
-        if (keepAliveCtx && keepAliveCtx.state === 'suspended') {
-          keepAliveCtx.resume().catch(()=>{});
-        }
-        // 無音の短い音を再生して音声サブシステムを維持
-        if (keepAliveCtx) {
-          const osc = keepAliveCtx.createOscillator();
-          const gain = keepAliveCtx.createGain();
-          gain.gain.value = 0.001; // ほぼ無音
-          osc.connect(gain);
-          gain.connect(keepAliveCtx.destination);
-          osc.start();
-          osc.stop(keepAliveCtx.currentTime + 0.01);
-        }
-      } catch {}
-    }, 5000);
-  } catch {}
-}
-function stopAudioKeepAlive(){
-  if (keepAliveInterval) { clearInterval(keepAliveInterval); keepAliveInterval = null; }
-  try { if (keepAliveCtx) { keepAliveCtx.close(); keepAliveCtx = null; } } catch {}
-}
-
 function getViewerHeight(){
   const vh = window.innerHeight || document.documentElement.clientHeight;
   return Math.max(300, vh - 260);
@@ -667,6 +630,12 @@ function toChunks(text, maxLen=220){
   return chunks.length ? chunks : splitLongText(text, maxLen);
 }
 
+function isIOSDevice(){
+  // iPadOS のデスクトップ表示は MacIntel を名乗るため、タッチ点数も見る。
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
 async function buildNarrationPlanFromCurrentPage(){
   const maxLen = 260;
   const plan = [];
@@ -691,9 +660,46 @@ async function buildNarrationPlanFromCurrentPage(){
     state.pageNum = startPage;
     await renderCurrentPage();
   }
+  // iPadOSは別タブへ移るとJavaScriptを停止するため、utterance間の遷移も止まる。
+  // EPUBだけは残りの本文を単一utteranceにし、遷移そのものを発生させない。
+  if(state.fileType === 'epub' && isIOSDevice() && plan.length > 1){
+    return [{ pageNum:startPage, chunk:plan.map(item=>item.chunk).join(' ') }];
+  }
   return plan;
 }
 let narrationWatchdog = null;
+let pendingNarrationPage = null;
+
+function updateNarrationPage(item){
+  if(item.pageNum === state.pageNum) return;
+  state.pageNum = item.pageNum;
+  persistSettings();
+
+  // ePub.js の rendition は非表示タブで display() を呼ぶと、ブラウザが処理を
+  // 保留して Web Speech の次の utterance まで止めることがある。読み上げと
+  // 画面描画を切り離し、復帰時に最新ページだけを描画する。
+  if(state.fileType === 'epub' && document.hidden){
+    pendingNarrationPage = item.pageNum;
+    document.dispatchEvent(new CustomEvent('ebook-reader:page-render-deferred', {
+      detail: { pageNum:item.pageNum, reason:'background-narration' }
+    }));
+    return;
+  }
+
+  pendingNarrationPage = null;
+  renderCurrentPage().catch(()=>{});
+}
+
+function renderDeferredNarrationPage(){
+  if(pendingNarrationPage === null || document.hidden) return;
+  const pageNum = pendingNarrationPage;
+  pendingNarrationPage = null;
+  renderCurrentPage().then(()=>{
+    document.dispatchEvent(new CustomEvent('ebook-reader:page-render-resumed', {
+      detail: { pageNum }
+    }));
+  }).catch(()=>{});
+}
 
 function startNarrationWatchdog(){
   if(narrationWatchdog) clearInterval(narrationWatchdog);
@@ -701,8 +707,6 @@ function startNarrationWatchdog(){
     if(!state.isNarrating || state.isPaused) return;
     // 定期的に sessionStorage に永続化（タブ破棄対策）
     persistSessionState();
-    // AudioContext を維持
-    try { if (keepAliveCtx && keepAliveCtx.state === 'suspended') keepAliveCtx.resume().catch(()=>{}); } catch {}
     if(!speechSynthesis.speaking && !speechSynthesis.pending){
       const nextIndex = state.currentPlanCompletedIndex + 1;
       if(nextIndex < state.currentPlan.length && nextIndex !== state.currentPlanIndex){
@@ -710,7 +714,6 @@ function startNarrationWatchdog(){
       } else if(nextIndex >= state.currentPlan.length) {
         state.isNarrating = false;
         stopNarrationWatchdog();
-        stopAudioKeepAlive();
         clearSessionState();
         updateMediaSessionState();
         setStatus('最終ページまで読み上げ完了');
@@ -725,25 +728,25 @@ function stopNarrationWatchdog(){
 
 function stopSpeech(){
   state.isNarrating = false;
+  pendingNarrationPage = null;
   speechSynthesis.cancel();
   state.isPaused = false;
   stopNarrationWatchdog();
-  stopAudioKeepAlive();
   clearSessionState();
   updateMediaSessionState();
   const t = $('btnPauseResume'); if (t) t.textContent = '⏸ 一時停止';
 }
 
 
-function speakPlanItem(i){
-  if (!state.isNarrating || state.isPaused) return;
-  if (i >= state.currentPlan.length) {
-    state.isNarrating = false;
-    clearSessionState();
-    updateMediaSessionState();
-    setStatus('最終ページまで読み上げ完了');
-    return;
-  }
+function finishNarration(){
+  state.isNarrating = false;
+  stopNarrationWatchdog();
+  clearSessionState();
+  updateMediaSessionState();
+  setStatus('最終ページまで読み上げ完了');
+}
+
+function createNarrationUtterance(i){
   const item = state.currentPlan[i];
   const voices = speechSynthesis.getVoices();
   const selectedVoice = voices.find(x=>x.name===$('voiceSelect').value);
@@ -756,28 +759,36 @@ function speakPlanItem(i){
     state.currentPlanIndex = i;
     persistSessionState();
     updateMediaSessionState();
-    if(item.pageNum !== state.pageNum){
-      state.pageNum = item.pageNum;
-      renderCurrentPage();
-      persistSettings();
-    }
+    updateNarrationPage(item);
     setStatus(`読み上げ中 (${i + 1}/${state.currentPlan.length})`);
   };
 
   ut.onend=()=>{
     state.currentPlanCompletedIndex = Math.max(state.currentPlanCompletedIndex, i);
     persistSessionState();
-    if(state.isNarrating && !state.isPaused) speakPlanItem(i + 1);
+    if(!state.isNarrating || state.isPaused) return;
+    if(i + 1 >= state.currentPlan.length) finishNarration();
+    else speakPlanItem(i + 1);
   };
 
   ut.onerror=()=>{
     state.currentPlanCompletedIndex = Math.max(state.currentPlanCompletedIndex, i);
     persistSessionState();
     setStatus('読み上げが中断されました。次の文から再開します。');
-    if(state.isNarrating && !state.isPaused) speakPlanItem(i + 1);
+    if(!state.isNarrating || state.isPaused) return;
+    if(i + 1 >= state.currentPlan.length) finishNarration();
+    else speakPlanItem(i + 1);
   };
+  return ut;
+}
 
-  speechSynthesis.speak(ut);
+function speakPlanItem(i){
+  if (!state.isNarrating || state.isPaused) return;
+  if (i >= state.currentPlan.length) {
+    finishNarration();
+    return;
+  }
+  speechSynthesis.speak(createNarrationUtterance(i));
 }
 
 async function startNarration(){
@@ -789,7 +800,6 @@ async function startNarration(){
   setStatus('現在ページから最終ページまで読み上げを準備中...');
 
   setupMediaSession();
-  startAudioKeepAlive();
 
   const plan = await buildNarrationPlanFromCurrentPage();
   if(!plan.length){ state.isNarrating = false; clearSessionState(); updateMediaSessionState(); setStatus('読み上げ可能なテキストがありません'); return; }
@@ -1020,6 +1030,7 @@ $('btnStop').addEventListener('click', stopSpeech);
 // --- Unified tab-recovery logic ---
 async function recoverNarrationIfNeeded(){
   if (document.hidden) return;
+  renderDeferredNarrationPage();
   // 1. まず sessionStorage から状態を復元（タブ破棄後の復元用）
   const saved = restoreSessionState();
   if (saved) {
@@ -1053,7 +1064,6 @@ async function recoverNarrationIfNeeded(){
         state.currentPlan = plan;
         state.currentPlanIndex = 0;
         setupMediaSession();
-        startAudioKeepAlive();
         startNarrationWatchdog();
         const t = $('btnPauseResume'); if (t) t.textContent = '⏸ 一時停止';
         const nextIndex = saved.completedIndex + 1;
@@ -1080,7 +1090,6 @@ async function recoverNarrationIfNeeded(){
   // resume() は効かないことが多いので、直接次のチャンクから再開
   try { speechSynthesis.resume(); } catch {}
   if (!narrationWatchdog) startNarrationWatchdog();
-  startAudioKeepAlive();
   state.isPaused = false;
   const t = $('btnPauseResume'); if (t) t.textContent = '⏸ 一時停止';
   setStatus('読み上げを継続中');
@@ -1177,7 +1186,7 @@ $('voiceSelect').addEventListener('change', persistSettings);
 
 speechSynthesis.onvoiceschanged = setupVoices;
 setupVoices(); restoreSettings(); applyTheme(localStorage.getItem(STORAGE_KEYS.theme)||'light');
-$('runtimeInfo').textContent = `Media Session: ${'mediaSession' in navigator ? '可':'不可'} / AudioContext: ${keepAliveCtx ? keepAliveCtx.state : '未初期化'} / タブ復元対応: 有効`; 
+$('runtimeInfo').textContent = `Media Session: ${'mediaSession' in navigator ? '可':'不可'} / タブ復元対応: 有効`;
 setStatus('待機中');
 updateModeControls();
 // ファイル未読込時はD&Dゾーンを表示
