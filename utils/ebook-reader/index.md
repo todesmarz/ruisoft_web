@@ -630,6 +630,12 @@ function toChunks(text, maxLen=220){
   return chunks.length ? chunks : splitLongText(text, maxLen);
 }
 
+function isIOSDevice(){
+  // iPadOS のデスクトップ表示は MacIntel を名乗るため、タッチ点数も見る。
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
 async function buildNarrationPlanFromCurrentPage(){
   // Chromium は非表示タブで長い utterance を中断することがあるため、
   // まとまった本文になりやすい EPUB だけ短く区切る。
@@ -655,6 +661,11 @@ async function buildNarrationPlanFromCurrentPage(){
   if (state.pageNum !== startPage) {
     state.pageNum = startPage;
     await renderCurrentPage();
+  }
+  // iPadOSは別タブへ移るとJavaScriptを停止するため、utterance間の遷移も止まる。
+  // EPUBだけは残りの本文を単一utteranceにし、遷移そのものを発生させない。
+  if(state.fileType === 'epub' && isIOSDevice() && plan.length > 1){
+    return [{ pageNum:startPage, chunk:plan.map(item=>item.chunk).join(' ') }];
   }
   return plan;
 }
