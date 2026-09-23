@@ -193,7 +193,7 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.mjs';
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.mjs';
 
-const state = { fileType:null, pdfDoc:null, epubBook:null, epubRendition:null, zipImages:[], pageNum:1, pageCount:0, textCache:new Map(), ocrCache:new Map(), isNarrating:false, isPaused:false, slideshowId:null, epubLocationsReady:false, renderToken:0, currentPlan:[], currentPlanIndex:0, currentPlanCompletedIndex:-1 };
+const state = { fileType:null, pdfDoc:null, epubBook:null, epubRendition:null, zipImages:[], pageNum:1, pageCount:0, textCache:new Map(), ocrCache:new Map(), isNarrating:false, isPaused:false, slideshowId:null, epubLocationsReady:false, renderToken:0, currentPlan:[], currentPlanIndex:0, currentPlanCompletedIndex:-1, utteranceQueue:[] };
 const STORAGE_KEYS = { fileName:'ebookReader.fileName', fileType:'ebookReader.fileType', lastPage:'ebookReader.lastPage', rate:'ebookReader.rate', voice:'ebookReader.voice', theme:'ebookReader.theme' };
 const SESSION_KEYS = { isNarrating:'ebookReader.isNarrating', currentPlanCompletedIndex:'ebookReader.currentPlanCompletedIndex', currentPlanLength:'ebookReader.currentPlanLength', pageNum:'ebookReader.pageNum', fileType:'ebookReader.fileType', timestamp:'ebookReader.timestamp' };
 const $ = id => document.getElementById(id);
@@ -637,7 +637,9 @@ function isIOSDevice(){
 }
 
 async function buildNarrationPlanFromCurrentPage(){
-  const maxLen = 260;
+  // Chromium は非表示タブで長い utterance を中断することがあるため、
+  // まとまった本文になりやすい EPUB だけ短く区切る。
+  const maxLen = state.fileType === 'epub' ? 80 : 260;
   const plan = [];
   const startPage = state.pageNum;
   for(let page = state.pageNum; page <= state.pageCount; page++){
@@ -730,6 +732,7 @@ function stopSpeech(){
   state.isNarrating = false;
   pendingNarrationPage = null;
   speechSynthesis.cancel();
+  state.utteranceQueue = [];
   state.isPaused = false;
   stopNarrationWatchdog();
   clearSessionState();
@@ -738,15 +741,22 @@ function stopSpeech(){
 }
 
 
+function shouldPrequeueNarration(){
+  // iPadOS のデスクトップ表示は MacIntel を名乗るため、タッチ点数も見る。
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
 function finishNarration(){
   state.isNarrating = false;
+  state.utteranceQueue = [];
   stopNarrationWatchdog();
   clearSessionState();
   updateMediaSessionState();
   setStatus('最終ページまで読み上げ完了');
 }
 
-function createNarrationUtterance(i){
+function createNarrationUtterance(i, prequeued){
   const item = state.currentPlan[i];
   const voices = speechSynthesis.getVoices();
   const selectedVoice = voices.find(x=>x.name===$('voiceSelect').value);
@@ -768,7 +778,7 @@ function createNarrationUtterance(i){
     persistSessionState();
     if(!state.isNarrating || state.isPaused) return;
     if(i + 1 >= state.currentPlan.length) finishNarration();
-    else speakPlanItem(i + 1);
+    else if(!prequeued) speakPlanItem(i + 1);
   };
 
   ut.onerror=()=>{
@@ -777,7 +787,7 @@ function createNarrationUtterance(i){
     setStatus('読み上げが中断されました。次の文から再開します。');
     if(!state.isNarrating || state.isPaused) return;
     if(i + 1 >= state.currentPlan.length) finishNarration();
-    else speakPlanItem(i + 1);
+    else if(!prequeued) speakPlanItem(i + 1);
   };
   return ut;
 }
@@ -788,7 +798,14 @@ function speakPlanItem(i){
     finishNarration();
     return;
   }
-  speechSynthesis.speak(createNarrationUtterance(i));
+  const prequeued = shouldPrequeueNarration();
+  const end = prequeued ? state.currentPlan.length : i + 1;
+  state.utteranceQueue = [];
+  for(let index=i; index<end; index++){
+    const utterance = createNarrationUtterance(index, prequeued);
+    state.utteranceQueue.push(utterance); // iPad SafariでGCされないよう参照を保持
+    speechSynthesis.speak(utterance);
+  }
 }
 
 async function startNarration(){
