@@ -204,7 +204,7 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.mjs';
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.mjs';
 
-const state = { fileType:null, pdfDoc:null, epubBook:null, epubRendition:null, zipImages:[], pageNum:1, pageCount:0, textCache:new Map(), ocrCache:new Map(), isNarrating:false, isPaused:false, slideshowId:null, epubLocationsReady:false, renderToken:0, currentPlan:[], currentPlanIndex:0, currentPlanCompletedIndex:-1, utteranceQueue:[], narrationPlanBuilding:false, queuedPlanIndex:-1, speechIdlePulses:0 };
+const state = { fileType:null, pdfDoc:null, epubBook:null, epubRendition:null, zipImages:[], pageNum:1, pageCount:0, textCache:new Map(), ocrCache:new Map(), isNarrating:false, isPaused:false, slideshowId:null, epubLocationsReady:false, renderToken:0, currentPlan:[], currentPlanIndex:0, currentPlanCompletedIndex:-1, utteranceQueue:[], narrationPlanBuilding:false, queuedPlanIndex:-1 };
 const STORAGE_KEYS = { fileName:'ebookReader.fileName', fileType:'ebookReader.fileType', lastPage:'ebookReader.lastPage', rate:'ebookReader.rate', voice:'ebookReader.voice', theme:'ebookReader.theme' };
 const SESSION_KEYS = { isNarrating:'ebookReader.isNarrating', currentPlanCompletedIndex:'ebookReader.currentPlanCompletedIndex', currentPlanLength:'ebookReader.currentPlanLength', pageNum:'ebookReader.pageNum', fileType:'ebookReader.fileType', timestamp:'ebookReader.timestamp' };
 const $ = id => document.getElementById(id);
@@ -969,10 +969,7 @@ async function startNarration(){
 
   setupMediaSession();
 
-  // iOS/iPadOSはタブを離れるとJSとWorkerを停止するため、既存の全本文を
-  // 1 utteranceにまとめる経路を維持する。その他の環境だけ逐次キューを使う。
-  if(state.fileType === 'epub' && !isIOSDevice()){
-    startSpeechKeepAlive();
+  if(state.fileType === 'epub'){
     await startProgressiveEpubNarration();
     return;
   }
