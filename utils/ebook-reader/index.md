@@ -720,6 +720,53 @@ async function buildNarrationPlanFromCurrentPage(){
 }
 let narrationWatchdog = null;
 let pendingNarrationPage = null;
+let speechKeepAliveWorker = null;
+let speechKeepAliveTimer = null;
+
+function handleSpeechKeepAlive(){
+  if(!state.isNarrating || state.isPaused) return;
+  // Chromeは非表示タブでspeechSynthesisを停止状態のままにすることがある。
+  // Worker由来の定期パルスで再開を促し、キュー消失時だけ未完了文を再登録する。
+  try { speechSynthesis.resume(); } catch {}
+  if(speechSynthesis.speaking || speechSynthesis.pending){
+    state.speechIdlePulses = 0;
+  } else {
+    state.speechIdlePulses += 1;
+    const nextIndex = state.currentPlanCompletedIndex + 1;
+    if(state.speechIdlePulses >= 2 && nextIndex < state.currentPlan.length){
+      state.speechIdlePulses = 0;
+      state.queuedPlanIndex = nextIndex - 1;
+      speakPlanItem(nextIndex);
+    }
+  }
+  document.dispatchEvent(new CustomEvent('ebook-reader:narration-keepalive', {
+    detail: { hidden:document.hidden, speaking:speechSynthesis.speaking, pending:speechSynthesis.pending }
+  }));
+}
+
+function startSpeechKeepAlive(){
+  stopSpeechKeepAlive();
+  if(typeof Worker !== 'undefined'){
+    let url = '';
+    try {
+      const source = 'setInterval(()=>postMessage("pulse"), 8000)';
+      url = URL.createObjectURL(new Blob([source], { type:'text/javascript' }));
+      speechKeepAliveWorker = new Worker(url);
+      speechKeepAliveWorker.onmessage = handleSpeechKeepAlive;
+    } catch {
+      speechKeepAliveWorker = null;
+    } finally {
+      if(url) URL.revokeObjectURL(url);
+    }
+  }
+  if(!speechKeepAliveWorker) speechKeepAliveTimer = setInterval(handleSpeechKeepAlive, 8000);
+}
+
+function stopSpeechKeepAlive(){
+  if(speechKeepAliveWorker){ speechKeepAliveWorker.terminate(); speechKeepAliveWorker = null; }
+  if(speechKeepAliveTimer){ clearInterval(speechKeepAliveTimer); speechKeepAliveTimer = null; }
+  state.speechIdlePulses = 0;
+}
 
 function updateNarrationPage(item){
   if(item.pageNum === state.pageNum) return;
@@ -786,6 +833,7 @@ function stopSpeech(){
   state.utteranceQueue = [];
   state.isPaused = false;
   stopNarrationWatchdog();
+  stopSpeechKeepAlive();
   clearSessionState();
   updateMediaSessionState();
   const t = $('btnPauseResume'); if (t) t.textContent = '⏸ 一時停止';
@@ -804,6 +852,7 @@ function finishNarration(){
   state.queuedPlanIndex = -1;
   state.utteranceQueue = [];
   stopNarrationWatchdog();
+  stopSpeechKeepAlive();
   clearSessionState();
   updateMediaSessionState();
   setStatus('最終ページまで読み上げ完了');
@@ -933,6 +982,7 @@ async function startNarration(){
   state.queuedPlanIndex = -1;
   persistSessionState();
   startNarrationWatchdog();
+  startSpeechKeepAlive();
   speakPlanItem(0);
 }
 
@@ -1196,6 +1246,7 @@ async function recoverNarrationIfNeeded(){
         state.currentPlanIndex = 0;
         setupMediaSession();
         startNarrationWatchdog();
+        startSpeechKeepAlive();
         const t = $('btnPauseResume'); if (t) t.textContent = '⏸ 一時停止';
         const nextIndex = saved.completedIndex + 1;
         if (nextIndex < plan.length) {
@@ -1221,6 +1272,7 @@ async function recoverNarrationIfNeeded(){
   // resume() は効かないことが多いので、直接次のチャンクから再開
   try { speechSynthesis.resume(); } catch {}
   if (!narrationWatchdog) startNarrationWatchdog();
+  if (!speechKeepAliveWorker && !speechKeepAliveTimer) startSpeechKeepAlive();
   state.isPaused = false;
   const t = $('btnPauseResume'); if (t) t.textContent = '⏸ 一時停止';
   setStatus('読み上げを継続中');
@@ -1240,6 +1292,8 @@ document.addEventListener('visibilitychange', ()=>{
   if (document.hidden) {
     if (state.isNarrating && !state.isPaused) {
       persistSessionState();
+      try { speechSynthesis.resume(); } catch {}
+      handleSpeechKeepAlive();
       setStatus('バックグラウンド再生を維持中...');
     }
   } else {
