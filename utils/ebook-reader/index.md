@@ -37,6 +37,9 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
     .er-panel { background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.06); overflow: hidden; }
     .er-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #fafafa; border-bottom: 1px solid #eee; }
     .er-panel-header h3 { margin: 0; font-size: 1rem; color: #444; }
+    .er-panel-header-actions { display: flex; align-items: center; gap: 10px; }
+    .er-panel-header button { padding: 5px 10px; border: 1px solid #d0d0d0; border-radius: 6px; background: #fff; color: #333; font-size: .85rem; cursor: pointer; }
+    .er-panel-header button:hover { background: #f2f2f2; }
     .er-panel-body { padding: 10px; }
 
     /* Viewer */
@@ -53,6 +56,11 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
     #epubTextFallback { display: none; padding: 14px; white-space: pre-wrap; }
     #zipImageViewer { display: none; width: 100%; min-height: 55vh; max-height: calc(100vh - 200px); align-items: center; justify-content: center; overflow: auto; }
     #zipImage { max-width: 100%; max-height: 80vh; object-fit: contain; transform-origin: center top; }
+    #bookViewerPanel:fullscreen, #bookViewerPanel:-webkit-full-screen { width: 100vw; height: 100vh; max-width: none; border: 0; border-radius: 0; background: #fff; }
+    #bookViewerPanel:fullscreen .er-panel-body, #bookViewerPanel:-webkit-full-screen .er-panel-body { height: calc(100vh - 50px); box-sizing: border-box; }
+    #bookViewerPanel:fullscreen #docViewer, #bookViewerPanel:-webkit-full-screen #docViewer { height: 100%; max-height: none; }
+    #bookViewerPanel:fullscreen #epubViewer, #bookViewerPanel:-webkit-full-screen #epubViewer,
+    #bookViewerPanel:fullscreen #zipImageViewer, #bookViewerPanel:-webkit-full-screen #zipImageViewer { height: 100%; max-height: none; }
 
     /* Text panel */
     .er-text-header { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; margin-bottom: 8px; }
@@ -127,10 +135,13 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
   <!-- Main 2-column -->
   <div class="er-main">
     <!-- Left: Viewer -->
-    <div class="er-panel">
+    <div class="er-panel" id="bookViewerPanel">
       <div class="er-panel-header">
         <h5>📖 ページ表示</h5>
-        <span style="font-size:.8rem;color:#888;">左右端をクリックでページ移動</span>
+        <div class="er-panel-header-actions">
+          <span style="font-size:.8rem;color:#888;">左右端をクリックでページ移動</span>
+          <button id="btnFullscreen" type="button" aria-pressed="false" title="書籍画面を全画面表示">⛶ 全画面</button>
+        </div>
       </div>
       <div class="er-panel-body">
         <div id="docViewer">
@@ -193,7 +204,7 @@ title: ebook/PDF 読み上げプレイヤー - Rui Software
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.mjs';
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.mjs';
 
-const state = { fileType:null, pdfDoc:null, epubBook:null, epubRendition:null, zipImages:[], pageNum:1, pageCount:0, textCache:new Map(), ocrCache:new Map(), isNarrating:false, isPaused:false, slideshowId:null, epubLocationsReady:false, renderToken:0, currentPlan:[], currentPlanIndex:0, currentPlanCompletedIndex:-1, utteranceQueue:[] };
+const state = { fileType:null, pdfDoc:null, epubBook:null, epubRendition:null, zipImages:[], pageNum:1, pageCount:0, textCache:new Map(), ocrCache:new Map(), isNarrating:false, isPaused:false, slideshowId:null, epubLocationsReady:false, renderToken:0, currentPlan:[], currentPlanIndex:0, currentPlanCompletedIndex:-1, utteranceQueue:[], narrationPlanBuilding:false, queuedPlanIndex:-1 };
 const STORAGE_KEYS = { fileName:'ebookReader.fileName', fileType:'ebookReader.fileType', lastPage:'ebookReader.lastPage', rate:'ebookReader.rate', voice:'ebookReader.voice', theme:'ebookReader.theme' };
 const SESSION_KEYS = { isNarrating:'ebookReader.isNarrating', currentPlanCompletedIndex:'ebookReader.currentPlanCompletedIndex', currentPlanLength:'ebookReader.currentPlanLength', pageNum:'ebookReader.pageNum', fileType:'ebookReader.fileType', timestamp:'ebookReader.timestamp' };
 const $ = id => document.getElementById(id);
@@ -266,7 +277,45 @@ function updateMediaSessionState(){
 
 function getViewerHeight(){
   const vh = window.innerHeight || document.documentElement.clientHeight;
+  if (getFullscreenElement() === $('bookViewerPanel')) return Math.max(300, vh - 70);
   return Math.max(300, vh - 260);
+}
+
+function getFullscreenElement(){
+  return document.fullscreenElement || document.webkitFullscreenElement || null;
+}
+
+async function toggleBookFullscreen(){
+  const panel = $('bookViewerPanel');
+  if(!panel) return;
+  try {
+    if(getFullscreenElement()){
+      const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen;
+      if(exitFullscreen) await exitFullscreen.call(document);
+    } else {
+      const requestFullscreen = panel.requestFullscreen || panel.webkitRequestFullscreen;
+      if(!requestFullscreen) throw new Error('このブラウザは全画面表示に対応していません');
+      await requestFullscreen.call(panel);
+    }
+  } catch(e) {
+    setStatus(`全画面表示を開始できません: ${e.message}`);
+  }
+}
+
+function syncBookFullscreenState(){
+  const active = getFullscreenElement() === $('bookViewerPanel');
+  const button = $('btnFullscreen');
+  if(button){
+    button.textContent = active ? '⛶ 全画面終了' : '⛶ 全画面';
+    button.title = active ? '全画面表示を終了' : '書籍画面を全画面表示';
+    button.setAttribute('aria-pressed', String(active));
+  }
+  if(state.fileType === 'epub' && state.epubRendition){
+    state.epubRendition.resize('100%', getViewerHeight() + 'px');
+  }
+  document.dispatchEvent(new CustomEvent('ebook-reader:fullscreen-change', {
+    detail: { active }
+  }));
 }
 
 function applyTheme(theme){
@@ -711,9 +760,9 @@ function startNarrationWatchdog(){
     persistSessionState();
     if(!speechSynthesis.speaking && !speechSynthesis.pending){
       const nextIndex = state.currentPlanCompletedIndex + 1;
-      if(nextIndex < state.currentPlan.length && nextIndex !== state.currentPlanIndex){
+      if(nextIndex < state.currentPlan.length && nextIndex > state.queuedPlanIndex){
         speakPlanItem(nextIndex);
-      } else if(nextIndex >= state.currentPlan.length) {
+      } else if(nextIndex >= state.currentPlan.length && !state.narrationPlanBuilding) {
         state.isNarrating = false;
         stopNarrationWatchdog();
         clearSessionState();
@@ -730,6 +779,8 @@ function stopNarrationWatchdog(){
 
 function stopSpeech(){
   state.isNarrating = false;
+  state.narrationPlanBuilding = false;
+  state.queuedPlanIndex = -1;
   pendingNarrationPage = null;
   speechSynthesis.cancel();
   state.utteranceQueue = [];
@@ -749,6 +800,8 @@ function shouldPrequeueNarration(){
 
 function finishNarration(){
   state.isNarrating = false;
+  state.narrationPlanBuilding = false;
+  state.queuedPlanIndex = -1;
   state.utteranceQueue = [];
   stopNarrationWatchdog();
   clearSessionState();
@@ -777,7 +830,7 @@ function createNarrationUtterance(i, prequeued){
     state.currentPlanCompletedIndex = Math.max(state.currentPlanCompletedIndex, i);
     persistSessionState();
     if(!state.isNarrating || state.isPaused) return;
-    if(i + 1 >= state.currentPlan.length) finishNarration();
+    if(i + 1 >= state.currentPlan.length && !state.narrationPlanBuilding) finishNarration();
     else if(!prequeued) speakPlanItem(i + 1);
   };
 
@@ -786,7 +839,7 @@ function createNarrationUtterance(i, prequeued){
     persistSessionState();
     setStatus('読み上げが中断されました。次の文から再開します。');
     if(!state.isNarrating || state.isPaused) return;
-    if(i + 1 >= state.currentPlan.length) finishNarration();
+    if(i + 1 >= state.currentPlan.length && !state.narrationPlanBuilding) finishNarration();
     else if(!prequeued) speakPlanItem(i + 1);
   };
   return ut;
@@ -805,6 +858,55 @@ function speakPlanItem(i){
     const utterance = createNarrationUtterance(index, prequeued);
     state.utteranceQueue.push(utterance); // iPad SafariでGCされないよう参照を保持
     speechSynthesis.speak(utterance);
+    state.queuedPlanIndex = index;
+  }
+}
+
+async function startProgressiveEpubNarration(){
+  state.currentPlan = [];
+  state.currentPlanIndex = 0;
+  state.currentPlanCompletedIndex = -1;
+  state.queuedPlanIndex = -1;
+  state.narrationPlanBuilding = true;
+  const startPage = state.pageNum;
+
+  // 全章の解析を待たず、章ごとに読み上げキューへ追加する。Web Speech の
+  // キューはタブが非表示になっても次の文へ進めるため、JSタイマーへの依存も減る。
+  for(let page=startPage; page<=state.pageCount && state.isNarrating; page++){
+    let rawText = '';
+    try {
+      rawText = await getReadableTextForPage(page, { allowOcr:false });
+    } catch(e) {
+      setStatus(`読み上げ準備中: ${page}ページをスキップ (${e.message})`);
+    }
+    const text = normalizeTextForTTS(rawText || '');
+    if(text){
+      const firstNewIndex = state.currentPlan.length;
+      toChunks(text, 80).forEach(chunk=>state.currentPlan.push({ pageNum:page, chunk }));
+      for(let i=firstNewIndex; i<state.currentPlan.length; i++){
+        const utterance = createNarrationUtterance(i, true);
+        state.utteranceQueue.push(utterance);
+        speechSynthesis.speak(utterance);
+        state.queuedPlanIndex = i;
+      }
+      if(firstNewIndex === 0){
+        persistSessionState();
+        startNarrationWatchdog();
+      }
+    }
+    // setTimeout はバックグラウンドタブで強く間引かれるため使わない。各章の
+    // 非同期 load 自体で描画スレッドへ制御が戻り、キュー構築も継続できる。
+    await Promise.resolve();
+  }
+
+  state.narrationPlanBuilding = false;
+  if(!state.isNarrating) return;
+  if(!state.currentPlan.length){
+    finishNarration();
+    setStatus('読み上げ可能なテキストがありません');
+  } else if(state.currentPlanCompletedIndex + 1 >= state.currentPlan.length &&
+            !speechSynthesis.speaking && !speechSynthesis.pending){
+    finishNarration();
   }
 }
 
@@ -818,11 +920,17 @@ async function startNarration(){
 
   setupMediaSession();
 
+  if(state.fileType === 'epub'){
+    await startProgressiveEpubNarration();
+    return;
+  }
+
   const plan = await buildNarrationPlanFromCurrentPage();
   if(!plan.length){ state.isNarrating = false; clearSessionState(); updateMediaSessionState(); setStatus('読み上げ可能なテキストがありません'); return; }
   state.currentPlan = plan;
   state.currentPlanIndex = 0;
   state.currentPlanCompletedIndex = -1;
+  state.queuedPlanIndex = -1;
   persistSessionState();
   startNarrationWatchdog();
   speakPlanItem(0);
@@ -1023,6 +1131,12 @@ $('btnToggleTextPanel').addEventListener('click', ()=>{
     main.classList.add('single-column');
   }
 });
+$('btnFullscreen').addEventListener('click', toggleBookFullscreen);
+if('onfullscreenchange' in document){
+  document.addEventListener('fullscreenchange', syncBookFullscreenState);
+} else {
+  document.addEventListener('webkitfullscreenchange', syncBookFullscreenState);
+}
 $('imageZoom').addEventListener('input', ()=>{ if(state.fileType==='zip') renderZipImage(state.pageNum); });
 $('btnSpeak').addEventListener('click', startNarration);
 $('btnPauseResume').addEventListener('click', ()=>{
