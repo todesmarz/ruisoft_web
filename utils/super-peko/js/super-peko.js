@@ -20,8 +20,6 @@ const input = new Input(),
   renderer = new Renderer(canvas);
 function persist() {
   storeSave(save);
-  byId("high-score").textContent = String(save.highScore).padStart(6, "0");
-  renderMap(game?.levelIndex || 0);
 }
 function showToast(text) {
   const el = byId("toast-message");
@@ -55,33 +53,6 @@ function updateHud(data) {
   byId("hud-world").textContent = data.world;
   byId("hud-lives").textContent = `× ${data.lives}`;
   byId("hud-time").textContent = data.time;
-  byId("stage-name").textContent = data.name;
-  renderMap(data.levelIndex);
-}
-function renderMap(current) {
-  const map = byId("world-map");
-  map.textContent = "";
-  LEVELS.forEach((level, i) => {
-    const node = document.createElement("button");
-    node.type = "button";
-    node.className = "world-node";
-    node.title = `${level.id} ${level.name}`;
-    node.setAttribute(
-      "aria-label",
-      `${level.id} ${level.name}${i < save.unlocked ? "" : "（未開放）"}`,
-    );
-    node.disabled = i >= save.unlocked;
-    if (i < save.unlocked) node.classList.add("unlocked");
-    if (save.completed.includes(level.id)) node.classList.add("complete");
-    if (i === current) node.classList.add("current");
-    node.onclick = () => {
-      if (i < save.unlocked) {
-        showOverlay();
-        game.start(i);
-      }
-    };
-    map.append(node);
-  });
 }
 const game = new Game({
   input,
@@ -127,7 +98,7 @@ byId("reset-save-button").onclick = () => {
     location.reload();
   }
 };
-window.addEventListener("pixelhopper:savechange", persist);
+window.addEventListener("superpeko:savechange", persist);
 persist();
 let previous = performance.now();
 function loop(now) {
@@ -138,7 +109,7 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
-window.PixelHopper = {
+window.SuperPeko = {
   getState: () => ({
     state: game.state,
     level: game.level.id,

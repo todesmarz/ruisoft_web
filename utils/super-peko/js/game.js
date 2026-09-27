@@ -182,7 +182,7 @@ export class Game {
       if (enemy.state === "shell") {
         enemy.vx = 0;
         enemy.vy = Math.min(800, enemy.vy + 1700 * dt);
-      } else if (enemy.type === "hopper" && enemy.grounded) {
+      } else if (enemy.type === "bouncer" && enemy.grounded) {
         enemy.jumpTimer -= dt;
         if (enemy.jumpTimer <= 0) {
           enemy.vy = -430;

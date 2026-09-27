@@ -7,7 +7,6 @@ import w6 from "./levels/world-6.js";
 import w7 from "./levels/world-7.js";
 import w8 from "./levels/world-8.js";
 import { VIEW } from "./config.js";
-import { createSuperPeko11 } from "./stages/super-peko-1-1.js";
 
 const worlds = [w1, w2, w3, w4, w5, w6, w7, w8];
 
@@ -123,7 +122,7 @@ function makeStage(world, spec, stageIndex) {
         vy: 0,
         alive: true,
         grounded: false,
-        type: rnd() > 0.82 ? "hopper" : rnd() > 0.72 ? "shelled" : "walker",
+        type: rnd() > 0.82 ? "bouncer" : rnd() > 0.72 ? "shelled" : "walker",
         state: "walking",
         jumpTimer: 0.6 + rnd() * 1.4,
       });
@@ -280,9 +279,7 @@ function makeStage(world, spec, stageIndex) {
         }
       : null,
   };
-  return world.world === 1 && stageIndex === 1
-    ? createSuperPeko11(level)
-    : level;
+  return level;
 }
 
 export const LEVELS = worlds.flatMap((world) =>
@@ -295,5 +292,9 @@ export const WORLD_META = worlds.map(({ world, title, theme, boss }) => ({
   boss,
 }));
 export function freshLevel(index) {
-  return structuredClone(LEVELS[index]);
+  // Stage records contain data only. This fallback keeps the start button
+  // working in browsers that predate structuredClone.
+  return typeof globalThis.structuredClone === "function"
+    ? globalThis.structuredClone(LEVELS[index])
+    : JSON.parse(JSON.stringify(LEVELS[index]));
 }

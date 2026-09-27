@@ -4,13 +4,13 @@ title: スーパペコ - 32ステージ・アクションゲーム
 description: ペコを操作して8ワールド32ステージを冒険する横スクロールアクションゲームです。
 ---
 
-<link rel="stylesheet" href="css/game.css">
+<link rel="stylesheet" href="css/super-peko.css">
 
-<main id="pixel-hopper-app" class="hopper-app" aria-label="スーパペコ ゲーム">
+<main id="super-peko-app" class="super-peko-app" aria-label="スーパペコ ゲーム">
   <header class="game-heading">
     <div>
       <p class="eyebrow">8-BIT PEKO ADVENTURE</p>
-      <h1>スーパー<span>ペコ</span></h1>
+      <h1>スーパ<span>ペコ</span></h1>
     </div>
     <div class="header-actions">
       <button id="sound-toggle-button" class="icon-button" type="button" aria-label="効果音を切り替える">SOUND: ON</button>
@@ -42,14 +42,6 @@ description: ペコを操作して8ワールド32ステージを冒険する横�
     </div>
   </section>
 
-  <section class="under-panel">
-    <div class="world-status">
-      <span id="stage-name">WORLD 1-1 · MEADOW RUN</span>
-      <span>BEST <strong id="high-score">000000</strong></span>
-    </div>
-    <div id="world-map" class="world-map" aria-label="ワールド進行状況"></div>
-  </section>
-
   <nav id="mobile-controls" class="mobile-controls" aria-label="タッチ操作">
     <div class="direction-controls">
       <button id="move-left-button" type="button" aria-label="左へ移動">◀</button>
@@ -68,7 +60,7 @@ description: ペコを操作して8ワールド32ステージを冒険する横�
 </main>
 
 <noscript>このゲームを遊ぶにはJavaScriptを有効にしてください。</noscript>
-<script type="module" src="js/main.js"></script>
+<script type="module" src="js/super-peko.js"></script>
 
 <!--
 再生成プロンプト:

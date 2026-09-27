@@ -272,7 +272,7 @@ export class Renderer {
     this.ctx.fillStyle = "#18283c";
     this.ctx.fillRect(item.x - 2, item.y + 7, item.w + 4, item.h - 3);
     this.ctx.fillStyle =
-      item.type === "hopper"
+      item.type === "bouncer"
         ? "#f28c52"
         : item.type === "shelled"
           ? "#43a884"
