@@ -83,6 +83,7 @@ export class Game {
     const playerResult = updatePlayer(this.player, this.input, this.level, dt);
     if (playerResult.jumped) this.audio.play("jump");
     this.resolveBlockHit(playerResult.hitCeiling);
+    this.updatePlayerAbility(dt);
     this.updateEnemies(dt);
     this.updateTurrets(dt);
     this.updatePowerups(dt);
@@ -163,9 +164,10 @@ export class Game {
         vx: 60,
         vy: -120,
         active: true,
+        kind: block.itemKind || "power-cell",
       });
       this.audio.play("power");
-      emit("itemreveal", { type: "power-cell" });
+      emit("itemreveal", { type: block.itemKind || "power-cell" });
     }
   }
 
@@ -177,12 +179,16 @@ export class Game {
     ];
     for (const enemy of this.level.enemies) {
       if (!enemy.alive) continue;
-      if (
-        enemy.type === "hopper" &&
-        enemy.grounded &&
-        Math.floor(this.elapsed * 2 + enemy.x) % 83 === 0
-      )
-        enemy.vy = -430;
+      if (enemy.state === "shell") {
+        enemy.vx = 0;
+        enemy.vy = Math.min(800, enemy.vy + 1700 * dt);
+      } else if (enemy.type === "hopper" && enemy.grounded) {
+        enemy.jumpTimer -= dt;
+        if (enemy.jumpTimer <= 0) {
+          enemy.vy = -430;
+          enemy.jumpTimer = 1.15;
+        }
+      }
       enemy.vy = Math.min(800, enemy.vy + 1700 * dt);
       const result = moveAndCollide(
         enemy,
@@ -190,7 +196,7 @@ export class Game {
         enemy.vx * dt,
         enemy.vy * dt,
       );
-      if (result.hitWall) enemy.vx *= -1;
+      if (result.hitWall && enemy.state !== "shell") enemy.vx *= -1;
       if (result.hitFloor) enemy.grounded = true;
       const edgeX = enemy.vx > 0 ? enemy.x + enemy.w + 4 : enemy.x - 4;
       const supported = solids.some(
@@ -200,7 +206,19 @@ export class Game {
           edgeX <= solid.x + solid.w &&
           Math.abs(enemy.y + enemy.h - solid.y) < 12,
       );
-      if (!supported && enemy.grounded) enemy.vx *= -1;
+      // Walkers deliberately continue over ledges; hopping and shelled sentries
+      // patrol their platform instead. This creates the familiar two enemy reads.
+      if (!supported && enemy.grounded && enemy.type !== "walker") enemy.vx *= -1;
+      if (enemy.state === "sliding") {
+        for (const target of this.level.enemies) {
+          if (target === enemy || !target.alive || !overlaps(enemy, target))
+            continue;
+          target.alive = false;
+          this.score += 200;
+          this.audio.play("stomp");
+          emit("enemydefeat", { type: target.type, method: "shell" });
+        }
+      }
       if (enemy.y > VIEW.height + 100) enemy.alive = false;
     }
     this.updateBoss(dt, solids);
@@ -271,8 +289,19 @@ export class Game {
       if (shot.x < 0 || shot.x > this.level.width || shot.y > VIEW.height)
         shot.active = false;
       if (overlaps(this.player, shot)) {
+        if (shot.source === "player") continue;
         shot.active = false;
         this.hit();
+      }
+      if (shot.source === "player") {
+        for (const enemy of this.level.enemies) {
+          if (!enemy.alive || !overlaps(enemy, shot)) continue;
+          enemy.alive = false;
+          shot.active = false;
+          this.score += 200;
+          emit("enemydefeat", { type: enemy.type, method: "pulse" });
+          break;
+        }
       }
     }
   }
@@ -290,6 +319,24 @@ export class Game {
     });
   }
 
+  updatePlayerAbility() {
+    const actionPressed = this.input.consumeAction();
+    if (this.player.ability !== "pulse" || !actionPressed) return;
+    const activeShots = this.level.projectiles.filter(
+      (shot) => shot.active && shot.source === "player",
+    ).length;
+    if (activeShots >= 2) return;
+    this.spawnProjectile(
+      this.player.x + (this.player.facing > 0 ? this.player.w : -18),
+      this.player.y + 18,
+      this.player.facing * 410,
+      0,
+      "player",
+    );
+    this.audio.play("jump");
+    emit("playerfire", { level: this.level.id });
+  }
+
   updatePowerups(dt) {
     const solids = [
       ...this.level.solids,
@@ -302,11 +349,22 @@ export class Game {
       if (result.hitWall) item.vx *= -1;
       if (overlaps(this.player, item)) {
         item.active = false;
-        powerPlayer(this.player);
+        if (item.kind === "star-core") {
+          this.player.starTimer = 10;
+          this.player.invulnerable = 10;
+        } else {
+          powerPlayer(this.player);
+          this.player.ability = item.kind === "pulse-module" ? "pulse" : "normal";
+        }
         this.score += 500;
         this.audio.play("power");
-        this.onToast("POWER CELL ONLINE");
-        emit("itemcollect", { type: "power-cell" });
+        const labels = {
+          "power-cell": "POWER CELL ONLINE",
+          "star-core": "STAR SHIELD · 10 SEC",
+          "pulse-module": "PULSE SHOT · X / SHIFT",
+        };
+        this.onToast(labels[item.kind] || labels["power-cell"]);
+        emit("itemcollect", { type: item.kind || "power-cell" });
       }
     }
   }
@@ -345,15 +403,29 @@ export class Game {
       if (overlaps(this.player, hazard)) return this.hit();
     for (const enemy of this.level.enemies) {
       if (!enemy.alive || !overlaps(this.player, enemy)) continue;
+      if (this.player.starTimer > 0) {
+        enemy.alive = false;
+        this.score += 250;
+        emit("enemydefeat", { type: enemy.type, method: "star" });
+        continue;
+      }
       if (
         this.player.vy > 100 &&
         this.player.y + this.player.h - enemy.y < 25
       ) {
-        enemy.alive = false;
+        if (enemy.type === "shelled" && enemy.state !== "shell") {
+          enemy.state = "shell";
+          enemy.h = 24;
+          enemy.y += 10;
+        } else enemy.alive = false;
         this.player.vy = -430;
         this.score += 250;
         this.audio.play("stomp");
         emit("enemydefeat", { type: enemy.type });
+      } else if (enemy.state === "shell") {
+        enemy.state = "sliding";
+        enemy.vx = Math.sign(enemy.x - this.player.x) * 430;
+        this.player.vx = -Math.sign(enemy.x - this.player.x) * 120;
       } else this.hit();
     }
     const boss = this.level.boss;
@@ -376,6 +448,7 @@ export class Game {
     if (this.player.invulnerable > 0) return;
     if (this.player.powered) {
       this.player.powered = false;
+      this.player.ability = "normal";
       const bottom = this.player.y + this.player.h;
       this.player.w = 30;
       this.player.h = 42;

@@ -7,6 +7,7 @@ import w6 from "./levels/world-6.js";
 import w7 from "./levels/world-7.js";
 import w8 from "./levels/world-8.js";
 import { VIEW } from "./config.js";
+import { createSuperPeko11 } from "./stages/super-peko-1-1.js";
 
 const worlds = [w1, w2, w3, w4, w5, w6, w7, w8];
 
@@ -122,7 +123,9 @@ function makeStage(world, spec, stageIndex) {
         vy: 0,
         alive: true,
         grounded: false,
-        type: rnd() > 0.74 ? "hopper" : "walker",
+        type: rnd() > 0.82 ? "hopper" : rnd() > 0.72 ? "shelled" : "walker",
+        state: "walking",
+        jumpTimer: 0.6 + rnd() * 1.4,
       });
     }
     if (i % 7 === 4)
@@ -144,6 +147,9 @@ function makeStage(world, spec, stageIndex) {
       w: 44,
       h: 44,
       type: i % 2 ? "item" : "breakable",
+      itemKind: ["power-cell", "star-core", "pulse-module"][
+        (world.world + stageIndex + i) % 3
+      ],
       used: false,
       disabled: false,
       hidden,
@@ -242,7 +248,7 @@ function makeStage(world, spec, stageIndex) {
   }
 
   const fortress = stageIndex === 4;
-  return {
+  const level = {
     id: `${world.world}-${stageIndex}`,
     number,
     world: world.world,
@@ -274,6 +280,9 @@ function makeStage(world, spec, stageIndex) {
         }
       : null,
   };
+  return world.world === 1 && stageIndex === 1
+    ? createSuperPeko11(level)
+    : level;
 }
 
 export const LEVELS = worlds.flatMap((world) =>

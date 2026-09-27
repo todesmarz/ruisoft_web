@@ -1,16 +1,16 @@
 ---
 layout: default
-title: Pixel Hopper - 32ステージ・アクションゲーム
-description: ロボットを操作して8ワールド32ステージを冒険するオリジナル横スクロールアクションゲームです。
+title: スーパペコ - 32ステージ・アクションゲーム
+description: ペコを操作して8ワールド32ステージを冒険する横スクロールアクションゲームです。
 ---
 
 <link rel="stylesheet" href="css/game.css">
 
-<main id="pixel-hopper-app" class="hopper-app" aria-label="Pixel Hopper ゲーム">
+<main id="pixel-hopper-app" class="hopper-app" aria-label="スーパペコ ゲーム">
   <header class="game-heading">
     <div>
-      <p class="eyebrow">ORIGINAL 8-BIT ADVENTURE</p>
-      <h1>PIXEL <span>HOPPER</span></h1>
+      <p class="eyebrow">8-BIT PEKO ADVENTURE</p>
+      <h1>スーパー<span>ペコ</span></h1>
     </div>
     <div class="header-actions">
       <button id="sound-toggle-button" class="icon-button" type="button" aria-label="効果音を切り替える">SOUND: ON</button>
@@ -28,12 +28,12 @@ description: ロボットを操作して8ワールド32ステージを冒険す�
     </div>
 
     <div id="game-stage" class="game-stage">
-      <canvas id="game-canvas" width="960" height="540" aria-label="Pixel Hopperのゲーム画面"></canvas>
+      <canvas id="game-canvas" width="960" height="540" aria-label="スーパペコのゲーム画面"></canvas>
       <section id="game-overlay" class="game-overlay" aria-live="assertive">
         <div class="overlay-card">
           <p id="overlay-kicker" class="eyebrow">32 STAGES / 8 WORLDS</p>
           <h2 id="overlay-title">POWER UP THE WORLD</h2>
-          <p id="overlay-message">探索ロボット「ピコ」を操作し、失われたエネルギーを取り戻そう。</p>
+          <p id="overlay-message">冒険家「ペコ」を操作し、失われたエネルギーを取り戻そう。</p>
           <button id="start-game-button" class="primary-button" type="button">START GAME</button>
           <button id="continue-game-button" class="secondary-button" type="button" hidden>CONTINUE</button>
         </div>
@@ -55,11 +55,14 @@ description: ロボットを操作して8ワールド32ステージを冒険す�
       <button id="move-left-button" type="button" aria-label="左へ移動">◀</button>
       <button id="move-right-button" type="button" aria-label="右へ移動">▶</button>
     </div>
-    <button id="jump-button" class="jump-button" type="button" aria-label="ジャンプする"><span>JUMP</span>A</button>
+    <div class="action-controls">
+      <button id="action-button" class="action-button" type="button" aria-label="パルスショットを撃つ"><span>SHOT</span>B</button>
+      <button id="jump-button" class="jump-button" type="button" aria-label="ジャンプする"><span>JUMP</span>A</button>
+    </div>
   </nav>
 
   <footer class="game-help">
-    <p><kbd>←</kbd><kbd>→</kbd> / <kbd>A</kbd><kbd>D</kbd> MOVE　 <kbd>SPACE</kbd> / <kbd>Z</kbd> JUMP　 <kbd>P</kbd> PAUSE</p>
+    <p><kbd>←</kbd><kbd>→</kbd> / <kbd>A</kbd><kbd>D</kbd> MOVE　 <kbd>SPACE</kbd> / <kbd>Z</kbd> JUMP　 <kbd>X</kbd> / <kbd>SHIFT</kbd> SHOT　 <kbd>P</kbd> PAUSE</p>
     <button id="reset-save-button" type="button">セーブデータを消去</button>
   </footer>
 </main>
@@ -69,7 +72,7 @@ description: ロボットを操作して8ワールド32ステージを冒険す�
 
 <!--
 再生成プロンプト:
-GitHub Pages向けに、外部アセットを使わないオリジナル横スクロールアクション「Pixel Hopper」を作成してください。
+GitHub Pages向けに、外部アセットを使わない横スクロールアクション「スーパペコ」を作成してください。
 HTML/Jekyll、CSS、ES Modulesを分離し、8ワールド32ステージ、キーボード・タッチ操作、敵、収集物、
 強化、ボス、チェックポイント、進行保存、効果音、CustomEvent、レスポンシブ表示を実装してください。
 既存ゲームのステージ、名称、キャラクター、画像、音楽は複製せず、独自の内容にしてください。
