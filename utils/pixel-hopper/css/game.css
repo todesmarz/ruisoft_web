@@ -262,6 +262,11 @@
   display: flex;
   gap: 12px;
 }
+.action-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 .direction-controls button {
   width: 68px;
   height: 58px;
@@ -275,7 +280,16 @@
   background: var(--yellow);
   border-color: #fff1ad;
 }
-.jump-button span {
+.mobile-controls .action-button {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  color: #dffffa;
+  background: #148e87;
+  border-color: #8ff8e8;
+}
+.jump-button span,
+.action-button span {
   display: block;
   font-size: 0.52rem;
 }

@@ -40,7 +40,7 @@ function showOverlay(nextTitle, nextMessage, buttonText, action) {
   kicker.textContent =
     nextTitle === "POWER UP THE WORLD"
       ? "32 STAGES / 8 WORLDS"
-      : "PIXEL HOPPER";
+      : "スーパペコ";
   title.textContent = nextTitle;
   message.textContent = nextMessage;
   primary.textContent = buttonText;
