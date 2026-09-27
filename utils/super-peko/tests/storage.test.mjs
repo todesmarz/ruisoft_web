@@ -17,7 +17,7 @@ test("uses safe defaults for absent or malformed data", () => {
     completed: [],
     sound: true,
   });
-  localStorage.setItem("pixelHopper.save.v1", "{broken");
+  localStorage.setItem("superPeko.save.v1", "{broken");
   assert.deepEqual(loadSave(), {
     highScore: 0,
     unlocked: 1,
@@ -28,7 +28,7 @@ test("uses safe defaults for absent or malformed data", () => {
 
 test("sanitizes types, bounds, and stage identifiers", () => {
   localStorage.setItem(
-    "pixelHopper.save.v1",
+    "superPeko.save.v1",
     JSON.stringify({
       highScore: -4,
       unlocked: 99,
@@ -54,5 +54,5 @@ test("round trips valid save data and clears it", () => {
   storeSave(save);
   assert.deepEqual(loadSave(), save);
   clearSave();
-  assert.equal(memory.has("pixelHopper.save.v1"), false);
+  assert.equal(memory.has("superPeko.save.v1"), false);
 });

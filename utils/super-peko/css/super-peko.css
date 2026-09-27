@@ -1,4 +1,4 @@
-.hopper-app {
+.super-peko-app {
   --ink: #15243a;
   --cream: #fff5d6;
   --orange: #ff7b54;
@@ -18,7 +18,7 @@
     0 28px 45px rgba(10, 24, 40, 0.25);
   user-select: none;
 }
-.hopper-app * {
+.super-peko-app * {
   box-sizing: border-box;
 }
 .game-heading {
@@ -204,42 +204,6 @@
   opacity: 1;
   transform: translate(-50%, 0);
 }
-.under-panel {
-  padding: 14px 20px 18px;
-  background: #10253b;
-}
-.world-status {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  color: #b8cedb;
-  font-size: 0.69rem;
-}
-.world-map {
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 6px;
-  margin-top: 11px;
-}
-.world-node {
-  height: 10px;
-  padding: 0;
-  border: 0;
-  cursor: not-allowed;
-  border-radius: 10px;
-  background: #29445c;
-}
-.world-node.unlocked {
-  cursor: pointer;
-  background: #5b7f93;
-}
-.world-node.complete {
-  background: var(--cyan);
-}
-.world-node.current {
-  background: var(--yellow);
-  box-shadow: 0 0 10px var(--yellow);
-}
 .mobile-controls {
   display: none;
   justify-content: space-between;
@@ -325,7 +289,7 @@
   font-size: 0.58rem;
 }
 @media (max-width: 720px) {
-  .hopper-app {
+  .super-peko-app {
     margin: 0.5rem -10px;
     border-width: 3px;
     border-radius: 14px;
@@ -347,12 +311,6 @@
   }
   .game-hud span {
     font-size: 0.48rem;
-  }
-  .under-panel {
-    padding: 10px;
-  }
-  .world-status {
-    font-size: 0.56rem;
   }
   .mobile-controls {
     display: flex;
@@ -378,9 +336,6 @@
   .game-hud strong {
     font-size: 0.62rem;
   }
-  .world-map {
-    gap: 3px;
-  }
   .overlay-card {
     padding: 20px 14px;
   }
@@ -392,7 +347,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hopper-app * {
+  .super-peko-app * {
     scroll-behavior: auto !important;
     transition: none !important;
   }

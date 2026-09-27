@@ -73,4 +73,4 @@ export const THEMES = {
     accent: "#ff9d58",
   },
 };
-export const SAVE_KEY = "pixelHopper.save.v1";
+export const SAVE_KEY = "superPeko.save.v1";

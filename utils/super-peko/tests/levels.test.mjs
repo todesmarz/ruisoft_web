@@ -35,18 +35,13 @@ test("every stage has safe spawn, checkpoint, and goal ground", () => {
   }
 });
 
-test("stage 1-1 uses the authored binary tile map", () => {
+test("stage 1-1 is generated from its complete stage specification", () => {
   const level = LEVELS[0];
-  assert.equal(level.name, "PEKO PLAINS");
-  assert.equal(level.width, 200 * 48);
-  assert.ok(level.solids.some((solid) => solid.x === 28 * 48 && solid.w === 96));
-  assert.ok(level.blocks.some((block) => block.x === 16 * 48));
-  assert.ok(
-    !level.solids.some(
-      (solid) => solid.y === level.floorY && solid.x <= 69 * 48 && solid.x + solid.w > 69 * 48,
-    ),
-    "the first ground gap must begin at tile 69",
-  );
+  assert.equal(level.name, "MEADOW RUN");
+  assert.equal(level.worldTitle, "SUNLIT MEADOW");
+  assert.deepEqual(level.features, ["blocks", "hidden"]);
+  assert.ok(level.solids.length > 0);
+  assert.ok(level.enemies.length > 0);
 });
 
 test("all planned environment modes and advanced mechanics are represented", () => {
@@ -86,7 +81,7 @@ test("stages contain all three classic item effects and enemy behaviors", () => 
   const enemyTypes = new Set(
     LEVELS.flatMap((level) => level.enemies.map((enemy) => enemy.type)),
   );
-  for (const type of ["walker", "hopper", "shelled"])
+  for (const type of ["walker", "bouncer", "shelled"])
     assert.ok(enemyTypes.has(type), `${type} enemy must be represented`);
 });
 
@@ -104,4 +99,17 @@ test("freshLevel returns isolated mutable state", () => {
   clone.enemies[0].alive = false;
   assert.equal(LEVELS[0].blocks[0].disabled, false);
   assert.equal(LEVELS[0].enemies[0].alive, true);
+});
+
+test("freshLevel works when structuredClone is unavailable", () => {
+  const nativeClone = globalThis.structuredClone;
+  try {
+    globalThis.structuredClone = undefined;
+    const copy = freshLevel(31);
+    assert.equal(copy.id, "8-4");
+    copy.enemies[0].alive = false;
+    assert.equal(LEVELS[31].enemies[0].alive, true);
+  } finally {
+    globalThis.structuredClone = nativeClone;
+  }
 });
