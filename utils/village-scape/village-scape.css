@@ -1,0 +1,40 @@
+#village-app {
+  --ink:#23312a; --muted:#6b756f; --paper:#f3f0e7; --line:#d8d2c3; --accent:#3f6a50;
+  max-width:1180px; margin:0 auto 3rem; color:var(--ink);
+  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+}
+#village-app * { box-sizing:border-box; }
+.village-header { display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; margin:0 0 1rem; }
+.village-header h1 { margin:0; font:500 clamp(1.6rem,3.4vw,2.65rem)/1.15 Georgia,"Yu Mincho",serif; letter-spacing:.1em; }
+.village-header p:not(.village-eyebrow) { margin:.45rem 0 0; color:var(--muted); font-size:.86rem; }
+.village-eyebrow { margin:0 0 .45rem; color:var(--accent); font-size:.62rem; font-weight:800; letter-spacing:.22em; text-transform:uppercase; }
+#village-live { max-width:18rem; color:var(--muted); font-size:.7rem; letter-spacing:.07em; text-align:right; }
+.village-stage { position:relative; overflow:hidden; min-height:360px; aspect-ratio:16/9; border-radius:6px; background:linear-gradient(#8ca8ae,#d8d4bd); box-shadow:0 24px 60px rgba(24,36,29,.22); isolation:isolate; }
+#village-webgl, #village-webgl canvas { display:block; width:100%; height:100%; }
+#village-webgl { position:absolute; inset:0; cursor:grab; }
+#village-webgl:active { cursor:grabbing; }
+.village-grade { position:absolute; inset:0; z-index:2; pointer-events:none; background:linear-gradient(180deg,rgba(8,20,24,.05),transparent 45%,rgba(10,20,12,.13)); box-shadow:inset 0 0 90px rgba(7,15,12,.28); mix-blend-mode:multiply; }
+.village-caption { position:absolute; z-index:3; left:clamp(14px,2.7vw,32px); bottom:clamp(14px,2.7vw,30px); color:#fff; text-shadow:0 2px 12px rgba(0,0,0,.75); pointer-events:none; }
+#village-scene-title { display:block; font:500 clamp(1.12rem,2.5vw,1.8rem)/1.2 Georgia,"Yu Mincho",serif; letter-spacing:.13em; }
+#village-scene-detail { display:block; margin-top:.38rem; font-size:clamp(.65rem,1.2vw,.8rem); letter-spacing:.11em; opacity:.9; }
+.village-hint { position:absolute; z-index:3; right:17px; bottom:17px; padding:5px 9px; border:1px solid rgba(255,255,255,.3); border-radius:20px; color:rgba(255,255,255,.75); background:rgba(18,30,25,.2); backdrop-filter:blur(8px); font-size:.62rem; letter-spacing:.08em; }
+.village-loading { position:absolute; inset:0; z-index:5; display:grid; place-content:center; justify-items:center; gap:7px; color:#35473d; background:linear-gradient(#a9c1c3,#e4dfca); transition:opacity .7s ease,visibility .7s; }
+.village-loading.is-hidden { opacity:0; visibility:hidden; }
+.village-loading strong { font:500 1rem Georgia,"Yu Mincho",serif; letter-spacing:.13em; }
+.village-loading small { color:#68776e; font-size:.65rem; }
+.village-loading__sun { width:36px; height:36px; margin-bottom:7px; border-radius:50%; background:#f6d489; box-shadow:0 0 35px rgba(248,213,133,.8); animation:village-pulse 1.5s ease-in-out infinite alternate; }
+.village-controls { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)) auto; gap:10px; align-items:end; margin-top:14px; padding:14px; border:1px solid var(--line); border-radius:5px; background:var(--paper); }
+.village-controls label { min-width:0; }
+.village-controls label > span { display:block; margin:0 0 5px; color:var(--muted); font-size:.67rem; font-weight:800; letter-spacing:.11em; }
+.village-controls select { width:100%; min-height:40px; padding:7px 30px 7px 10px; border:1px solid #bbb7ab; border-radius:3px; background:#fff; color:var(--ink); font:inherit; cursor:pointer; }
+.village-actions { display:flex; gap:7px; }
+.village-button { min-height:40px; padding:7px 14px; border:1px solid #3f5e49; border-radius:3px; background:#fff; color:#30493a; font-weight:700; cursor:pointer; transition:background .18s ease,transform .18s ease; }
+.village-button:hover { background:#e2eadf; transform:translateY(-1px); }
+.village-button--primary,.village-button[aria-pressed="true"] { color:#fff; background:var(--accent); }
+.village-button:focus-visible,.village-controls select:focus-visible { outline:3px solid #8bad99; outline-offset:2px; }
+.village-note { display:flex; justify-content:space-between; gap:1rem; margin:.75rem .15rem 0; color:var(--muted); font-size:.7rem; }
+.village-note i { display:inline-block; width:6px; height:6px; margin-right:5px; border-radius:50%; background:#75967c; box-shadow:0 0 0 3px rgba(117,150,124,.16); }
+@keyframes village-pulse { to { transform:scale(1.12); box-shadow:0 0 55px rgba(248,213,133,.95); } }
+@media (max-width:800px) { .village-controls{grid-template-columns:1fr 1fr}.village-actions{grid-column:1/-1}.village-header{align-items:flex-start;flex-direction:column}#village-live{text-align:left}.village-stage{min-height:0}.village-hint{display:none} }
+@media (max-width:520px) { .village-controls{grid-template-columns:1fr}.village-actions{grid-column:auto}.village-button{flex:1}.village-note{display:block}.village-note span{display:block;margin-top:.28rem} }
+@media (prefers-reduced-motion:reduce) { .village-button,.village-loading{transition:none}.village-loading__sun{animation:none} }
