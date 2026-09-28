@@ -28,12 +28,21 @@ export class Game {
     this.loadLevel(0);
   }
 
-  loadLevel(index, checkpoint = false) {
+  loadLevel(index, checkpoint = false, playerState = null) {
     this.levelIndex = clamp(index, 0, LEVELS.length - 1);
     this.level = freshLevel(this.levelIndex);
     this.player = createPlayer(
       checkpoint ? this.level.checkpoint : this.level.spawn,
     );
+    if (playerState?.powered) powerPlayer(this.player);
+    if (playerState) {
+      this.player.ability = playerState.ability || "normal";
+      this.player.starTimer = Math.max(0, playerState.starTimer || 0);
+      this.player.invulnerable = Math.max(
+        this.player.starTimer,
+        playerState.invulnerable || 0,
+      );
+    }
     this.player.checkpoint = checkpoint;
     // A checkpoint reload must never put the player straight back into damage,
     // and the camera must already be looking at the respawn point.
@@ -535,6 +544,7 @@ export class Game {
     this.audio.play("hit");
     emit("lifechange", { lives: this.lives });
     if (this.lives <= 0) {
+      const retryLevel = this.levelIndex;
       this.state = "gameover";
       this.recordScore();
       this.onOverlay(
@@ -543,7 +553,7 @@ export class Game {
         "TRY AGAIN",
         () => {
           this.onOverlay();
-          this.start(0);
+          this.start(retryLevel);
         },
       );
       emit("gameover", { score: this.score });
@@ -572,6 +582,12 @@ export class Game {
     this.score += bonus;
     this.audio.play("clear");
     const next = this.levelIndex + 1;
+    const playerState = {
+      powered: this.player.powered,
+      ability: this.player.ability,
+      starTimer: this.player.starTimer,
+      invulnerable: this.player.invulnerable,
+    };
     this.save.unlocked = Math.max(this.save.unlocked, Math.min(32, next + 1));
     if (!this.save.completed.includes(this.level.id))
       this.save.completed.push(this.level.id);
@@ -594,7 +610,7 @@ export class Game {
         `TIME BONUS +${bonus} · NEXT ${LEVELS[next].id}`,
         "NEXT STAGE",
         () => {
-          this.loadLevel(next);
+          this.loadLevel(next, false, playerState);
           this.state = "playing";
           this.onOverlay();
         },
