@@ -34,7 +34,9 @@ export function updatePlayer(player, input, level, dt) {
       : PHYSICS.moveSpeed;
 
   const wasGrounded = player.grounded;
-  player.coyoteTimer = wasGrounded ? 0.09 : Math.max(0, player.coyoteTimer - dt);
+  player.coyoteTimer = wasGrounded
+    ? 0.09
+    : Math.max(0, player.coyoteTimer - dt);
   player.jumpBuffer = input.consumeJump()
     ? 0.11
     : Math.max(0, player.jumpBuffer - dt);
@@ -59,7 +61,10 @@ export function updatePlayer(player, input, level, dt) {
   player.vx = clamp(player.vx, -speed, speed);
 
   let jumped = false;
-  if (player.jumpBuffer > 0 && (player.grounded || player.coyoteTimer > 0 || water)) {
+  if (
+    player.jumpBuffer > 0 &&
+    (player.grounded || player.coyoteTimer > 0 || water)
+  ) {
     // A little horizontal momentum is converted into lift, matching the long,
     // controllable arcs expected from classic run-and-jump platformers.
     const runBoost = Math.min(55, Math.abs(player.vx) * 0.16);
@@ -83,6 +88,7 @@ export function updatePlayer(player, input, level, dt) {
     player.vy + (water ? PHYSICS.waterGravity : PHYSICS.gravity) * dt,
   );
 
+  const previousBottom = player.y + player.h;
   const solids = [
     ...level.solids,
     ...level.blocks.filter((block) => !block.disabled),
@@ -94,6 +100,23 @@ export function updatePlayer(player, input, level, dt) {
     player.vx * dt,
     player.vy * dt,
   );
+  // Cannons remain pass-through scenery from the sides and below. Only their
+  // flat rim is a one-way foothold, so they have no damaging body collision.
+  if (player.vy >= 0) {
+    const turretTop = level.turrets.find(
+      (turret) =>
+        previousBottom <= turret.y + 2 &&
+        player.y + player.h >= turret.y &&
+        player.x + player.w > turret.x &&
+        player.x < turret.x + turret.w,
+    );
+    if (turretTop) {
+      player.y = turretTop.y - player.h;
+      player.vy = 0;
+      player.grounded = true;
+      collision.hitFloor = turretTop;
+    }
+  }
   for (const spring of level.springs) {
     if (
       player.x + player.w > spring.x &&
