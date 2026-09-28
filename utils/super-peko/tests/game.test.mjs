@@ -13,6 +13,7 @@ globalThis.CustomEvent = class CustomEvent {
 function makeGame() {
   const messages = [];
   const sounds = [];
+  let overlayAction;
   const input = {
     actionPressed: false,
     consumeAction() {
@@ -27,12 +28,22 @@ function makeGame() {
     renderer: { draw() {} },
     save: { unlocked: 1, completed: [], highScore: 0 },
     onHud() {},
-    onOverlay() {},
+    onOverlay(_title, _message, _buttonText, action) {
+      overlayAction = action;
+    },
     onToast(message) {
       messages.push(message);
     },
   });
-  return { game, input, messages, sounds };
+  return {
+    game,
+    input,
+    messages,
+    sounds,
+    runOverlayAction() {
+      overlayAction?.();
+    },
+  };
 }
 
 test("checkpoint respawns start protected and with the camera in position", () => {
@@ -76,4 +87,35 @@ test("invulnerability counts down audibly and announces its end", () => {
   game.updateProtectionAudio(0.01);
   assert.equal(sounds.at(-1), "shieldEnd");
   assert.equal(messages.at(-1), "無敵時間終了");
+});
+
+test("power-up state carries over to the next stage", () => {
+  const { game, runOverlayAction } = makeGame();
+  game.state = "playing";
+  game.player.powered = true;
+  game.player.ability = "pulse";
+  game.player.starTimer = 4;
+  game.player.invulnerable = 4;
+
+  game.clearStage();
+  runOverlayAction();
+
+  assert.equal(game.level.id, "1-2");
+  assert.equal(game.player.powered, true);
+  assert.equal(game.player.ability, "pulse");
+  assert.equal(game.player.starTimer, 4);
+  assert.equal(game.player.invulnerable, 4);
+});
+
+test("game over retries the stage where the player was defeated", () => {
+  const { game, runOverlayAction } = makeGame();
+  game.start(1);
+  game.lives = 1;
+
+  game.loseLife("SYSTEM DAMAGE");
+  runOverlayAction();
+
+  assert.equal(game.level.id, "1-2");
+  assert.equal(game.state, "playing");
+  assert.equal(game.lives, 3);
 });
