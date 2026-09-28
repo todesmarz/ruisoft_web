@@ -6,7 +6,8 @@ import w5 from "./levels/world-5.js";
 import w6 from "./levels/world-6.js";
 import w7 from "./levels/world-7.js";
 import w8 from "./levels/world-8.js";
-import { VIEW } from "./config.js";
+import { TURRET, VIEW } from "./config.js";
+import { stageBlueprint } from "./stage-blueprints.js";
 
 const worlds = [w1, w2, w3, w4, w5, w6, w7, w8];
 
@@ -147,7 +148,9 @@ function applyMeadowRunLayout(level) {
 function makeStage(world, spec, stageIndex) {
   const rnd = random(spec.seed);
   const number = (world.world - 1) * 4 + stageIndex;
-  const width = 3500 + world.world * 160 + stageIndex * 190;
+  const id = `${world.world}-${stageIndex}`;
+  const blueprint = stageBlueprint(id);
+  const width = blueprint.width;
   const floorY = 432;
   const checkpointX = Math.floor(width * 0.52);
   const arrays = {
@@ -164,33 +167,35 @@ function makeStage(world, spec, stageIndex) {
     portals: [],
   };
 
-  let x = 0;
-  while (x < width) {
-    const protectedZone =
-      x < 560 || Math.abs(x - checkpointX) < 260 || x > width - 520;
-    const gapChance =
-      spec.mode === "water"
-        ? 0
-        : spec.mode === "high"
-          ? 0.24
-          : 0.1 + world.world * 0.007;
-    const gap = !protectedZone && rnd() < gapChance;
-    const run = gap
-      ? VIEW.tile * (1 + (rnd() > 0.82 ? 1 : 0))
-      : VIEW.tile * (2 + Math.floor(rnd() * 5));
-    if (!gap) {
-      arrays.solids.push({
-        x,
-        y: floorY,
-        w: Math.min(run, width - x),
-        h: 108,
-        type: spec.mode === "fortress" ? "metal" : "ground",
+  // Build the main route from an explicit blueprint rather than scattering
+  // random ground. This keeps every one of the 32 courses recognizable and
+  // repeatable while the encounters below remain native to Super Peko.
+  let groundStart = 0;
+  for (const gap of blueprint.gaps) {
+    arrays.solids.push({
+      x: groundStart,
+      y: floorY,
+      w: gap.x - groundStart,
+      h: 108,
+      type: spec.mode === "fortress" ? "metal" : "ground",
+    });
+    if (spec.features.includes("lava"))
+      arrays.hazards.push({
+        x: gap.x,
+        y: floorY + 20,
+        w: gap.w,
+        h: 88,
+        type: "lava",
       });
-    } else if (spec.features.includes("lava")) {
-      arrays.hazards.push({ x, y: floorY + 20, w: run, h: 88, type: "lava" });
-    }
-    x += run;
+    groundStart = gap.x + gap.w;
   }
+  arrays.solids.push({
+    x: groundStart,
+    y: floorY,
+    w: width - groundStart,
+    h: 108,
+    type: spec.mode === "fortress" ? "metal" : "ground",
+  });
 
   addSafeGround(
     arrays.solids,
@@ -214,7 +219,10 @@ function makeStage(world, spec, stageIndex) {
     spec.mode === "fortress" ? "metal" : "ground",
   );
 
-  const encounterCount = 12 + world.world * 2 + stageIndex * 2;
+  const encounterCount = Math.max(
+    12 + world.world * 2 + stageIndex * 2,
+    Math.round(width / 260),
+  );
   for (let i = 0; i < encounterCount; i += 1) {
     const px = 430 + i * ((width - 850) / encounterCount) + rnd() * 70;
     const elevated = rnd() > 0.58;
@@ -259,8 +267,9 @@ function makeStage(world, spec, stageIndex) {
       });
   }
 
-  for (let i = 0; i < 4; i += 1) {
-    const bx = 650 + i * ((width - 1300) / 4);
+  const blockCount = Math.max(4, Math.round(width / 1100));
+  for (let i = 0; i < blockCount; i += 1) {
+    const bx = 650 + i * ((width - 1300) / blockCount);
     const hidden = spec.features.includes("hidden") && i === 1;
     arrays.blocks.push({
       x: bx,
@@ -325,8 +334,10 @@ function makeStage(world, spec, stageIndex) {
         y: floorY - 46,
         w: 38,
         h: 46,
-        cooldown: 1.4 + i * 0.35,
-        timer: i * 0.4,
+        cooldown: TURRET.baseCooldown + i * TURRET.cooldownStep,
+        // Let the player read a newly encountered cannon, then stagger shots
+        // so that several cannons never fire a solid wall at once.
+        timer: TURRET.initialDelay + i * TURRET.cooldownStep,
       });
   }
   if (spec.features.includes("portal")) {
@@ -370,7 +381,7 @@ function makeStage(world, spec, stageIndex) {
 
   const fortress = stageIndex === 4;
   const level = {
-    id: `${world.world}-${stageIndex}`,
+    id,
     number,
     world: world.world,
     stage: stageIndex,
@@ -379,6 +390,7 @@ function makeStage(world, spec, stageIndex) {
     theme: world.theme,
     mode: spec.mode,
     features: spec.features,
+    routeGaps: blueprint.gaps,
     timeLimit: Math.max(190, 330 - world.world * 10),
     width,
     floorY,

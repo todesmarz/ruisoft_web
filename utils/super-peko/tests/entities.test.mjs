@@ -22,8 +22,37 @@ function level() {
     blocks: [],
     platforms: [],
     springs: [],
+    turrets: [],
   };
 }
+
+test("a player can land on a turret without side or underside collision", () => {
+  const course = level();
+  course.solids = [];
+  course.turrets = [{ x: 100, y: 100, w: 38, h: 46 }];
+
+  const landing = createPlayer({ x: 104, y: 54 });
+  landing.vy = 180;
+  updatePlayer(landing, input(), course, 1 / 30);
+  assert.equal(landing.y + landing.h, course.turrets[0].y);
+  assert.equal(landing.grounded, true);
+
+  const passingThrough = createPlayer({ x: 104, y: 110 });
+  passingThrough.vy = -300;
+  updatePlayer(passingThrough, input(), course, 1 / 60);
+  assert.ok(
+    passingThrough.y < 110,
+    "the turret underside must not block movement",
+  );
+
+  const passingSide = createPlayer({ x: 60, y: 100 });
+  passingSide.vx = 280;
+  updatePlayer(passingSide, input({ right: true }), course, 0.035);
+  assert.ok(
+    passingSide.x > 60,
+    "the turret body must not block horizontal movement",
+  );
+});
 
 test("jump height increases with running momentum", () => {
   const standing = createPlayer({ x: 20, y: 58 });

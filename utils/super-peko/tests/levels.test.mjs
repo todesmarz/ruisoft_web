@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { LEVELS, WORLD_META, freshLevel } from "../js/levels.js";
+import { TURRET } from "../js/config.js";
+import { STAGE_BLUEPRINTS } from "../js/stage-blueprints.js";
 
 function hasGroundAt(level, x, requiredWidth = 0) {
   return level.solids.some(
@@ -16,6 +18,16 @@ test("contains eight worlds and 32 unique stages", () => {
   assert.equal(LEVELS.length, 32);
   assert.equal(new Set(LEVELS.map((level) => level.id)).size, 32);
   assert.equal(new Set(LEVELS.map((level) => level.name)).size, 32);
+});
+
+test("all 32 stages are generated from explicit map blueprints", () => {
+  assert.equal(Object.keys(STAGE_BLUEPRINTS).length, 32);
+  for (const level of LEVELS) {
+    const blueprint = STAGE_BLUEPRINTS[level.id];
+    assert.ok(blueprint, `${level.id} needs a map blueprint`);
+    assert.equal(level.width, blueprint.width);
+    assert.deepEqual(level.routeGaps, blueprint.gaps);
+  }
 });
 
 test("every stage has safe spawn, checkpoint, and goal ground", () => {
@@ -83,14 +95,39 @@ test("all planned environment modes and advanced mechanics are represented", () 
   assert.ok(LEVELS.some((level) => level.turrets.length > 0));
 });
 
+test("every stage after 1-1 is fully populated and keeps its stage identity", () => {
+  for (const level of LEVELS.slice(1)) {
+    assert.ok(level.width > 3500, `${level.id} must be a complete course`);
+    assert.ok(
+      level.solids.length >= 3,
+      `${level.id} needs traversable terrain`,
+    );
+    assert.ok(level.blocks.length >= 4, `${level.id} needs block encounters`);
+    assert.ok(level.gems.length >= 12, `${level.id} needs a collectible route`);
+    assert.ok(level.enemies.length >= 6, `${level.id} needs enemy encounters`);
+    assert.ok(
+      level.features.length >= 2,
+      `${level.id} needs distinct mechanics`,
+    );
+  }
+});
+
+test("turrets use a slower, staggered firing cadence", () => {
+  const turrets = LEVELS.flatMap((level) => level.turrets);
+  assert.ok(turrets.length > 0);
+  assert.ok(turrets.every((turret) => turret.cooldown >= TURRET.baseCooldown));
+  assert.ok(turrets.every((turret) => turret.timer >= TURRET.initialDelay));
+});
+
 test("stages contain all three classic item effects and enemy behaviors", () => {
   const itemKinds = new Set(
     LEVELS.flatMap((level) => level.blocks.map((block) => block.itemKind)),
   );
-  assert.deepEqual(
-    [...itemKinds].filter(Boolean).sort(),
-    ["power-cell", "pulse-module", "star-core"],
-  );
+  assert.deepEqual([...itemKinds].filter(Boolean).sort(), [
+    "power-cell",
+    "pulse-module",
+    "star-core",
+  ]);
   const enemyTypes = new Set(
     LEVELS.flatMap((level) => level.enemies.map((enemy) => enemy.type)),
   );

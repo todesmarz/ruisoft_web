@@ -16,6 +16,13 @@ export const PLAYER_SIZE = {
   small: { width: 30, height: 42 },
   powered: { width: 34, height: 58 },
 };
+export const TURRET = {
+  // Turrets create an occasional timing challenge rather than a continuous
+  // wall of projectiles. Stages add a small stagger for each cannon.
+  baseCooldown: 3.2,
+  cooldownStep: 0.45,
+  initialDelay: 1.4,
+};
 export const THEMES = {
   meadow: {
     sky: "#76d7e8",
