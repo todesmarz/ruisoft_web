@@ -19,6 +19,8 @@ export class AudioSystem {
       hit: [180, 70, 0.25, "sawtooth"],
       stomp: [170, 110, 0.08, "square"],
       power: [360, 760, 0.3, "triangle"],
+      warning: [880, 660, 0.12, "square"],
+      shieldEnd: [520, 140, 0.25, "sawtooth"],
       clear: [520, 1040, 0.45, "square"],
       boss: [110, 55, 0.35, "sawtooth"],
     };

@@ -7,6 +7,7 @@ function input(overrides = {}) {
     left: false,
     right: false,
     jump: false,
+    action: false,
     consumeJump: () => false,
     ...overrides,
   };
@@ -57,4 +58,17 @@ test("coyote time accepts a jump immediately after leaving a ledge", () => {
   );
   assert.equal(result.jumped, true);
   assert.ok(player.vy < 0);
+});
+
+test("holding the action button enables running speed", () => {
+  const walking = createPlayer({ x: 20, y: 58 });
+  const running = createPlayer({ x: 20, y: 58 });
+  walking.vx = 340;
+  running.vx = 340;
+
+  updatePlayer(walking, input({ right: true }), level(), 1 / 60);
+  updatePlayer(running, input({ right: true, action: true }), level(), 1 / 60);
+
+  assert.equal(walking.vx, 285);
+  assert.ok(running.vx > walking.vx);
 });

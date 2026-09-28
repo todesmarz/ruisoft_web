@@ -42,6 +42,19 @@ test("stage 1-1 is generated from its complete stage specification", () => {
   assert.deepEqual(level.features, ["blocks", "hidden"]);
   assert.ok(level.solids.length > 0);
   assert.ok(level.enemies.length > 0);
+  assert.equal(level.width, 6048);
+  assert.deepEqual(
+    level.solids.filter((solid) => solid.type === "pipe").map((pipe) => pipe.x),
+    [1392, 1824, 2784],
+  );
+  assert.ok(level.blocks.length >= 20);
+  assert.ok(level.blocks.some((block) => block.hidden));
+  assert.ok(
+    level.solids.some(
+      (solid) => solid.x === 4656 && solid.y === level.floorY - 48,
+    ),
+    "the final staircase should be present",
+  );
 });
 
 test("all planned environment modes and advanced mechanics are represented", () => {

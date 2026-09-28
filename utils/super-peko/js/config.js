@@ -3,6 +3,7 @@ export const PHYSICS = {
   gravity: 1950,
   waterGravity: 500,
   moveSpeed: 285,
+  runSpeed: 360,
   iceSpeed: 330,
   acceleration: 1800,
   friction: 2100,

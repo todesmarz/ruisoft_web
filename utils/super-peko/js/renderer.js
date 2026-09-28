@@ -135,6 +135,13 @@ export class Renderer {
 
   block(item, theme) {
     if (item.disabled || (item.hidden && !item.revealed)) return;
+    let bumpOffset = 0;
+    if (item.bumpTimer > 0) {
+      const progress = 1 - item.bumpTimer / 0.16;
+      bumpOffset = -Math.sin(progress * Math.PI) * 10;
+    }
+    this.ctx.save();
+    this.ctx.translate(0, bumpOffset);
     const gradient = this.ctx.createLinearGradient(
       item.x,
       item.y,
@@ -154,7 +161,12 @@ export class Renderer {
     this.ctx.fillStyle = "rgba(255,255,255,.7)";
     this.ctx.fillRect(item.x + 8, item.y + 7, item.w - 16, 4);
     this.ctx.fillStyle = "rgba(75,35,30,.55)";
-    for (const [dx, dy] of [[7, 7], [item.w - 11, 7], [7, item.h - 11], [item.w - 11, item.h - 11]])
+    for (const [dx, dy] of [
+      [7, 7],
+      [item.w - 11, 7],
+      [7, item.h - 11],
+      [item.w - 11, item.h - 11],
+    ])
       this.ctx.fillRect(item.x + dx, item.y + dy, 4, 4);
     if (item.type === "item" && !item.used) {
       this.ctx.fillStyle = "rgba(255,255,255,.35)";
@@ -163,6 +175,7 @@ export class Renderer {
       this.ctx.font = "900 25px monospace";
       this.ctx.fillText("?", item.x + 14, item.y + 32);
     }
+    this.ctx.restore();
   }
 
   platform(item, theme) {
@@ -198,6 +211,13 @@ export class Renderer {
   }
 
   portal(item, theme) {
+    this.ctx.fillStyle = "rgba(9,24,39,.78)";
+    this.ctx.fillRect(item.x - 13, item.y - 26, item.w + 26, 18);
+    this.ctx.fillStyle = "#fff";
+    this.ctx.font = "bold 10px monospace";
+    this.ctx.textAlign = "center";
+    this.ctx.fillText(`${item.label} · B`, item.x + item.w / 2, item.y - 13);
+    this.ctx.textAlign = "start";
     this.ctx.strokeStyle = theme.accent;
     this.ctx.lineWidth = 7;
     this.ctx.strokeRect(item.x + 5, item.y + 5, item.w - 10, item.h - 5);
@@ -230,16 +250,45 @@ export class Renderer {
       "star-core": "#fff1a8",
       "pulse-module": "#22c7b8",
     };
-    this.ctx.fillStyle = colors[item.kind] || colors["power-cell"];
-    this.ctx.fillRect(item.x, item.y, item.w, item.h);
-    this.ctx.fillStyle = "#20364c";
+    const color = colors[item.kind] || colors["power-cell"];
+    this.ctx.fillStyle = "rgba(9,24,39,.82)";
+    this.ctx.fillRect(item.x - 7, item.y - 16, item.w + 14, 12);
+    this.ctx.fillStyle = "#fff";
+    this.ctx.font = "bold 9px monospace";
+    this.ctx.textAlign = "center";
+    const labels = {
+      "power-cell": "POWER",
+      "star-core": "STAR",
+      "pulse-module": "PULSE",
+    };
+    this.ctx.fillText(labels[item.kind] || "ITEM", item.x + item.w / 2, item.y - 7);
+    this.ctx.textAlign = "start";
+    this.ctx.fillStyle = "#17283e";
+    this.ctx.fillRect(item.x - 2, item.y - 2, item.w + 4, item.h + 4);
+    this.ctx.fillStyle = color;
     if (item.kind === "star-core") {
-      this.ctx.fillRect(item.x + 11, item.y + 4, 8, 22);
-      this.ctx.fillRect(item.x + 4, item.y + 11, 22, 8);
+      // A stepped five-point star reads clearly even at the game's pixel scale.
+      this.ctx.fillRect(item.x + 11, item.y + 2, 8, 26);
+      this.ctx.fillRect(item.x + 3, item.y + 9, 24, 10);
+      this.ctx.fillRect(item.x + 6, item.y + 6, 18, 18);
+      this.ctx.fillStyle = "#8f6230";
+      this.ctx.fillRect(item.x + 9, item.y + 12, 3, 4);
+      this.ctx.fillRect(item.x + 18, item.y + 12, 3, 4);
+    } else if (item.kind === "pulse-module") {
+      this.ctx.fillRect(item.x + 3, item.y + 3, 24, 24);
+      this.ctx.fillStyle = "#e9ffff";
+      this.ctx.fillRect(item.x + 8, item.y + 8, 14, 14);
+      this.ctx.fillStyle = "#20364c";
+      this.ctx.fillRect(item.x + 12, item.y + 5, 6, 20);
+      this.ctx.fillRect(item.x + 5, item.y + 12, 20, 6);
     } else {
-      this.ctx.fillRect(item.x + 8, item.y + 5, 14, 20);
-      if (item.kind === "pulse-module")
-        this.ctx.fillRect(item.x + 3, item.y + 11, 24, 8);
+      // Battery silhouette with a lightning mark for the basic power-up.
+      this.ctx.fillRect(item.x + 5, item.y + 6, 20, 21);
+      this.ctx.fillRect(item.x + 11, item.y + 2, 8, 5);
+      this.ctx.fillStyle = "#20364c";
+      this.ctx.fillRect(item.x + 14, item.y + 9, 5, 7);
+      this.ctx.fillRect(item.x + 10, item.y + 14, 7, 5);
+      this.ctx.fillRect(item.x + 12, item.y + 18, 5, 6);
     }
   }
 

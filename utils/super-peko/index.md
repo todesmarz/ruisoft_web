@@ -48,13 +48,13 @@ description: ペコを操作して8ワールド32ステージを冒険する横�
       <button id="move-right-button" type="button" aria-label="右へ移動">▶</button>
     </div>
     <div class="action-controls">
-      <button id="action-button" class="action-button" type="button" aria-label="パルスショットを撃つ"><span>SHOT</span>B</button>
+      <button id="action-button" class="action-button" type="button" aria-label="ダッシュ、ショット、ゲート進入"><span>RUN / SHOT</span>B</button>
       <button id="jump-button" class="jump-button" type="button" aria-label="ジャンプする"><span>JUMP</span>A</button>
     </div>
   </nav>
 
   <footer class="game-help">
-    <p><kbd>←</kbd><kbd>→</kbd> / <kbd>A</kbd><kbd>D</kbd> MOVE　 <kbd>SPACE</kbd> / <kbd>Z</kbd> JUMP　 <kbd>X</kbd> / <kbd>SHIFT</kbd> SHOT　 <kbd>P</kbd> PAUSE</p>
+    <p><kbd>←</kbd><kbd>→</kbd> / <kbd>A</kbd><kbd>D</kbd> MOVE　 <kbd>SPACE</kbd> / <kbd>Z</kbd> JUMP　 <kbd>X</kbd> / <kbd>SHIFT</kbd> RUN・SHOT・ENTER GATE　 <kbd>P</kbd> PAUSE</p>
     <button id="reset-save-button" type="button">セーブデータを消去</button>
   </footer>
 </main>

@@ -22,6 +22,128 @@ function addSafeGround(solids, x, floorY, width = 288, type = "ground") {
   solids.push({ x: x - width / 2, y: floorY, w: width, h: 108, type });
 }
 
+const stageBlock = (
+  x,
+  y,
+  type = "breakable",
+  itemKind = null,
+  hidden = false,
+) => ({
+  x,
+  y,
+  w: 48,
+  h: 48,
+  type,
+  itemKind,
+  used: false,
+  disabled: false,
+  hidden,
+  revealed: !hidden,
+  bumpTimer: 0,
+});
+
+/**
+ * World 1-1 is deliberately authored instead of procedurally scattered.  It is
+ * the game's tutorial: block rows teach jumping, pipes teach obstacle height,
+ * the two short pits teach running jumps, and the final staircase leads the
+ * player's eye to the goal.
+ */
+function applyMeadowRunLayout(level) {
+  const floorY = level.floorY;
+  level.width = 6048;
+  level.spawn = { x: 120, y: floorY - 70 };
+  level.checkpoint = { x: 3168, y: floorY - 70 };
+  level.goal = { x: 5808, y: floorY - 132, w: 40, h: 132 };
+  level.solids = [
+    { x: 0, y: floorY, w: 2208, h: 108, type: "ground" },
+    { x: 2304, y: floorY, w: 1056, h: 108, type: "ground" },
+    { x: 3456, y: floorY, w: 2592, h: 108, type: "ground" },
+    { x: 1392, y: floorY - 96, w: 96, h: 96, type: "pipe" },
+    { x: 1824, y: floorY - 144, w: 96, h: 144, type: "pipe" },
+    { x: 2784, y: floorY - 96, w: 96, h: 96, type: "pipe" },
+  ];
+
+  // A readable sequence of single blocks, a five-block bridge, a hidden
+  // reward, and a high/low block formation replaces the former random spread.
+  level.blocks = [
+    stageBlock(720, 288, "item", "power-cell"),
+    stageBlock(912, 288),
+    stageBlock(960, 288, "item", "star-core"),
+    stageBlock(1008, 288),
+    stageBlock(960, 192, "item", "pulse-module"),
+    ...[2496, 2544, 2592, 2640, 2688].map((x, index) =>
+      stageBlock(
+        x,
+        288,
+        index === 2 ? "item" : "breakable",
+        index === 2 ? "power-cell" : null,
+      ),
+    ),
+    stageBlock(3072, 336, "item", "star-core", true),
+    stageBlock(3552, 288),
+    stageBlock(3600, 288, "item", "pulse-module"),
+    stageBlock(3648, 288),
+    ...[3504, 3552, 3600, 3648, 3696, 3744, 3792].map((x) =>
+      stageBlock(x, 192),
+    ),
+    stageBlock(4080, 288, "item", "power-cell"),
+    stageBlock(4272, 240),
+  ];
+
+  level.gems = [
+    [744, 238],
+    [936, 238],
+    [984, 142],
+    [1440, 276],
+    [2328, 348],
+    [2520, 238],
+    [2616, 238],
+    [2808, 276],
+    [3528, 142],
+    [3624, 142],
+    [3720, 142],
+    [4104, 238],
+    [4560, 348],
+    [5040, 252],
+    [5520, 156],
+  ].map(([x, y]) => ({ x, y, w: 20, h: 24, collected: false }));
+
+  level.enemies = [
+    840, 1248, 1632, 2016, 2448, 2928, 3312, 3888, 4416, 4896,
+  ].map((x, index) => ({
+    x,
+    y: floorY - 38,
+    w: 36,
+    h: 34,
+    vx: index === 6 ? -66 : -58,
+    vy: 0,
+    alive: true,
+    grounded: false,
+    type: index === 6 ? "shelled" : "walker",
+    state: "walking",
+    jumpTimer: 1,
+  }));
+
+  // Four-step stair pairs create an unmistakable, learnable final run-up.
+  for (const [start, direction] of [
+    [4656, 1],
+    [4944, -1],
+    [5280, 1],
+  ]) {
+    for (let step = 0; step < 4; step += 1) {
+      const height = (direction > 0 ? step + 1 : 4 - step) * 48;
+      level.solids.push({
+        x: start + step * 48,
+        y: floorY - height,
+        w: 48,
+        h: height,
+        type: "ground",
+      });
+    }
+  }
+  level.springs = [];
+}
+
 function makeStage(world, spec, stageIndex) {
   const rnd = random(spec.seed);
   const number = (world.world - 1) * 4 + stageIndex;
@@ -279,6 +401,7 @@ function makeStage(world, spec, stageIndex) {
         }
       : null,
   };
+  if (world.world === 1 && stageIndex === 1) applyMeadowRunLayout(level);
   return level;
 }
 
