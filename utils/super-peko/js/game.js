@@ -23,6 +23,7 @@ export class Game {
     this.camera = 0;
     this.elapsed = 0;
     this.portalCooldown = 0;
+    this.nearPortal = null;
     this.stageCleared = false;
     this.loadLevel(0);
   }
@@ -34,9 +35,19 @@ export class Game {
       checkpoint ? this.level.checkpoint : this.level.spawn,
     );
     this.player.checkpoint = checkpoint;
+    // A checkpoint reload must never put the player straight back into damage,
+    // and the camera must already be looking at the respawn point.
+    if (checkpoint) this.player.invulnerable = 2.5;
     this.time = this.level.timeLimit;
-    this.camera = 0;
+    this.camera = checkpoint
+      ? clamp(
+          this.player.x - VIEW.width * 0.36,
+          0,
+          this.level.width - VIEW.width,
+        )
+      : 0;
     this.portalCooldown = 0;
+    this.nearPortal = null;
     this.stageCleared = false;
     this.updateHud();
   }
@@ -80,15 +91,21 @@ export class Game {
     if (this.time <= 0) return this.loseLife("TIME UP");
 
     this.updatePlatforms(dt);
+    this.updateBlocks(dt);
+    const protectionBefore = Math.max(
+      this.player.invulnerable,
+      this.player.starTimer,
+    );
     const playerResult = updatePlayer(this.player, this.input, this.level, dt);
+    this.updateProtectionAudio(protectionBefore);
     if (playerResult.jumped) this.audio.play("jump");
     this.resolveBlockHit(playerResult.hitCeiling);
+    this.resolvePortals();
     this.updatePlayerAbility(dt);
     this.updateEnemies(dt);
     this.updateTurrets(dt);
     this.updatePowerups(dt);
     this.collect();
-    this.resolvePortals();
     this.resolveDanger();
 
     if (!this.player.checkpoint && this.player.x >= this.level.checkpoint.x) {
@@ -108,6 +125,35 @@ export class Game {
       (clamp(target, 0, this.level.width - VIEW.width) - this.camera) *
       Math.min(1, dt * 7);
     this.updateHud();
+  }
+
+  updateBlocks(dt) {
+    for (const block of this.level.blocks)
+      block.bumpTimer = Math.max(0, (block.bumpTimer || 0) - dt);
+  }
+
+  updateProtectionAudio(before) {
+    if (before <= 0) return;
+    const after = Math.max(
+      this.player.invulnerable,
+      this.player.starTimer,
+    );
+    if (after === 0) {
+      this.audio.play("shieldEnd");
+      this.onToast("無敵時間終了");
+      emit("invulnerabilityend", { level: this.level.id });
+      return;
+    }
+    const previousSecond = Math.ceil(before);
+    const remainingSecond = Math.ceil(after);
+    if (after <= 3 && remainingSecond < previousSecond) {
+      this.audio.play("warning");
+      this.onToast(`無敵終了まで ${remainingSecond}`);
+      emit("invulnerabilitywarning", {
+        level: this.level.id,
+        remaining: remainingSecond,
+      });
+    }
   }
 
   updatePlatforms(dt) {
@@ -149,6 +195,21 @@ export class Game {
   resolveBlockHit(block) {
     if (!block || !this.level.blocks.includes(block) || block.disabled) return;
     block.revealed = true;
+    block.bumpTimer = 0.16;
+    emit("blockhit", { level: this.level.id, type: block.type });
+    // A struck block also defeats an enemy standing directly on it.
+    for (const enemy of this.level.enemies) {
+      const standingOnBlock =
+        enemy.alive &&
+        enemy.x + enemy.w > block.x &&
+        enemy.x < block.x + block.w &&
+        Math.abs(enemy.y + enemy.h - block.y) < 8;
+      if (standingOnBlock) {
+        enemy.alive = false;
+        this.score += 200;
+        emit("enemydefeat", { type: enemy.type, method: "block" });
+      }
+    }
     if (block.type === "breakable" && this.player.powered) {
       block.disabled = true;
       this.score += 50;
@@ -383,11 +444,19 @@ export class Game {
   }
 
   resolvePortals() {
-    if (this.portalCooldown > 0) return;
     const portal = this.level.portals.find((item) =>
       overlaps(this.player, item),
     );
-    if (!portal) return;
+    if (!portal) {
+      this.nearPortal = null;
+      return false;
+    }
+    if (this.nearPortal !== portal) {
+      this.nearPortal = portal;
+      this.onToast(`${portal.label} GATE · B / X で入る`);
+      emit("portalready", { level: this.level.id, label: portal.label });
+    }
+    if (this.portalCooldown > 0 || !this.input.consumeAction()) return false;
     this.player.x = portal.targetX;
     this.player.y = portal.targetY;
     this.player.vx = 0;
@@ -396,6 +465,7 @@ export class Game {
     this.audio.play("power");
     this.onToast(portal.label);
     emit("portal", { level: this.level.id, label: portal.label });
+    return true;
   }
 
   resolveDanger() {
@@ -488,6 +558,7 @@ export class Game {
           this.loadLevel(this.levelIndex, checkpoint);
           this.state = "playing";
           this.onOverlay();
+          if (checkpoint) this.onToast("CHECKPOINT · 2.5 SEC SAFE");
         },
       );
     }

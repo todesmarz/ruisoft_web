@@ -27,7 +27,11 @@ export function updatePlayer(player, input, level, dt) {
   const ice = level.mode === "ice";
   const acceleration = ice ? PHYSICS.acceleration * 0.45 : PHYSICS.acceleration;
   const friction = ice ? PHYSICS.iceFriction : PHYSICS.friction;
-  const speed = ice ? PHYSICS.iceSpeed : PHYSICS.moveSpeed;
+  const speed = ice
+    ? PHYSICS.iceSpeed
+    : input.action
+      ? PHYSICS.runSpeed
+      : PHYSICS.moveSpeed;
 
   const wasGrounded = player.grounded;
   player.coyoteTimer = wasGrounded ? 0.09 : Math.max(0, player.coyoteTimer - dt);
