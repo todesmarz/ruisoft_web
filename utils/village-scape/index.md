@@ -1,13 +1,10 @@
-<!doctype html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="光と季節が移ろう、インタラクティブな日本の里山風景">
-  <title>里山、移ろう刻 - Rui Software</title>
-  <style>
-html, body { margin:0; min-height:100%; background:#ebe8df; }
-body { padding:clamp(18px,4vw,48px); }
+---
+layout: default
+title: 里山、移ろう刻 - Rui Software
+description: 光と季節が移ろう、インタラクティブな日本の里山風景
+---
+
+<style>
 #village-app {
   --ink:#23312a; --muted:#6b756f; --paper:#f3f0e7; --line:#d8d2c3; --accent:#3f6a50;
   max-width:1180px; margin:0 auto 3rem; color:var(--ink);
@@ -50,9 +47,8 @@ body { padding:clamp(18px,4vw,48px); }
 @media (max-width:520px) { .village-controls{grid-template-columns:1fr}.village-actions{grid-column:auto}.village-button{flex:1}.village-note{display:block}.village-note span{display:block;margin-top:.28rem} }
 @media (prefers-reduced-motion:reduce) { .village-button,.village-loading{transition:none}.village-loading__sun{animation:none} }
 
-  </style>
-</head>
-<body>
+</style>
+
 <div id="village-app">
   <header class="village-header">
     <div>
@@ -277,5 +273,3 @@ try {
 } catch(error) { loading.querySelector('strong').textContent='風景を表示できませんでした';loading.querySelector('small').textContent='WebGL対応ブラウザで再読み込みしてください';console.error('[VillageScape]',error); }
 
 </script>
-</body>
-</html>
