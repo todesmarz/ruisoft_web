@@ -2,6 +2,7 @@ import { Input } from "./input.js";
 import { AudioSystem } from "./audio.js";
 import { Renderer } from "./renderer.js";
 import { Game } from "./game.js";
+import { GeneticAutoPlay } from "./genetic-autoplay.js";
 import { loadSave, storeSave, clearSave } from "./storage.js";
 import { LEVELS } from "./levels.js";
 const byId = (id) => document.getElementById(id),
@@ -63,6 +64,31 @@ const game = new Game({
   onOverlay: showOverlay,
   onToast: showToast,
 });
+const autoplayButton = byId("autoplay-toggle-button"),
+  autoplayPanel = byId("autoplay-panel"),
+  autoplaySpeed = byId("autoplay-speed");
+function updateAutoplayStatus(status) {
+  autoplayButton.textContent = `AI AUTO: ${status.enabled ? "ON" : "OFF"}`;
+  autoplayButton.setAttribute("aria-pressed", String(status.enabled));
+  autoplayPanel.hidden = !status.enabled;
+  byId("autoplay-status").textContent = status.enabled ? "進化・走行中" : "待機中";
+  byId("autoplay-generation").textContent = status.generation;
+  byId("autoplay-candidate").textContent = `${status.candidate} / ${status.population}`;
+  byId("autoplay-fitness").textContent = status.fitness;
+  byId("autoplay-remaining").textContent = `${status.remaining}s`;
+}
+const autoplay = new GeneticAutoPlay({
+  game,
+  input,
+  onStatus: updateAutoplayStatus,
+});
+autoplay.report();
+autoplayButton.onclick = () => {
+  const enabled = autoplay.toggle();
+  if (enabled) showOverlay();
+  showToast(enabled ? "GENETIC PILOT ONLINE" : "MANUAL CONTROL");
+};
+autoplaySpeed.onchange = () => autoplay.setSpeed(autoplaySpeed.value);
 primary.onclick = () => {
   showOverlay();
   game.start(0);
@@ -84,6 +110,10 @@ soundButton.onclick = () => {
 };
 byId("pause-game-button").onclick = () => game.togglePause();
 window.addEventListener("keydown", (e) => {
+  if (e.code === "KeyG") {
+    e.preventDefault();
+    autoplayButton.click();
+  }
   if (["KeyP", "Escape"].includes(e.code)) {
     e.preventDefault();
     game.togglePause();
@@ -104,7 +134,11 @@ let previous = performance.now();
 function loop(now) {
   const dt = (now - previous) / 1000;
   previous = now;
-  game.update(dt);
+  const steps = autoplay.enabled ? autoplay.speed : 1;
+  for (let step = 0; step < steps; step += 1) {
+    autoplay.update(dt);
+    game.update(dt);
+  }
   game.render();
   requestAnimationFrame(loop);
 }
@@ -120,4 +154,11 @@ window.SuperPeko = {
     showOverlay();
     game.start(Math.max(0, Math.min(31, index)));
   },
+  setAutoPlay: (enabled) => autoplay.toggle(Boolean(enabled)),
+  getAutoPlay: () => ({
+    enabled: autoplay.enabled,
+    generation: autoplay.generation,
+    candidate: autoplay.candidate + 1,
+    bestFitness: Math.round(autoplay.bestFitness),
+  }),
 };

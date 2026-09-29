@@ -14,6 +14,7 @@ description: ペコを操作して8ワールド32ステージを冒険する横�
     </div>
     <div class="header-actions">
       <button id="sound-toggle-button" class="icon-button" type="button" aria-label="効果音を切り替える">SOUND: ON</button>
+      <button id="autoplay-toggle-button" class="icon-button autoplay-button" type="button" aria-pressed="false" aria-controls="autoplay-panel">AI AUTO: OFF</button>
       <button id="pause-game-button" class="icon-button" type="button" aria-label="ゲームを一時停止する">PAUSE</button>
     </div>
   </header>
@@ -26,6 +27,23 @@ description: ペコを操作して8ワールド32ステージを冒険する横�
       <div><span>LIVES</span><strong id="hud-lives">× 3</strong></div>
       <div><span>TIME</span><strong id="hud-time">300</strong></div>
     </div>
+
+    <aside id="autoplay-panel" class="autoplay-panel" aria-live="polite" hidden>
+      <div>
+        <span class="autoplay-label">GENETIC PILOT</span>
+        <strong id="autoplay-status">待機中</strong>
+      </div>
+      <dl>
+        <div><dt>世代</dt><dd id="autoplay-generation">1</dd></div>
+        <div><dt>個体</dt><dd id="autoplay-candidate">1 / 12</dd></div>
+        <div><dt>最高適応度</dt><dd id="autoplay-fitness">0</dd></div>
+        <div><dt>残り</dt><dd id="autoplay-remaining">9s</dd></div>
+      </dl>
+      <label for="autoplay-speed">学習速度
+        <select id="autoplay-speed"><option value="1">×1</option><option value="2">×2</option><option value="4">×4</option></select>
+      </label>
+      <p>12体の操作方針を実戦評価し、上位個体の交叉・突然変異で世代を進めます。</p>
+    </aside>
 
     <div id="game-stage" class="game-stage">
       <canvas id="game-canvas" width="960" height="540" aria-label="スーパペコのゲーム画面"></canvas>
@@ -54,7 +72,7 @@ description: ペコを操作して8ワールド32ステージを冒険する横�
   </nav>
 
   <footer class="game-help">
-    <p><kbd>←</kbd><kbd>→</kbd> / <kbd>A</kbd><kbd>D</kbd> MOVE　 <kbd>SPACE</kbd> / <kbd>Z</kbd> JUMP　 <kbd>X</kbd> / <kbd>SHIFT</kbd> RUN・SHOT・ENTER GATE　 <kbd>P</kbd> PAUSE</p>
+    <p><kbd>←</kbd><kbd>→</kbd> / <kbd>A</kbd><kbd>D</kbd> MOVE　 <kbd>SPACE</kbd> / <kbd>Z</kbd> JUMP　 <kbd>X</kbd> / <kbd>SHIFT</kbd> RUN・SHOT・ENTER GATE　 <kbd>P</kbd> PAUSE　 <kbd>G</kbd> GENETIC AUTO</p>
     <button id="reset-save-button" type="button">セーブデータを消去</button>
   </footer>
 </main>
