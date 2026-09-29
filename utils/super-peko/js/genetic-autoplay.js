@@ -6,6 +6,7 @@ export const AUTOPLAY = Object.freeze({
   stallSeconds: 10,
   mutationRate: 0.18,
   mutationScale: 0.55,
+  leftThreshold: 0.35,
 });
 
 const SENSOR_COUNT = 9;
@@ -93,8 +94,8 @@ export function decide(genome, sensors) {
   });
   const horizontal = outputs[0];
   return {
-    left: horizontal < 0.38,
-    right: horizontal >= 0.38,
+    left: horizontal < AUTOPLAY.leftThreshold,
+    right: horizontal >= AUTOPLAY.leftThreshold,
     jump: outputs[1] > 0.54,
     action: outputs[2] > 0.5,
   };
@@ -154,12 +155,10 @@ export class GeneticAutoPlay {
       return;
     }
     if (["transition", "gameover"].includes(this.game.state)) {
-      // A failed attempt is not itself a stall. Restart the stage for the same
-      // genome and preserve its progress deadline; otherwise an early fall or
-      // collision can end a nominally 10-second trial after only a few seconds.
-      this.releaseControls();
-      this.game.start(this.game.levelIndex);
-      this.game.onOverlay();
+      // Death by an enemy or a fall has already ended this attempt. Penalize
+      // the failed genome and immediately evaluate the next candidate.
+      this.finishTrial(-2000);
+      return;
     }
     if (this.game.state !== "playing") {
       this.report();
