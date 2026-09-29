@@ -154,8 +154,12 @@ export class GeneticAutoPlay {
       return;
     }
     if (["transition", "gameover"].includes(this.game.state)) {
-      this.finishTrial(-2000);
-      return;
+      // A failed attempt is not itself a stall. Restart the stage for the same
+      // genome and preserve its progress deadline; otherwise an early fall or
+      // collision can end a nominally 10-second trial after only a few seconds.
+      this.releaseControls();
+      this.game.start(this.game.levelIndex);
+      this.game.onOverlay();
     }
     if (this.game.state !== "playing") {
       this.report();
