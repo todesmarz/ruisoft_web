@@ -64,6 +64,15 @@ test("policy weights are converted into independent game controls", () => {
   });
 });
 
+test("the lower horizontal range for choosing left favors forward movement", () => {
+  const genome = { genes: Array(27).fill(0), fitness: 0 };
+  genome.genes[0] = Math.log(0.36 / 0.64);
+  const actions = decide(genome, [1, 0, 0, 0, 0, 0, 0, 0, 0]);
+  assert.equal(AUTOPLAY.leftThreshold, 0.35);
+  assert.equal(actions.left, false);
+  assert.equal(actions.right, true);
+});
+
 function autoplayFixture() {
   const game = {
     state: "playing",
@@ -156,17 +165,17 @@ test("simulation speed does not shorten the wall-clock stall period", () => {
   assert.equal(autoplay.stallTime, 3);
 });
 
-test("losing a life restarts the attempt without ending the trial", () => {
+test("losing a life immediately advances to the next candidate", () => {
   const { autoplay, game } = autoplayFixture();
   autoplay.update(3);
+  game.player.x = 100;
+  autoplay.maxX = 100;
   game.state = "transition";
   autoplay.update(0.1);
   assert.equal(game.state, "playing");
-  assert.equal(autoplay.candidate, 0);
-  assert.equal(autoplay.trialTime, 3.1);
-  assert.equal(autoplay.population[0].fitness, -Infinity);
-  autoplay.update(AUTOPLAY.stallSeconds - 3.1);
   assert.equal(autoplay.candidate, 1);
+  assert.equal(autoplay.population[0].fitness, -1900);
+  assert.equal(autoplay.trialTime, 0);
 });
 
 test("coins, items, and defeated enemies contribute explicit rewards", () => {
