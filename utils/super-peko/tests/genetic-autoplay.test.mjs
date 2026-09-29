@@ -7,7 +7,11 @@ import {
   decide,
   mutate,
   nextGeneration,
+  GeneticAutoPlay,
 } from "../js/genetic-autoplay.js";
+
+globalThis.window = { dispatchEvent() {} };
+globalThis.CustomEvent = class CustomEvent {};
 
 test("genomes contain weights for every sensor and action", () => {
   const genome = createGenome(() => 0.75);
@@ -54,4 +58,69 @@ test("policy weights are converted into independent game controls", () => {
     jump: true,
     action: false,
   });
+});
+
+function autoplayFixture() {
+  const game = {
+    state: "playing",
+    player: { x: 0, vx: 0, vy: 0, grounded: true, powered: false },
+    level: {
+      width: 2000,
+      goal: { x: 1900 },
+      enemies: [],
+      hazards: [],
+    },
+    score: 0,
+    gems: 0,
+    rewards: { items: 0, enemies: 0 },
+    levelIndex: 0,
+    start() {
+      this.state = "playing";
+      this.player.x = 0;
+      this.score = 0;
+      this.gems = 0;
+      this.rewards = { items: 0, enemies: 0 };
+    },
+    onOverlay() {},
+  };
+  const input = { reset() {} };
+  const autoplay = new GeneticAutoPlay({ game, input, random: () => 0.5 });
+  autoplay.enabled = true;
+  autoplay.beginTrial();
+  autoplay.applyActions = () => {};
+  return { autoplay, game };
+}
+
+test("a trial continues past the former time limit while making progress", () => {
+  const { autoplay, game } = autoplayFixture();
+  for (let second = 0; second < 12; second += 1) {
+    game.player.x += 10;
+    autoplay.update(1);
+  }
+  assert.equal(autoplay.candidate, 0);
+  assert.equal(autoplay.trialTime, 12);
+});
+
+test("a trial ends after the configured period without forward progress", () => {
+  const { autoplay } = autoplayFixture();
+  autoplay.update(AUTOPLAY.stallSeconds);
+  assert.equal(autoplay.candidate, 1);
+});
+
+test("losing a life immediately ends the current trial", () => {
+  const { autoplay, game } = autoplayFixture();
+  game.state = "transition";
+  autoplay.update(0.1);
+  assert.equal(autoplay.candidate, 1);
+  assert.equal(autoplay.population[0].fitness, -2000);
+});
+
+test("coins, items, and defeated enemies contribute explicit rewards", () => {
+  const { autoplay, game } = autoplayFixture();
+  game.player.x = 50;
+  game.gems = 2;
+  game.rewards = { items: 1, enemies: 3 };
+  autoplay.maxX = 50;
+  autoplay.finishTrial();
+  assert.equal(autoplay.population[0].fitness, 1150);
 });

@@ -25,6 +25,7 @@ export class Game {
     this.portalCooldown = 0;
     this.nearPortal = null;
     this.stageCleared = false;
+    this.rewards = { items: 0, enemies: 0 };
     this.loadLevel(0);
   }
 
@@ -65,6 +66,7 @@ export class Game {
     this.score = 0;
     this.gems = 0;
     this.lives = 3;
+    this.rewards = { items: 0, enemies: 0 };
     this.loadLevel(index);
     this.state = "playing";
     emit("gamestart", { level: this.level.id });
@@ -215,6 +217,7 @@ export class Game {
         Math.abs(enemy.y + enemy.h - block.y) < 8;
       if (standingOnBlock) {
         enemy.alive = false;
+        this.rewards.enemies += 1;
         this.score += 200;
         emit("enemydefeat", { type: enemy.type, method: "block" });
       }
@@ -260,13 +263,17 @@ export class Game {
         }
       }
       enemy.vy = Math.min(800, enemy.vy + 1700 * dt);
+      // moveAndCollide stops horizontal velocity on contact. Preserve the
+      // approach speed so walking, bouncing, and sliding enemies can turn
+      // around instead of remaining motionless against the wall.
+      const approachVx = enemy.vx;
       const result = moveAndCollide(
         enemy,
         solids,
         enemy.vx * dt,
         enemy.vy * dt,
       );
-      if (result.hitWall && enemy.state !== "shell") enemy.vx *= -1;
+      if (result.hitWall && enemy.state !== "shell") enemy.vx = -approachVx;
       if (result.hitFloor) enemy.grounded = true;
       const edgeX = enemy.vx > 0 ? enemy.x + enemy.w + 4 : enemy.x - 4;
       const supported = solids.some(
@@ -284,6 +291,7 @@ export class Game {
           if (target === enemy || !target.alive || !overlaps(enemy, target))
             continue;
           target.alive = false;
+          this.rewards.enemies += 1;
           this.score += 200;
           this.audio.play("stomp");
           emit("enemydefeat", { type: target.type, method: "shell" });
@@ -367,6 +375,7 @@ export class Game {
         for (const enemy of this.level.enemies) {
           if (!enemy.alive || !overlaps(enemy, shot)) continue;
           enemy.alive = false;
+          this.rewards.enemies += 1;
           shot.active = false;
           this.score += 200;
           emit("enemydefeat", { type: enemy.type, method: "pulse" });
@@ -419,6 +428,7 @@ export class Game {
       if (result.hitWall) item.vx *= -1;
       if (overlaps(this.player, item)) {
         item.active = false;
+        this.rewards.items += 1;
         if (item.kind === "star-core") {
           this.player.starTimer = 10;
           this.player.invulnerable = 10;
@@ -484,6 +494,7 @@ export class Game {
       if (!enemy.alive || !overlaps(this.player, enemy)) continue;
       if (this.player.starTimer > 0) {
         enemy.alive = false;
+        this.rewards.enemies += 1;
         this.score += 250;
         emit("enemydefeat", { type: enemy.type, method: "star" });
         continue;
@@ -496,7 +507,10 @@ export class Game {
           enemy.state = "shell";
           enemy.h = 24;
           enemy.y += 10;
-        } else enemy.alive = false;
+        } else {
+          enemy.alive = false;
+          this.rewards.enemies += 1;
+        }
         this.player.vy = -430;
         this.score += 250;
         this.audio.play("stomp");
@@ -516,6 +530,7 @@ export class Game {
         this.audio.play(boss.hp ? "stomp" : "boss");
         if (boss.hp <= 0) {
           boss.alive = false;
+          this.rewards.enemies += 1;
           this.onToast(`${boss.type.toUpperCase()} DOWN`);
           emit("bossdefeat", { level: this.level.id, type: boss.type });
         }

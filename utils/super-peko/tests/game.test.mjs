@@ -119,3 +119,34 @@ test("game over retries the stage where the player was defeated", () => {
   assert.equal(game.state, "playing");
   assert.equal(game.lives, 3);
 });
+
+test("an enemy reverses direction after colliding with a wall", () => {
+  const { game } = makeGame();
+  const enemy = {
+    x: 50,
+    y: 398,
+    w: 36,
+    h: 34,
+    vx: 60,
+    vy: 0,
+    alive: true,
+    grounded: true,
+    type: "walker",
+    state: "walking",
+  };
+  game.level.enemies = [enemy];
+  game.level.solids = [
+    { x: 0, y: 432, w: 300, h: 108 },
+    { x: 88, y: 300, w: 48, h: 132 },
+  ];
+  game.level.blocks = [];
+  game.level.platforms = [];
+  game.level.boss = null;
+
+  game.updateEnemies(0.1);
+  assert.equal(enemy.x, 52);
+  assert.equal(enemy.vx, -60);
+
+  game.updateEnemies(0.1);
+  assert.ok(enemy.x < 52);
+});
