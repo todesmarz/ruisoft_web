@@ -18,6 +18,20 @@ export const SITUATIONS = Object.freeze([
   "hazardAhead",
   "wallAhead",
   "enemyAhead",
+  "enemyClose",
+  "enemyAbove",
+  "enemyBelow",
+  "enemyGroup",
+  "shellAhead",
+  "canShoot",
+  "nearGoal",
+  "highPosition",
+  "movingForward",
+  "movingBackward",
+  "poweredUp",
+  "smallSize",
+  "rising",
+  "falling",
   "airborne",
   "clearPath",
 ]);
@@ -25,22 +39,74 @@ export const SITUATIONS = Object.freeze([
 export const BEHAVIORS = Object.freeze({
   advance: Object.freeze({ left: false, right: true, jump: false, action: false }),
   run: Object.freeze({ left: false, right: true, jump: false, action: true }),
-  jump: Object.freeze({ left: false, right: true, jump: true, action: false }),
-  runJump: Object.freeze({ left: false, right: true, jump: true, action: true }),
+  shortJump: Object.freeze({
+    left: false, right: true, jump: true, action: false, jumpDuration: 0.04,
+  }),
+  jump: Object.freeze({
+    left: false, right: true, jump: true, action: false, jumpDuration: 0.1,
+  }),
+  highJump: Object.freeze({
+    left: false, right: true, jump: true, action: false, jumpDuration: 0.18,
+  }),
+  runShortJump: Object.freeze({
+    left: false, right: true, jump: true, action: true, jumpDuration: 0.04,
+  }),
+  runJump: Object.freeze({
+    left: false, right: true, jump: true, action: true, jumpDuration: 0.1,
+  }),
+  runHighJump: Object.freeze({
+    left: false, right: true, jump: true, action: true, jumpDuration: 0.18,
+  }),
   retreat: Object.freeze({ left: true, right: false, jump: false, action: false }),
   retreatJump: Object.freeze({ left: true, right: false, jump: true, action: false }),
   attack: Object.freeze({ left: false, right: true, jump: false, action: true }),
+  patrol: Object.freeze({
+    pattern: Object.freeze([
+      Object.freeze({ duration: 0.7, left: false, right: true, jump: false, action: false }),
+      Object.freeze({ duration: 0.2, left: false, right: false, jump: false, action: false }),
+    ]),
+  }),
+  dashHop: Object.freeze({
+    pattern: Object.freeze([
+      Object.freeze({ duration: 0.45, left: false, right: true, jump: false, action: true }),
+      Object.freeze({ duration: 0.2, left: false, right: true, jump: true, action: true }),
+      Object.freeze({ duration: 0.25, left: false, right: true, jump: false, action: true }),
+    ]),
+  }),
+  stompCombo: Object.freeze({
+    pattern: Object.freeze([
+      Object.freeze({ duration: 0.18, left: false, right: true, jump: true, action: true }),
+      Object.freeze({ duration: 0.42, left: false, right: true, jump: false, action: false }),
+    ]),
+  }),
+  retreatCounter: Object.freeze({
+    pattern: Object.freeze([
+      Object.freeze({ duration: 0.28, left: true, right: false, jump: false, action: false }),
+      Object.freeze({ duration: 0.18, left: false, right: true, jump: true, action: true }),
+      Object.freeze({ duration: 0.3, left: false, right: true, jump: false, action: true }),
+    ]),
+  }),
+  rapidFireAdvance: Object.freeze({
+    pattern: Object.freeze([
+      Object.freeze({ duration: 0.12, left: false, right: true, jump: false, action: true }),
+      Object.freeze({ duration: 0.12, left: false, right: true, jump: false, action: false }),
+    ]),
+  }),
   wait: Object.freeze({ left: false, right: false, jump: false, action: false }),
 });
 
 const BEHAVIOR_NAMES = Object.freeze(Object.keys(BEHAVIORS));
 const randomBehavior = (random) =>
   BEHAVIOR_NAMES[Math.min(BEHAVIOR_NAMES.length - 1, Math.floor(random() * BEHAVIOR_NAMES.length))];
+const randomPriority = (random) => Math.floor(random() * 101);
 
 export function createGenome(random = Math.random) {
   return {
     dna: Object.fromEntries(
       SITUATIONS.map((situation) => [situation, randomBehavior(random)]),
+    ),
+    priorities: Object.fromEntries(
+      SITUATIONS.map((situation) => [situation, randomPriority(random)]),
     ),
     fitness: -Infinity,
   };
@@ -52,6 +118,14 @@ export function crossover(a, b, random = Math.random) {
       SITUATIONS.map((situation) => [
         situation,
         random() < 0.5 ? a.dna[situation] : b.dna[situation],
+      ]),
+    ),
+    priorities: Object.fromEntries(
+      SITUATIONS.map((situation) => [
+        situation,
+        random() < 0.5
+          ? a.priorities?.[situation] ?? 0
+          : b.priorities?.[situation] ?? 0,
       ]),
     ),
     fitness: -Infinity,
@@ -70,6 +144,14 @@ export function mutate(
         random() < rate ? randomBehavior(random) : genome.dna[situation],
       ]),
     ),
+    priorities: Object.fromEntries(
+      SITUATIONS.map((situation) => [
+        situation,
+        random() < rate
+          ? randomPriority(random)
+          : genome.priorities?.[situation] ?? 0,
+      ]),
+    ),
     fitness: -Infinity,
   };
 }
@@ -79,6 +161,7 @@ export function nextGeneration(population, random = Math.random) {
   const eliteCount = Math.min(AUTOPLAY.eliteCount, ranked.length);
   const next = ranked.slice(0, eliteCount).map((genome) => ({
     dna: { ...genome.dna },
+    priorities: { ...(genome.priorities || {}) },
     fitness: -Infinity,
   }));
   while (next.length < population.length) {
@@ -91,6 +174,46 @@ export function nextGeneration(population, random = Math.random) {
 
 const overlaps = (a, b) =>
   a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+
+export function resolveBehavior(behavior, elapsed = 0, sensors = {}) {
+  const target = sensors.enemyTarget;
+  const towardTarget = target?.distanceX < 0
+    ? { left: true, right: false }
+    : { left: false, right: true };
+  if (behavior === "stompCombo") {
+    if (!target) return { ...BEHAVIORS.advance, targeted: false };
+    if (Math.abs(target.distanceX) > VIEW.tile * 1.6)
+      return { ...towardTarget, jump: false, action: true, targeted: true };
+    const jump = Boolean(sensors.playerState?.grounded || sensors.rising);
+    return { ...towardTarget, jump, action: false, targeted: true };
+  }
+  if (behavior === "retreatCounter") {
+    if (!target) return { ...BEHAVIORS.advance, targeted: false };
+    if (Math.abs(target.distanceX) < VIEW.tile * 0.8 && sensors.playerState?.grounded)
+      return { left: true, right: false, jump: false, action: false, targeted: true };
+    return {
+      ...towardTarget,
+      jump: Boolean(sensors.playerState?.grounded || sensors.rising),
+      action: Boolean(sensors.canShoot),
+      targeted: true,
+    };
+  }
+  if (behavior === "rapidFireAdvance") {
+    if (!target || !sensors.canShoot)
+      return { ...BEHAVIORS.advance, targeted: false };
+    const firing = elapsed % 0.24 < 0.12;
+    return { ...towardTarget, jump: false, action: firing, targeted: true };
+  }
+  const definition = BEHAVIORS[behavior] || BEHAVIORS.advance;
+  if (!definition.pattern) return definition;
+  const cycle = definition.pattern.reduce((total, phase) => total + phase.duration, 0);
+  let cursor = elapsed % cycle;
+  for (const [index, phase] of definition.pattern.entries()) {
+    if (cursor < phase.duration) return { ...phase, patternPhase: index };
+    cursor -= phase.duration;
+  }
+  return { ...definition.pattern[0], patternPhase: 0 };
+}
 
 export function senseGame(game) {
   const { player, level } = game;
@@ -107,6 +230,16 @@ export function senseGame(game) {
     ...level.blocks.filter((block) => !block.disabled),
     ...level.platforms,
   ];
+  const hasLineOfSight = (enemy) => {
+    const sightY = player.y + player.h * 0.5;
+    return !solids.some(
+      (solid) =>
+        solid.x < enemy.x &&
+        solid.x + solid.w > front &&
+        solid.y < sightY &&
+        solid.y + solid.h > sightY,
+    );
+  };
   const pathProbe = {
     x: front,
     y: player.y + 2,
@@ -119,11 +252,18 @@ export function senseGame(game) {
     w: VIEW.tile,
     h: VIEW.tile * 1.5,
   };
-  const enemyAhead = level.enemies.some(
+  const nearbyEnemies = level.enemies.filter(
     (enemy) =>
       enemy.alive &&
       isAhead(enemy, AUTOPLAY.enemyLookAhead) &&
-      Math.abs(enemy.y - player.y) <= VIEW.tile * 2,
+      Math.abs(enemy.y - player.y) <= VIEW.tile * 2 &&
+      hasLineOfSight(enemy),
+  );
+  const enemyAhead = nearbyEnemies.length > 0;
+  const closestEnemy = nearbyEnemies.reduce(
+    (closest, enemy) =>
+      !closest || distanceAhead(enemy) < distanceAhead(closest) ? enemy : closest,
+    null,
   );
   const hazardAhead = level.hazards.some(
     (hazard) => isAhead(hazard, AUTOPLAY.obstacleLookAhead) && overlaps(landingProbe, hazard),
@@ -133,19 +273,81 @@ export function senseGame(game) {
   );
   const gapAhead = player.grounded && !solids.some((solid) => overlaps(landingProbe, solid));
 
-  return { gapAhead, hazardAhead, wallAhead, enemyAhead, airborne: !player.grounded };
+  const progress = player.x / Math.max(1, level.width - player.w);
+  return {
+    gapAhead,
+    hazardAhead,
+    wallAhead,
+    enemyAhead,
+    enemyClose: Boolean(closestEnemy && distanceAhead(closestEnemy) <= VIEW.tile * 1.25),
+    enemyAbove: Boolean(closestEnemy && closestEnemy.y + closestEnemy.h < player.y + player.h * 0.5),
+    enemyBelow: Boolean(closestEnemy && closestEnemy.y > player.y + player.h * 0.5),
+    enemyGroup: nearbyEnemies.length >= 2,
+    shellAhead: nearbyEnemies.some((enemy) => ["shell", "sliding"].includes(enemy.state)),
+    canShoot: player.ability === "pulse",
+    enemyTarget: closestEnemy
+      ? {
+          distanceX: distanceAhead(closestEnemy),
+          distanceY: closestEnemy.y - player.y,
+          x: closestEnemy.x,
+          y: closestEnemy.y,
+          type: closestEnemy.type,
+          state: closestEnemy.state,
+        }
+      : null,
+    nearGoal: level.goal
+      ? player.x + player.w >= level.goal.x - VIEW.tile * 4
+      : progress >= 0.9,
+    highPosition: player.y < VIEW.height * 0.45,
+    movingForward: player.vx > 20,
+    movingBackward: player.vx < -20,
+    poweredUp: Boolean(player.powered),
+    smallSize: !player.powered,
+    rising: player.vy < -20,
+    falling: player.vy > 20,
+    airborne: !player.grounded,
+    playerState: {
+      size: {
+        width: player.w,
+        height: player.h,
+        powered: Boolean(player.powered),
+      },
+      position: { x: player.x, y: player.y, progress },
+      velocity: { x: player.vx, y: player.vy },
+      grounded: Boolean(player.grounded),
+    },
+  };
 }
 
-export function currentSituation(sensors) {
-  return SITUATIONS.find(
+export function currentSituation(sensors, priorities = {}, previousSituation) {
+  const active = SITUATIONS.filter(
     (situation) => situation !== "clearPath" && sensors[situation],
-  ) || "clearPath";
+  );
+  if (!active.length) return "clearPath";
+  const priority = (situation) => priorities[situation] ?? 0;
+  const winner = active.reduce((best, situation) =>
+    priority(situation) > priority(best) ? situation : best,
+  );
+  // Keep the current action while its situation remains at least as important
+  // as the challenger. This avoids oscillation as movement changes the sensors.
+  if (
+    previousSituation &&
+    active.includes(previousSituation) &&
+    priority(previousSituation) >= priority(winner)
+  )
+    return previousSituation;
+  return winner;
 }
 
-export function decide(genome, sensors) {
-  const situation = currentSituation(sensors);
+export function decide(genome, sensors, previousSituation, elapsed = 0) {
+  const situation = currentSituation(sensors, genome.priorities, previousSituation);
   const behavior = genome.dna[situation] || "advance";
-  return { ...BEHAVIORS[behavior], situation, behavior };
+  return {
+    ...resolveBehavior(behavior, elapsed, sensors),
+    situation,
+    behavior,
+    priority: genome.priorities?.[situation] ?? 0,
+  };
 }
 
 export class GeneticAutoPlay {
@@ -162,6 +364,8 @@ export class GeneticAutoPlay {
     this.previousActions = {};
     this.situation = "clearPath";
     this.behavior = "advance";
+    this.priority = 0;
+    this.actionTime = 0;
   }
 
   toggle(force) {
@@ -194,6 +398,8 @@ export class GeneticAutoPlay {
     this.maxX = this.game.player.x;
     this.lastProgressAt = 0;
     this.stallTime = 0;
+    this.actionTime = 0;
+    this.situation = "clearPath";
     if (this.game.state !== "playing") this.game.start(this.game.levelIndex);
   }
 
@@ -217,24 +423,54 @@ export class GeneticAutoPlay {
       this.lastProgressAt = this.trialTime;
     }
     this.stallTime = this.trialTime - this.lastProgressAt;
-    const actions = decide(this.population[this.candidate], senseGame(this.game));
+    const sensors = senseGame(this.game);
+    const actions = decide(
+      this.population[this.candidate],
+      sensors,
+      this.situation,
+      this.actionTime,
+    );
+    const changed =
+      actions.situation !== this.situation || actions.behavior !== this.behavior;
+    if (changed) {
+      this.actionTime = 0;
+      Object.assign(
+        actions,
+        decide(
+          this.population[this.candidate],
+          sensors,
+          actions.situation,
+          0,
+        ),
+      );
+    }
     this.situation = actions.situation;
     this.behavior = actions.behavior;
+    this.priority = actions.priority;
     this.applyActions(actions);
+    this.actionTime += dt;
     if (this.stallTime >= AUTOPLAY.stallSeconds) this.finishTrial(-500);
     else this.report();
   }
 
   applyActions(actions) {
     for (const name of ["left", "right", "jump", "action"]) {
-      const pressed = Boolean(actions[name]);
+      const pressed =
+        name === "jump" && actions.jumpDuration
+          ? Boolean(actions[name]) && this.actionTime < actions.jumpDuration
+          : Boolean(actions[name]);
       if (name === "jump" && pressed && !this.previousActions.jump)
         this.input.jumpPressed = true;
       if (name === "action" && pressed && !this.previousActions.action)
         this.input.actionPressed = true;
       this.input[name] = pressed;
     }
-    this.previousActions = actions;
+    this.previousActions = Object.fromEntries(
+      ["left", "right", "jump", "action"].map((name) => [
+        name,
+        Boolean(this.input[name]),
+      ]),
+    );
   }
 
   finishTrial(bonus = 0) {
@@ -283,6 +519,7 @@ export class GeneticAutoPlay {
       remaining: Math.max(0, Math.ceil(AUTOPLAY.stallSeconds - (this.stallTime || 0))),
       speed: this.speed,
       situation: this.situation,
+      priority: this.priority,
       behavior: this.behavior,
     });
   }
