@@ -135,8 +135,11 @@ function loop(now) {
   const dt = (now - previous) / 1000;
   previous = now;
   const steps = autoplay.enabled ? autoplay.speed : 1;
+  // The stall timeout is wall-clock time, so advance it once per rendered
+  // frame. Calling it for every accelerated simulation step made the 10-second
+  // timeout expire in 2.5 seconds at 4x speed.
+  autoplay.update(dt);
   for (let step = 0; step < steps; step += 1) {
-    autoplay.update(dt);
     game.update(dt);
   }
   game.render();

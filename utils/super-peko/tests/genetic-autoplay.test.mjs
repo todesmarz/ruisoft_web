@@ -148,12 +148,25 @@ test("a trial ends after the configured period without forward progress", () => 
   assert.equal(autoplay.candidate, 1);
 });
 
-test("losing a life immediately ends the current trial", () => {
+test("simulation speed does not shorten the wall-clock stall period", () => {
+  const { autoplay } = autoplayFixture();
+  autoplay.setSpeed(4);
+  autoplay.update(3);
+  assert.equal(autoplay.candidate, 0);
+  assert.equal(autoplay.stallTime, 3);
+});
+
+test("losing a life restarts the attempt without ending the trial", () => {
   const { autoplay, game } = autoplayFixture();
+  autoplay.update(3);
   game.state = "transition";
   autoplay.update(0.1);
+  assert.equal(game.state, "playing");
+  assert.equal(autoplay.candidate, 0);
+  assert.equal(autoplay.trialTime, 3.1);
+  assert.equal(autoplay.population[0].fitness, -Infinity);
+  autoplay.update(AUTOPLAY.stallSeconds - 3.1);
   assert.equal(autoplay.candidate, 1);
-  assert.equal(autoplay.population[0].fitness, -2000);
 });
 
 test("coins, items, and defeated enemies contribute explicit rewards", () => {
