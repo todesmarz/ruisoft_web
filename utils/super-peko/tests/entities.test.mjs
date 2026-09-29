@@ -76,6 +76,18 @@ test("jump height increases with running momentum", () => {
   assert.ok(running.vy < standing.vy);
 });
 
+test("a held jump has enough boost time for the genetic MAX jump", () => {
+  const player = createPlayer({ x: 20, y: 58 });
+  player.grounded = true;
+  updatePlayer(
+    player,
+    input({ jump: true, consumeJump: () => true }),
+    level(),
+    1 / 60,
+  );
+  assert.ok(player.jumpHold > 0.18);
+});
+
 test("coyote time accepts a jump immediately after leaving a ledge", () => {
   const player = createPlayer({ x: 20, y: 20 });
   player.coyoteTimer = 0.08;

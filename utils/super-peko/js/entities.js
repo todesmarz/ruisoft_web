@@ -72,7 +72,9 @@ export function updatePlayer(player, input, level, dt) {
     player.grounded = false;
     player.coyoteTimer = 0;
     player.jumpBuffer = 0;
-    player.jumpHold = 0.18;
+    // A longer ceiling lets the genetic controller evolve a MAX jump while
+    // short/high jumps still release the button at their own DNA hold times.
+    player.jumpHold = 0.26;
     jumped = true;
   }
   if (input.jump && player.jumpHold > 0 && player.vy < 0) {
