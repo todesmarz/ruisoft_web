@@ -77,6 +77,7 @@ function updateAutoplayStatus(status) {
   byId("autoplay-fitness").textContent = status.fitness;
   byId("autoplay-remaining").textContent = `${status.remaining}s`;
   byId("autoplay-situation").textContent = status.situation;
+  byId("autoplay-priority").textContent = status.priority;
   byId("autoplay-behavior").textContent = status.behavior;
 }
 const autoplay = new GeneticAutoPlay({
