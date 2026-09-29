@@ -13,6 +13,10 @@ import {
 globalThis.window = { dispatchEvent() {} };
 globalThis.CustomEvent = class CustomEvent {};
 
+test("a trial allows ten seconds without a new highest position", () => {
+  assert.equal(AUTOPLAY.stallSeconds, 10);
+});
+
 test("genomes contain weights for every sensor and action", () => {
   const genome = createGenome(() => 0.75);
   assert.equal(genome.genes.length, 27);
@@ -99,6 +103,43 @@ test("a trial continues past the former time limit while making progress", () =>
   }
   assert.equal(autoplay.candidate, 0);
   assert.equal(autoplay.trialTime, 12);
+});
+
+test("subpixel forward progress clears the stall timer", () => {
+  const { autoplay, game } = autoplayFixture();
+  autoplay.update(AUTOPLAY.stallSeconds - 0.1);
+  game.player.x += 0.1;
+  autoplay.update(0.1);
+  assert.equal(autoplay.candidate, 0);
+  assert.equal(autoplay.stallTime, 0);
+});
+
+test("a new highest position starts a fresh ten-second countdown", () => {
+  const { autoplay, game } = autoplayFixture();
+  autoplay.update(AUTOPLAY.stallSeconds - 1);
+  game.player.x = 0.1;
+  autoplay.update(0.1);
+
+  autoplay.update(1);
+  assert.equal(autoplay.candidate, 0);
+  assert.equal(autoplay.stallTime, 1);
+
+  autoplay.update(AUTOPLAY.stallSeconds - 1);
+  assert.equal(autoplay.candidate, 1);
+});
+
+test("moving right below the highest position does not clear the stall timer", () => {
+  const { autoplay, game } = autoplayFixture();
+  game.player.x = 10;
+  autoplay.update(0.1);
+  game.player.x = 5;
+  autoplay.update(AUTOPLAY.stallSeconds - 1);
+  game.player.x = 5.1;
+  autoplay.update(0.5);
+  assert.equal(autoplay.candidate, 0);
+  assert.equal(autoplay.stallTime, AUTOPLAY.stallSeconds - 0.5);
+  autoplay.update(0.5);
+  assert.equal(autoplay.candidate, 1);
 });
 
 test("a trial ends after the configured period without forward progress", () => {
