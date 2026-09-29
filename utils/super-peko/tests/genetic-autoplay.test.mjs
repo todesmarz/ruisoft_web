@@ -106,6 +106,35 @@ test("the next generation preserves elite genes and resets fitness", () => {
   assert.ok(next.every((genome) => genome.fitness === -Infinity));
 });
 
+test("offspring inherit from the 12 highest-rated genomes in their generation", () => {
+  const behaviors = [
+    "wait",
+    "advance",
+    "run",
+    "shortJump",
+    "jump",
+    "highJump",
+    "maxJump",
+    "runShortJump",
+    "runJump",
+    "runHighJump",
+    "runMaxJump",
+    "retreat",
+    "attack",
+  ];
+  const population = behaviors.map((behavior, fitness) => ({
+    dna: Object.fromEntries(SITUATIONS.map((key) => [key, behavior])),
+    fitness,
+  }));
+
+  const next = nextGeneration(population, () => 0.999);
+
+  assert.equal(AUTOPLAY.breedingPoolSize, 12);
+  assert.ok(Object.values(next[AUTOPLAY.eliteCount].dna).every(
+    (behavior) => behavior === "advance",
+  ));
+});
+
 test("the first matching situation selects its DNA behavior", () => {
   const genome = createGenome(() => 0);
   genome.dna.gapAhead = "runJump";

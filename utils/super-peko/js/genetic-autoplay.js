@@ -4,6 +4,7 @@ import { emit } from "./events.js";
 export const AUTOPLAY = Object.freeze({
   populationSize: 12,
   eliteCount: 3,
+  breedingPoolSize: 12,
   stallSeconds: 3,
   mutationRate: 0.18,
   enemyLookAhead: VIEW.tile * 4,
@@ -297,6 +298,7 @@ export function mutate(
 export function nextGeneration(population, random = Math.random) {
   const ranked = [...population].sort((a, b) => b.fitness - a.fitness);
   const eliteCount = Math.min(AUTOPLAY.eliteCount, ranked.length);
+  const breedingPool = ranked.slice(0, AUTOPLAY.breedingPoolSize);
   const next = ranked.slice(0, eliteCount).map((genome) => ({
     dna: { ...genome.dna },
     priorities: { ...(genome.priorities || {}) },
@@ -309,8 +311,8 @@ export function nextGeneration(population, random = Math.random) {
     fitness: -Infinity,
   }));
   while (next.length < population.length) {
-    const parentA = ranked[Math.floor(random() * eliteCount)];
-    const parentB = ranked[Math.floor(random() * eliteCount)];
+    const parentA = breedingPool[Math.floor(random() * breedingPool.length)];
+    const parentB = breedingPool[Math.floor(random() * breedingPool.length)];
     next.push(mutate(crossover(parentA, parentB, random), random));
   }
   return next;
