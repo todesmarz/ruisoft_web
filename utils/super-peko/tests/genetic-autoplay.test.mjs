@@ -2,86 +2,94 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   AUTOPLAY,
+  BEHAVIORS,
+  SITUATIONS,
   createGenome,
   crossover,
+  currentSituation,
   decide,
   mutate,
   nextGeneration,
+  senseGame,
   GeneticAutoPlay,
 } from "../js/genetic-autoplay.js";
 
 globalThis.window = { dispatchEvent() {} };
 globalThis.CustomEvent = class CustomEvent {};
 
-test("a trial allows ten seconds without a new highest position", () => {
-  assert.equal(AUTOPLAY.stallSeconds, 10);
+test("a trial allows three seconds without a new highest position", () => {
+  assert.equal(AUTOPLAY.stallSeconds, 3);
 });
 
-test("genomes contain weights for every sensor and action", () => {
-  const genome = createGenome(() => 0.75);
-  assert.equal(genome.genes.length, 27);
-  assert.ok(genome.genes.every((gene) => gene === 0.5));
+test("genomes map every situation to a behavior instead of button weights", () => {
+  const genome = createGenome(() => 0);
+  assert.deepEqual(Object.keys(genome.dna), [...SITUATIONS]);
+  assert.ok(Object.values(genome.dna).every((behavior) => behavior === "advance"));
+  assert.equal("genes" in genome, false);
   assert.equal(genome.fitness, -Infinity);
 });
 
-test("crossover takes genes from both parents", () => {
-  const left = { genes: Array(27).fill(-1) };
-  const right = { genes: Array(27).fill(1) };
+test("crossover takes situation behaviors from both parents", () => {
+  const left = { dna: Object.fromEntries(SITUATIONS.map((key) => [key, "jump"])) };
+  const right = { dna: Object.fromEntries(SITUATIONS.map((key) => [key, "retreat"])) };
   let call = 0;
   const child = crossover(left, right, () => (call++ % 2 ? 0.9 : 0.1));
-  assert.deepEqual(child.genes.slice(0, 4), [-1, 1, -1, 1]);
+  assert.deepEqual(Object.values(child.dna).slice(0, 4), [
+    "jump",
+    "retreat",
+    "jump",
+    "retreat",
+  ]);
 });
 
-test("mutation can preserve or change inherited genes", () => {
-  const genome = { genes: Array(27).fill(0) };
-  assert.deepEqual(mutate(genome, () => 0.9, 0).genes, genome.genes);
-  const changed = mutate(genome, () => 0, 1, 0.5);
-  assert.ok(changed.genes.every((gene) => gene === -0.5));
+test("mutation can preserve or replace situation behaviors", () => {
+  const genome = {
+    dna: Object.fromEntries(SITUATIONS.map((key) => [key, "retreat"])),
+  };
+  assert.deepEqual(mutate(genome, () => 0.9, 0).dna, genome.dna);
+  const changed = mutate(genome, () => 0, 1);
+  assert.ok(Object.values(changed.dna).every((behavior) => behavior === "advance"));
 });
 
 test("the next generation preserves elite genes and resets fitness", () => {
   const population = Array.from({ length: AUTOPLAY.populationSize }, (_, i) => ({
-    genes: Array(27).fill(i),
+    dna: Object.fromEntries(SITUATIONS.map((key) => [key, i === 11 ? "jump" : "run"])),
     fitness: i,
   }));
   const next = nextGeneration(population, () => 0.1);
   assert.equal(next.length, population.length);
-  assert.deepEqual(next[0].genes, Array(27).fill(11));
-  assert.deepEqual(next[1].genes, Array(27).fill(10));
+  assert.ok(Object.values(next[0].dna).every((behavior) => behavior === "jump"));
+  assert.ok(Object.values(next[1].dna).every((behavior) => behavior === "run"));
   assert.ok(next.every((genome) => genome.fitness === -Infinity));
 });
 
-test("policy weights are converted into independent game controls", () => {
-  const genome = { genes: Array(27).fill(0), fitness: 0 };
-  genome.genes[0] = 8;
-  genome.genes[9] = 8;
-  genome.genes[18] = -8;
-  assert.deepEqual(decide(genome, [1, 0, 0, 0, 0, 0, 0, 0, 0]), {
-    left: false,
-    right: true,
-    jump: true,
-    action: false,
+test("the first matching situation selects its DNA behavior", () => {
+  const genome = createGenome(() => 0);
+  genome.dna.gapAhead = "runJump";
+  genome.dna.enemyAhead = "retreat";
+  assert.deepEqual(decide(genome, { gapAhead: true, enemyAhead: true }), {
+    ...BEHAVIORS.runJump,
+    situation: "gapAhead",
+    behavior: "runJump",
   });
 });
 
-test("the lower horizontal range for choosing left favors forward movement", () => {
-  const genome = { genes: Array(27).fill(0), fitness: 0 };
-  genome.genes[0] = Math.log(0.36 / 0.64);
-  const actions = decide(genome, [1, 0, 0, 0, 0, 0, 0, 0, 0]);
-  assert.equal(AUTOPLAY.leftThreshold, 0.35);
-  assert.equal(actions.left, false);
-  assert.equal(actions.right, true);
+test("clear path is the fallback situation", () => {
+  assert.equal(currentSituation({}), "clearPath");
 });
 
 function autoplayFixture() {
   const game = {
     state: "playing",
-    player: { x: 0, vx: 0, vy: 0, grounded: true, powered: false },
+    player: { x: 0, y: 390, w: 30, h: 42, vx: 0, vy: 0, grounded: true, powered: false, facing: 1 },
     level: {
       width: 2000,
       goal: { x: 1900 },
       enemies: [],
       hazards: [],
+      solids: [{ x: 0, y: 432, w: 2000, h: 108 }],
+      blocks: [],
+      platforms: [],
     },
     score: 0,
     gems: 0,
@@ -104,6 +112,19 @@ function autoplayFixture() {
   return { autoplay, game };
 }
 
+test("sensors recognize an enemy a few tiles ahead, a wall, and a gap", () => {
+  const { game } = autoplayFixture();
+  game.level.enemies.push({ x: 130, y: 390, w: 36, h: 34, alive: true });
+  game.level.solids.push({ x: 78, y: 336, w: 48, h: 96 });
+  let sensed = senseGame(game);
+  assert.equal(sensed.enemyAhead, true);
+  assert.equal(sensed.wallAhead, true);
+
+  game.level.solids = [{ x: 0, y: 432, w: 40, h: 108 }];
+  sensed = senseGame(game);
+  assert.equal(sensed.gapAhead, true);
+});
+
 test("a trial continues past the former time limit while making progress", () => {
   const { autoplay, game } = autoplayFixture();
   for (let second = 0; second < 12; second += 1) {
@@ -123,7 +144,7 @@ test("subpixel forward progress clears the stall timer", () => {
   assert.equal(autoplay.stallTime, 0);
 });
 
-test("a new highest position starts a fresh ten-second countdown", () => {
+test("a new highest position starts a fresh three-second countdown", () => {
   const { autoplay, game } = autoplayFixture();
   autoplay.update(AUTOPLAY.stallSeconds - 1);
   game.player.x = 0.1;
@@ -133,7 +154,7 @@ test("a new highest position starts a fresh ten-second countdown", () => {
   assert.equal(autoplay.candidate, 0);
   assert.equal(autoplay.stallTime, 1);
 
-  autoplay.update(AUTOPLAY.stallSeconds - 1);
+  autoplay.update(AUTOPLAY.stallSeconds - 0.9);
   assert.equal(autoplay.candidate, 1);
 });
 
@@ -160,14 +181,16 @@ test("a trial ends after the configured period without forward progress", () => 
 test("simulation speed does not shorten the wall-clock stall period", () => {
   const { autoplay } = autoplayFixture();
   autoplay.setSpeed(4);
-  autoplay.update(3);
+  autoplay.update(AUTOPLAY.stallSeconds - 0.1);
   assert.equal(autoplay.candidate, 0);
-  assert.equal(autoplay.stallTime, 3);
+  assert.equal(autoplay.stallTime, AUTOPLAY.stallSeconds - 0.1);
+  autoplay.update(0.1);
+  assert.equal(autoplay.candidate, 1);
 });
 
 test("losing a life immediately advances to the next candidate", () => {
   const { autoplay, game } = autoplayFixture();
-  autoplay.update(3);
+  autoplay.update(AUTOPLAY.stallSeconds - 0.1);
   game.player.x = 100;
   autoplay.maxX = 100;
   game.state = "transition";
