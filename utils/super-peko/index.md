@@ -37,12 +37,12 @@ description: ペコを操作して8ワールド32ステージを冒険する横�
         <div><dt>世代</dt><dd id="autoplay-generation">1</dd></div>
         <div><dt>個体</dt><dd id="autoplay-candidate">1 / 12</dd></div>
         <div><dt>最高適応度</dt><dd id="autoplay-fitness">0</dd></div>
-        <div><dt>残り</dt><dd id="autoplay-remaining">9s</dd></div>
+        <div><dt>停滞判定</dt><dd id="autoplay-remaining">3s</dd></div>
       </dl>
       <label for="autoplay-speed">学習速度
         <select id="autoplay-speed"><option value="1">×1</option><option value="2">×2</option><option value="4">×4</option></select>
       </label>
-      <p>12体の操作方針を実戦評価し、上位個体の交叉・突然変異で世代を進めます。</p>
+      <p>死亡または3秒間前進しない時まで走行し、コイン・アイテム・敵撃破を報酬として進化します。</p>
     </aside>
 
     <div id="game-stage" class="game-stage">

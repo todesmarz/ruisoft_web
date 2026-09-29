@@ -3,7 +3,7 @@ import { emit } from "./events.js";
 export const AUTOPLAY = Object.freeze({
   populationSize: 12,
   eliteCount: 3,
-  trialSeconds: 9,
+  stallSeconds: 3,
   mutationRate: 0.18,
   mutationScale: 0.55,
 });
@@ -139,8 +139,8 @@ export class GeneticAutoPlay {
   beginTrial() {
     this.trialTime = 0;
     this.startX = this.game.player.x;
-    this.startScore = this.game.score;
     this.startGems = this.game.gems;
+    this.startRewards = { ...(this.game.rewards || {}) };
     this.maxX = this.game.player.x;
     this.stallTime = 0;
     if (this.game.state !== "playing") this.game.start(this.game.levelIndex);
@@ -148,8 +148,16 @@ export class GeneticAutoPlay {
 
   update(dt) {
     if (!this.enabled) return;
+    if (this.game.state === "clear") {
+      this.finishTrial(50000);
+      return;
+    }
+    if (["transition", "gameover"].includes(this.game.state)) {
+      this.finishTrial(-2000);
+      return;
+    }
     if (this.game.state !== "playing") {
-      this.finishTrial(this.game.state === "clear" ? 50000 : -2000);
+      this.report();
       return;
     }
     this.trialTime += dt;
@@ -157,8 +165,8 @@ export class GeneticAutoPlay {
     this.maxX = Math.max(this.maxX, this.game.player.x);
     this.stallTime = this.maxX > previousMax + 1 ? 0 : this.stallTime + dt;
     this.applyActions(decide(this.population[this.candidate], senseGame(this.game)));
-    if (this.trialTime >= AUTOPLAY.trialSeconds || this.stallTime >= 2.5)
-      this.finishTrial(this.stallTime >= 2.5 ? -500 : 0);
+    if (this.stallTime >= AUTOPLAY.stallSeconds)
+      this.finishTrial(-500);
     else this.report();
   }
 
@@ -175,10 +183,12 @@ export class GeneticAutoPlay {
   }
 
   finishTrial(bonus = 0) {
+    const rewards = this.game.rewards || {};
     const fitness =
       this.maxX - this.startX +
-      (this.game.score - this.startScore) * 0.25 +
-      (this.game.gems - this.startGems) * 80 +
+      (this.game.gems - this.startGems) * 100 +
+      ((rewards.items || 0) - (this.startRewards.items || 0)) * 300 +
+      ((rewards.enemies || 0) - (this.startRewards.enemies || 0)) * 200 +
       bonus;
     this.population[this.candidate].fitness = fitness;
     this.bestFitness = Math.max(this.bestFitness, fitness);
@@ -215,7 +225,7 @@ export class GeneticAutoPlay {
       candidate: this.candidate + 1,
       population: this.population.length,
       fitness: Math.round(this.bestFitness),
-      remaining: Math.max(0, Math.ceil(AUTOPLAY.trialSeconds - (this.trialTime || 0))),
+      remaining: Math.max(0, Math.ceil(AUTOPLAY.stallSeconds - (this.stallTime || 0))),
       speed: this.speed,
     });
   }
