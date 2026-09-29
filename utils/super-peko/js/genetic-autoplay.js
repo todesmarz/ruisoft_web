@@ -1,31 +1,58 @@
+import { VIEW } from "./config.js";
 import { emit } from "./events.js";
 
 export const AUTOPLAY = Object.freeze({
   populationSize: 12,
   eliteCount: 3,
-  stallSeconds: 10,
+  stallSeconds: 3,
   mutationRate: 0.18,
-  mutationScale: 0.55,
-  leftThreshold: 0.35,
+  enemyLookAhead: VIEW.tile * 4,
+  obstacleLookAhead: VIEW.tile * 2,
 });
 
-const SENSOR_COUNT = 9;
-const ACTION_COUNT = 3;
-const GENE_COUNT = SENSOR_COUNT * ACTION_COUNT;
-const sigmoid = (value) => 1 / (1 + Math.exp(-value));
-const randomGene = (random) => random() * 2 - 1;
+// A genome evolves one behavior for each recognizable situation. The GA no
+// longer evolves abstract button weights; its DNA can be read as rules such as
+// "gap ahead -> running jump" and "enemy nearby -> attack".
+export const SITUATIONS = Object.freeze([
+  "gapAhead",
+  "hazardAhead",
+  "wallAhead",
+  "enemyAhead",
+  "airborne",
+  "clearPath",
+]);
+
+export const BEHAVIORS = Object.freeze({
+  advance: Object.freeze({ left: false, right: true, jump: false, action: false }),
+  run: Object.freeze({ left: false, right: true, jump: false, action: true }),
+  jump: Object.freeze({ left: false, right: true, jump: true, action: false }),
+  runJump: Object.freeze({ left: false, right: true, jump: true, action: true }),
+  retreat: Object.freeze({ left: true, right: false, jump: false, action: false }),
+  retreatJump: Object.freeze({ left: true, right: false, jump: true, action: false }),
+  attack: Object.freeze({ left: false, right: true, jump: false, action: true }),
+  wait: Object.freeze({ left: false, right: false, jump: false, action: false }),
+});
+
+const BEHAVIOR_NAMES = Object.freeze(Object.keys(BEHAVIORS));
+const randomBehavior = (random) =>
+  BEHAVIOR_NAMES[Math.min(BEHAVIOR_NAMES.length - 1, Math.floor(random() * BEHAVIOR_NAMES.length))];
 
 export function createGenome(random = Math.random) {
   return {
-    genes: Array.from({ length: GENE_COUNT }, () => randomGene(random)),
+    dna: Object.fromEntries(
+      SITUATIONS.map((situation) => [situation, randomBehavior(random)]),
+    ),
     fitness: -Infinity,
   };
 }
 
 export function crossover(a, b, random = Math.random) {
   return {
-    genes: a.genes.map((gene, index) =>
-      random() < 0.5 ? gene : b.genes[index],
+    dna: Object.fromEntries(
+      SITUATIONS.map((situation) => [
+        situation,
+        random() < 0.5 ? a.dna[situation] : b.dna[situation],
+      ]),
     ),
     fitness: -Infinity,
   };
@@ -35,11 +62,13 @@ export function mutate(
   genome,
   random = Math.random,
   rate = AUTOPLAY.mutationRate,
-  scale = AUTOPLAY.mutationScale,
 ) {
   return {
-    genes: genome.genes.map((gene) =>
-      random() < rate ? gene + (random() * 2 - 1) * scale : gene,
+    dna: Object.fromEntries(
+      SITUATIONS.map((situation) => [
+        situation,
+        random() < rate ? randomBehavior(random) : genome.dna[situation],
+      ]),
     ),
     fitness: -Infinity,
   };
@@ -49,7 +78,7 @@ export function nextGeneration(population, random = Math.random) {
   const ranked = [...population].sort((a, b) => b.fitness - a.fitness);
   const eliteCount = Math.min(AUTOPLAY.eliteCount, ranked.length);
   const next = ranked.slice(0, eliteCount).map((genome) => ({
-    genes: [...genome.genes],
+    dna: { ...genome.dna },
     fitness: -Infinity,
   }));
   while (next.length < population.length) {
@@ -60,45 +89,63 @@ export function nextGeneration(population, random = Math.random) {
   return next;
 }
 
+const overlaps = (a, b) =>
+  a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+
 export function senseGame(game) {
   const { player, level } = game;
-  const ahead = (entity) => entity.x + entity.w >= player.x;
-  const nearestEnemy = level.enemies
-    .filter((enemy) => enemy.alive && ahead(enemy))
-    .sort((a, b) => a.x - b.x)[0];
-  const nearestHazard = level.hazards
-    .filter(ahead)
-    .sort((a, b) => a.x - b.x)[0];
-  const distance = (entity, fallback = 720) =>
-    Math.min(fallback, Math.max(-fallback, (entity?.x ?? player.x + fallback) - player.x)) /
-    fallback;
-  return [
-    1,
-    player.vx / 360,
-    player.vy / 900,
-    player.grounded ? 1 : 0,
-    distance(nearestEnemy),
-    nearestEnemy ? (nearestEnemy.y - player.y) / 300 : 1,
-    distance(nearestHazard),
-    Math.min(1, (level.goal.x - player.x) / level.width),
-    player.powered ? 1 : 0,
+  // Every course progresses to the right, so "ahead" stays goalward even when
+  // a DNA behavior has briefly made Peko face or retreat to the left.
+  const front = player.x + player.w;
+  const distanceAhead = (entity) => entity.x - front;
+  const isAhead = (entity, distance) => {
+    const gap = distanceAhead(entity);
+    return gap >= -VIEW.tile * 0.25 && gap <= distance;
+  };
+  const solids = [
+    ...level.solids,
+    ...level.blocks.filter((block) => !block.disabled),
+    ...level.platforms,
   ];
+  const pathProbe = {
+    x: front,
+    y: player.y + 2,
+    w: AUTOPLAY.obstacleLookAhead,
+    h: Math.max(1, player.h - 4),
+  };
+  const landingProbe = {
+    x: front + VIEW.tile * 0.5,
+    y: player.y + player.h,
+    w: VIEW.tile,
+    h: VIEW.tile * 1.5,
+  };
+  const enemyAhead = level.enemies.some(
+    (enemy) =>
+      enemy.alive &&
+      isAhead(enemy, AUTOPLAY.enemyLookAhead) &&
+      Math.abs(enemy.y - player.y) <= VIEW.tile * 2,
+  );
+  const hazardAhead = level.hazards.some(
+    (hazard) => isAhead(hazard, AUTOPLAY.obstacleLookAhead) && overlaps(landingProbe, hazard),
+  );
+  const wallAhead = solids.some(
+    (solid) => overlaps(pathProbe, solid) && solid.y < player.y + player.h - VIEW.tile * 0.25,
+  );
+  const gapAhead = player.grounded && !solids.some((solid) => overlaps(landingProbe, solid));
+
+  return { gapAhead, hazardAhead, wallAhead, enemyAhead, airborne: !player.grounded };
+}
+
+export function currentSituation(sensors) {
+  return SITUATIONS.find(
+    (situation) => situation !== "clearPath" && sensors[situation],
+  ) || "clearPath";
 }
 
 export function decide(genome, sensors) {
-  const outputs = Array.from({ length: ACTION_COUNT }, (_, action) => {
-    let sum = 0;
-    for (let sensor = 0; sensor < SENSOR_COUNT; sensor += 1)
-      sum += genome.genes[action * SENSOR_COUNT + sensor] * sensors[sensor];
-    return sigmoid(sum);
-  });
-  const horizontal = outputs[0];
-  return {
-    left: horizontal < AUTOPLAY.leftThreshold,
-    right: horizontal >= AUTOPLAY.leftThreshold,
-    jump: outputs[1] > 0.54,
-    action: outputs[2] > 0.5,
-  };
+  const situation = currentSituation(sensors);
+  const behavior = genome.dna[situation] || "advance";
+  return { ...BEHAVIORS[behavior], situation, behavior };
 }
 
 export class GeneticAutoPlay {
@@ -113,6 +160,8 @@ export class GeneticAutoPlay {
       createGenome(random),
     );
     this.previousActions = {};
+    this.situation = "clearPath";
+    this.behavior = "advance";
   }
 
   toggle(force) {
@@ -155,8 +204,6 @@ export class GeneticAutoPlay {
       return;
     }
     if (["transition", "gameover"].includes(this.game.state)) {
-      // Death by an enemy or a fall has already ended this attempt. Penalize
-      // the failed genome and immediately evaluate the next candidate.
       this.finishTrial(-2000);
       return;
     }
@@ -165,15 +212,16 @@ export class GeneticAutoPlay {
       return;
     }
     this.trialTime += dt;
-    const reachedNewMax = this.game.player.x > this.maxX;
-    if (reachedNewMax) {
+    if (this.game.player.x > this.maxX) {
       this.maxX = this.game.player.x;
       this.lastProgressAt = this.trialTime;
     }
     this.stallTime = this.trialTime - this.lastProgressAt;
-    this.applyActions(decide(this.population[this.candidate], senseGame(this.game)));
-    if (this.stallTime >= AUTOPLAY.stallSeconds)
-      this.finishTrial(-500);
+    const actions = decide(this.population[this.candidate], senseGame(this.game));
+    this.situation = actions.situation;
+    this.behavior = actions.behavior;
+    this.applyActions(actions);
+    if (this.stallTime >= AUTOPLAY.stallSeconds) this.finishTrial(-500);
     else this.report();
   }
 
@@ -234,6 +282,8 @@ export class GeneticAutoPlay {
       fitness: Math.round(this.bestFitness),
       remaining: Math.max(0, Math.ceil(AUTOPLAY.stallSeconds - (this.stallTime || 0))),
       speed: this.speed,
+      situation: this.situation,
+      behavior: this.behavior,
     });
   }
 }

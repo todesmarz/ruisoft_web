@@ -76,6 +76,8 @@ function updateAutoplayStatus(status) {
   byId("autoplay-candidate").textContent = `${status.candidate} / ${status.population}`;
   byId("autoplay-fitness").textContent = status.fitness;
   byId("autoplay-remaining").textContent = `${status.remaining}s`;
+  byId("autoplay-situation").textContent = status.situation;
+  byId("autoplay-behavior").textContent = status.behavior;
 }
 const autoplay = new GeneticAutoPlay({
   game,
@@ -136,8 +138,8 @@ function loop(now) {
   previous = now;
   const steps = autoplay.enabled ? autoplay.speed : 1;
   // The stall timeout is wall-clock time, so advance it once per rendered
-  // frame. Calling it for every accelerated simulation step made the 10-second
-  // timeout expire in 2.5 seconds at 4x speed.
+  // frame. Calling it for every accelerated simulation step would make the
+  // three-second timeout expire in 0.75 seconds at 4x speed.
   autoplay.update(dt);
   for (let step = 0; step < steps; step += 1) {
     game.update(dt);
