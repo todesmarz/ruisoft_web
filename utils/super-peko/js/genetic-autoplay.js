@@ -3,7 +3,7 @@ import { emit } from "./events.js";
 export const AUTOPLAY = Object.freeze({
   populationSize: 12,
   eliteCount: 3,
-  stallSeconds: 3,
+  stallSeconds: 10,
   mutationRate: 0.18,
   mutationScale: 0.55,
 });
@@ -142,6 +142,7 @@ export class GeneticAutoPlay {
     this.startGems = this.game.gems;
     this.startRewards = { ...(this.game.rewards || {}) };
     this.maxX = this.game.player.x;
+    this.lastProgressAt = 0;
     this.stallTime = 0;
     if (this.game.state !== "playing") this.game.start(this.game.levelIndex);
   }
@@ -161,9 +162,12 @@ export class GeneticAutoPlay {
       return;
     }
     this.trialTime += dt;
-    const previousMax = this.maxX;
-    this.maxX = Math.max(this.maxX, this.game.player.x);
-    this.stallTime = this.maxX > previousMax + 1 ? 0 : this.stallTime + dt;
+    const reachedNewMax = this.game.player.x > this.maxX;
+    if (reachedNewMax) {
+      this.maxX = this.game.player.x;
+      this.lastProgressAt = this.trialTime;
+    }
+    this.stallTime = this.trialTime - this.lastProgressAt;
     this.applyActions(decide(this.population[this.candidate], senseGame(this.game)));
     if (this.stallTime >= AUTOPLAY.stallSeconds)
       this.finishTrial(-500);
