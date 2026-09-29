@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   AUTOPLAY,
   BEHAVIORS,
+  ENEMY_SITUATIONS,
   SITUATIONS,
   createGenome,
   crossover,
@@ -11,6 +12,7 @@ import {
   mutate,
   nextGeneration,
   resolveBehavior,
+  sampleTiming,
   senseGame,
   GeneticAutoPlay,
 } from "../js/genetic-autoplay.js";
@@ -28,6 +30,10 @@ test("genomes map every situation to a behavior instead of button weights", () =
   assert.ok(Object.values(genome.dna).every((behavior) => behavior === "advance"));
   assert.deepEqual(Object.keys(genome.priorities), [...SITUATIONS]);
   assert.ok(Object.values(genome.priorities).every((priority) => priority === 0));
+  assert.deepEqual(Object.keys(genome.timing), [...SITUATIONS]);
+  assert.ok(Object.values(genome.timing).every(
+    (timing) => timing.scale === 0.8 && timing.variance === 0,
+  ));
   assert.equal("genes" in genome, false);
   assert.equal(genome.fitness, -Infinity);
 });
@@ -52,6 +58,38 @@ test("mutation can preserve or replace situation behaviors", () => {
   assert.deepEqual(mutate(genome, () => 0.9, 0).dna, genome.dna);
   const changed = mutate(genome, () => 0, 1);
   assert.ok(Object.values(changed.dna).every((behavior) => behavior === "advance"));
+});
+
+test("button timing scale and variance are inherited and mutated as genes", () => {
+  const timing = Object.fromEntries(
+    SITUATIONS.map((key) => [key, { scale: 0.9, variance: 0.1 }]),
+  );
+  const left = { dna: {}, priorities: {}, timing };
+  const right = {
+    dna: {},
+    priorities: {},
+    timing: Object.fromEntries(
+      SITUATIONS.map((key) => [key, { scale: 1.1, variance: 0.2 }]),
+    ),
+  };
+  const child = crossover(left, right, () => 0);
+  assert.deepEqual(child.timing.clearPath, { scale: 0.9, variance: 0.1 });
+  assert.notEqual(child.timing.clearPath, timing.clearPath);
+
+  const preserved = mutate({ dna: {}, priorities: {}, timing }, () => 0.9, 0);
+  assert.deepEqual(preserved.timing.clearPath, timing.clearPath);
+  const changed = mutate({ dna: {}, priorities: {}, timing }, () => 0, 1);
+  assert.deepEqual(changed.timing.clearPath, { scale: 0.8, variance: 0 });
+});
+
+test("a timing gene produces repeatable per-action variation", () => {
+  const gene = { scale: 1.1, variance: 0.2 };
+  assert.ok(Math.abs(sampleTiming(gene, () => 0) - 0.88) < Number.EPSILON);
+  assert.equal(sampleTiming(gene, () => 0.5), 1.1);
+  assert.ok(Math.abs(sampleTiming(gene, () => 1) - 1.32) < Number.EPSILON);
+  assert.ok(Math.abs(resolveBehavior("maxJump", 0, {}, 1.2).jumpDuration - 0.312) < Number.EPSILON);
+  assert.equal(resolveBehavior("dashJump", 0.55, {}, 1.2).patternPhase, 0);
+  assert.equal(resolveBehavior("dashJump", 0.61, {}, 1.2).patternPhase, 1);
 });
 
 test("the next generation preserves elite genes and resets fitness", () => {
@@ -100,10 +138,12 @@ test("situation priority is genetic and preserves an equally important active ac
   );
 });
 
-test("jump behaviors provide distinct small, normal, and large jump holds", () => {
+test("jump behaviors provide distinct small, normal, high, and max jump holds", () => {
   assert.ok(BEHAVIORS.shortJump.jumpDuration < BEHAVIORS.jump.jumpDuration);
   assert.ok(BEHAVIORS.jump.jumpDuration < BEHAVIORS.highJump.jumpDuration);
+  assert.ok(BEHAVIORS.highJump.jumpDuration < BEHAVIORS.maxJump.jumpDuration);
   assert.ok(BEHAVIORS.runShortJump.jumpDuration < BEHAVIORS.runHighJump.jumpDuration);
+  assert.ok(BEHAVIORS.runHighJump.jumpDuration < BEHAVIORS.runMaxJump.jumpDuration);
 });
 
 test("movement patterns evolve through run, jump, and rest phases", () => {
@@ -118,6 +158,22 @@ test("movement patterns evolve through run, jump, and rest phases", () => {
   assert.equal(resolveBehavior("dashHop", 0.5).jump, true);
   assert.equal(resolveBehavior("patrol", 0.75).right, false);
   assert.equal(resolveBehavior("dashHop", 1).patternPhase, 0);
+  assert.equal(resolveBehavior("dashJump", 0.55).jump, true);
+  assert.equal(resolveBehavior("retreatDashJump", 0.1).left, true);
+  assert.equal(resolveBehavior("retreatDashJump", 0.3).right, true);
+});
+
+test("item collection steers toward a target and jumps for elevated items", () => {
+  const sensors = { itemTarget: { distanceX: -20, distanceY: -50, kind: "gem" } };
+  assert.deepEqual(resolveBehavior("collectItem", 0, sensors), {
+    left: true,
+    right: false,
+    jump: true,
+    action: true,
+    jumpDuration: 0.26,
+    targeted: true,
+  });
+  assert.equal(resolveBehavior("collectItem", 0, {}).targeted, false);
 });
 
 test("enemy-clearing patterns include stomping, countering, and repeated fire", () => {
@@ -162,6 +218,9 @@ function autoplayFixture() {
       solids: [{ x: 0, y: 432, w: 2000, h: 108 }],
       blocks: [],
       platforms: [],
+      powerups: [],
+      gems: [],
+      boss: null,
     },
     score: 0,
     gems: 0,
@@ -238,6 +297,32 @@ test("sensors distinguish enemy formations and clearing opportunities", () => {
     type: undefined,
     state: "shell",
   });
+});
+
+test("every regular and boss enemy type has a distinct situation", () => {
+  assert.ok(Object.values(ENEMY_SITUATIONS).every((situation) => SITUATIONS.includes(situation)));
+  for (const [type, situation] of Object.entries(ENEMY_SITUATIONS)) {
+    const { game } = autoplayFixture();
+    const enemy = { x: 70, y: 390, w: 36, h: 34, alive: true, type, state: "walking" };
+    if (situation.startsWith("boss")) game.level.boss = enemy;
+    else game.level.enemies.push(enemy);
+    const sensed = senseGame(game);
+    assert.equal(sensed[situation], true, `${type} should activate ${situation}`);
+    assert.equal(sensed.enemyTarget.type, type);
+  }
+});
+
+test("sensors find collectible items and unused item blocks", () => {
+  const { game } = autoplayFixture();
+  game.level.gems.push({ x: 90, y: 360, w: 20, h: 20, collected: false });
+  let sensed = senseGame(game);
+  assert.equal(sensed.itemNearby, true);
+  assert.equal(sensed.itemTarget.kind, "gem");
+
+  game.level.gems[0].collected = true;
+  game.level.blocks.push({ x: 120, y: 320, w: 48, h: 48, type: "item", used: false });
+  sensed = senseGame(game);
+  assert.equal(sensed.itemTarget.kind, "item-block");
 });
 
 test("walls block enemy vision and prevent target-specific jumps", () => {
