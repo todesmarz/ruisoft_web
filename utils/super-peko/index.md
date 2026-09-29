@@ -41,11 +41,12 @@ description: ペコを操作して8ワールド32ステージを冒険する横�
         <div><dt>状況</dt><dd id="autoplay-situation">clearPath</dd></div>
         <div><dt>状況優先度</dt><dd id="autoplay-priority">0</dd></div>
         <div><dt>DNA行動</dt><dd id="autoplay-behavior">advance</dd></div>
+        <div><dt>攻撃タイミング</dt><dd id="autoplay-action-timing">--</dd></div>
       </dl>
       <label for="autoplay-speed">学習速度
         <select id="autoplay-speed"><option value="1">×1</option><option value="2">×2</option><option value="4">×4</option></select>
       </label>
-      <p>移動・ダッシュジャンプ・少し戻ってダッシュジャンプ・MAXジャンプ・アイテム取得・踏みつけ・反撃・連射などの行動方針に加え、ボタンを押す長さと個体ごとのブレもDNAとして進化させます。敵の種類・穴・壁・アイテムなどの状況を認識し、距離と高低差から行動タイミングを決めます。死亡または3秒間最高到達点を更新しない時に、次の個体へ交代します。</p>
+      <p>「左へ180ms→右へ500ms→右＋ジャンプ260ms」のようなコマンドセットと、個体ごとのタイミングのブレをDNAとして進化させます。敵の位置確認・接触タイミング計算・攻撃を組み合わせ、アイテムブロックは開封対象、出現した実アイテムは取得対象として別々に認識します。死亡または3秒間最高到達点を更新しない時に、次の個体へ交代します。</p>
     </aside>
 
     <div id="game-stage" class="game-stage">

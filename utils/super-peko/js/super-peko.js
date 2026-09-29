@@ -79,6 +79,9 @@ function updateAutoplayStatus(status) {
   byId("autoplay-situation").textContent = status.situation;
   byId("autoplay-priority").textContent = status.priority;
   byId("autoplay-behavior").textContent = status.behavior;
+  byId("autoplay-action-timing").textContent = Number.isFinite(status.enemyActionTimingMs)
+    ? `${status.enemyActionTimingMs} ms`
+    : "--";
 }
 const autoplay = new GeneticAutoPlay({
   game,

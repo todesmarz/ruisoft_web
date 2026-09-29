@@ -39,6 +39,7 @@ export const SITUATIONS = Object.freeze([
   "shellAhead",
   ...Object.values(ENEMY_SITUATIONS),
   "canShoot",
+  "itemBlockAhead",
   "itemNearby",
   "nearGoal",
   "highPosition",
@@ -84,6 +85,9 @@ export const BEHAVIORS = Object.freeze({
   attack: Object.freeze({ left: false, right: true, jump: false, action: true }),
   // Resolved dynamically from itemTarget in resolveBehavior.
   collectItem: Object.freeze({ targeted: true }),
+  // Hitting a block only reveals an item. Collection starts after the spawned
+  // item itself has been observed by senseGame.
+  revealItem: Object.freeze({ targeted: true }),
   patrol: Object.freeze({
     pattern: Object.freeze([
       Object.freeze({ duration: 0.7, left: false, right: true, jump: false, action: false }),
@@ -134,6 +138,53 @@ export const BEHAVIORS = Object.freeze({
   wait: Object.freeze({ left: false, right: false, jump: false, action: false }),
 });
 
+// GA genes select command sets rather than opaque button weights. Durations
+// are deliberately expressed in milliseconds so a gene is readable as
+// "left for 180 ms, then right for 500 ms, jumping for 260 ms". Observation
+// and timing commands document the decision pipeline; control commands are
+// executed by resolveBehavior below.
+export const COMMAND_SETS = Object.freeze({
+  patrol: Object.freeze([
+    Object.freeze({ command: "move", durationMs: 700, right: true }),
+    Object.freeze({ command: "wait", durationMs: 200 }),
+  ]),
+  dashHop: Object.freeze([
+    Object.freeze({ command: "move", durationMs: 450, right: true, attack: true }),
+    Object.freeze({ command: "move", durationMs: 200, right: true, jumpMs: 200, attack: true }),
+    Object.freeze({ command: "move", durationMs: 250, right: true, attack: true }),
+  ]),
+  dashJump: Object.freeze([
+    Object.freeze({ command: "move", durationMs: 500, right: true, attack: true }),
+    Object.freeze({ command: "move", durationMs: 260, right: true, jumpMs: 260, attack: true }),
+    Object.freeze({ command: "move", durationMs: 240, right: true, attack: true }),
+  ]),
+  retreatDashJump: Object.freeze([
+    Object.freeze({ command: "move", durationMs: 180, left: true }),
+    Object.freeze({ command: "move", durationMs: 500, right: true, attack: true }),
+    Object.freeze({ command: "move", durationMs: 260, right: true, jumpMs: 260, attack: true }),
+    Object.freeze({ command: "move", durationMs: 200, right: true, attack: true }),
+  ]),
+  stompCombo: Object.freeze([
+    Object.freeze({ command: "checkEnemyPosition" }),
+    Object.freeze({ command: "calculateActionTiming" }),
+    Object.freeze({ command: "jumpAttack", durationMs: 180, jumpMs: 180 }),
+    Object.freeze({ command: "approach", durationMs: 420 }),
+  ]),
+  retreatCounter: Object.freeze([
+    Object.freeze({ command: "checkEnemyPosition" }),
+    Object.freeze({ command: "calculateActionTiming" }),
+    Object.freeze({ command: "move", durationMs: 280, left: true }),
+    Object.freeze({ command: "jumpAttack", durationMs: 180, right: true, jumpMs: 180, attack: true }),
+    Object.freeze({ command: "attack", durationMs: 300, right: true, attack: true }),
+  ]),
+  rapidFireAdvance: Object.freeze([
+    Object.freeze({ command: "checkEnemyPosition" }),
+    Object.freeze({ command: "calculateActionTiming" }),
+    Object.freeze({ command: "attack", durationMs: 120, right: true, attack: true }),
+    Object.freeze({ command: "move", durationMs: 120, right: true }),
+  ]),
+});
+
 const BEHAVIOR_NAMES = Object.freeze(Object.keys(BEHAVIORS));
 const randomBehavior = (random) =>
   BEHAVIOR_NAMES[Math.min(BEHAVIOR_NAMES.length - 1, Math.floor(random() * BEHAVIOR_NAMES.length))];
@@ -147,6 +198,27 @@ export function sampleTiming(timing = {}, random = Math.random) {
   const scale = Number.isFinite(timing.scale) ? timing.scale : 1;
   const variance = Number.isFinite(timing.variance) ? timing.variance : 0;
   return Math.max(0.5, scale * (1 + (random() * 2 - 1) * variance));
+}
+
+export function resolveCommandSet(commands, elapsed = 0, timingScale = 1) {
+  const executable = (commands || []).filter((command) => command.durationMs > 0);
+  if (!executable.length) return null;
+  const cycleMs = executable.reduce((total, command) => total + command.durationMs, 0);
+  let cursorMs = (elapsed * 1000 / timingScale) % cycleMs;
+  for (const [index, command] of executable.entries()) {
+    if (cursorMs < command.durationMs) {
+      return {
+        duration: command.durationMs / 1000 * timingScale,
+        left: Boolean(command.left),
+        right: Boolean(command.right),
+        jump: Boolean(command.jumpMs),
+        action: Boolean(command.attack),
+        patternPhase: index,
+      };
+    }
+    cursorMs -= command.durationMs;
+  }
+  return null;
 }
 
 export function createGenome(random = Math.random) {
@@ -296,6 +368,23 @@ export function resolveBehavior(behavior, elapsed = 0, sensors = {}, timingScale
       targeted: true,
     };
   }
+  if (behavior === "revealItem") {
+    const block = sensors.itemBlockTarget;
+    if (!block) return { ...BEHAVIORS.advance, targeted: false };
+    const towardBlock = block.distanceX < 0
+      ? { left: true, right: false }
+      : { left: false, right: true };
+    const aligned = Math.abs(block.distanceX) <= VIEW.tile * 0.75;
+    return {
+      ...towardBlock,
+      jump: aligned,
+      action: false,
+      jumpDuration: 0.26 * timingScale,
+      targeted: true,
+    };
+  }
+  if (["patrol", "dashHop", "dashJump", "retreatDashJump"].includes(behavior))
+    return resolveCommandSet(COMMAND_SETS[behavior], elapsed, timingScale);
   const definition = BEHAVIORS[behavior] || BEHAVIORS.advance;
   if (!definition.pattern)
     return definition.jumpDuration
@@ -377,6 +466,8 @@ export function senseGame(game) {
   );
   const gapAhead = player.grounded && !solids.some((solid) => overlaps(landingProbe, solid));
 
+  // An unopened block is a reveal target, not a collectible. Only transition
+  // to itemNearby after the concrete power-up has spawned and can be sensed.
   const collectibles = [
     ...(level.powerups || [])
       .filter((item) => item.active)
@@ -384,9 +475,6 @@ export function senseGame(game) {
     ...(level.gems || [])
       .filter((item) => !item.collected)
       .map((item) => ({ ...item, kind: "gem" })),
-    ...level.blocks
-      .filter((item) => item.type === "item" && !item.used && !item.disabled)
-      .map((item) => ({ ...item, kind: "item-block" })),
   ].filter(
     (item) =>
       Math.abs(item.x - player.x) <= AUTOPLAY.enemyLookAhead &&
@@ -396,6 +484,18 @@ export function senseGame(game) {
     const distance = Math.hypot(item.x - player.x, item.y - player.y);
     return !closest || distance < closest.distance ? { item, distance } : closest;
   }, null)?.item;
+  const itemBlocks = level.blocks.filter(
+    (block) =>
+      block.type === "item" &&
+      !block.used &&
+      !block.disabled &&
+      Math.abs(block.x - player.x) <= AUTOPLAY.enemyLookAhead &&
+      Math.abs(block.y - player.y) <= VIEW.tile * 3,
+  );
+  const closestItemBlock = itemBlocks.reduce((closest, block) => {
+    const distance = Math.hypot(block.x - player.x, block.y - player.y);
+    return !closest || distance < closest.distance ? { block, distance } : closest;
+  }, null)?.block;
 
   const progress = player.x / Math.max(1, level.width - player.w);
   return {
@@ -415,6 +515,15 @@ export function senseGame(game) {
       ]),
     ),
     canShoot: player.ability === "pulse",
+    itemBlockAhead: Boolean(closestItemBlock),
+    itemBlockTarget: closestItemBlock
+      ? {
+          distanceX: closestItemBlock.x + closestItemBlock.w * 0.5 - (player.x + player.w * 0.5),
+          distanceY: closestItemBlock.y + closestItemBlock.h * 0.5 - (player.y + player.h * 0.5),
+          x: closestItemBlock.x,
+          y: closestItemBlock.y,
+        }
+      : null,
     itemNearby: Boolean(closestItem),
     itemTarget: closestItem
       ? {
@@ -434,6 +543,13 @@ export function senseGame(game) {
           type: closestEnemy.type,
           state: closestEnemy.state,
         }
+      : null,
+    enemyActionTimingMs: closestEnemy
+      ? Math.round(
+          Math.max(0, distanceAhead(closestEnemy)) /
+            Math.max(1, Math.abs(player.vx) + Math.abs(closestEnemy.vx || 0)) *
+            1000,
+        )
       : null,
     nearGoal: level.goal
       ? player.x + player.w >= level.goal.x - VIEW.tile * 4
@@ -505,6 +621,7 @@ export class GeneticAutoPlay {
     this.situation = "clearPath";
     this.behavior = "advance";
     this.priority = 0;
+    this.enemyActionTimingMs = null;
     this.actionTime = 0;
     this.actionTimingScale = 1;
   }
@@ -541,6 +658,7 @@ export class GeneticAutoPlay {
     this.stallTime = 0;
     this.actionTime = 0;
     this.situation = "clearPath";
+    this.enemyActionTimingMs = null;
     this.actionTimingScale = sampleTiming(
       this.population[this.candidate].timing?.clearPath,
       this.random,
@@ -569,6 +687,7 @@ export class GeneticAutoPlay {
     }
     this.stallTime = this.trialTime - this.lastProgressAt;
     const sensors = senseGame(this.game);
+    this.enemyActionTimingMs = sensors.enemyActionTimingMs;
     const actions = decide(
       this.population[this.candidate],
       sensors,
@@ -594,6 +713,13 @@ export class GeneticAutoPlay {
           this.actionTimingScale,
         ),
       );
+      emit("autoplayactionchange", {
+        situation: actions.situation,
+        behavior: actions.behavior,
+        patternPhase: actions.patternPhase ?? null,
+        enemyTarget: sensors.enemyTarget,
+        timingMs: sensors.enemyActionTimingMs,
+      });
     }
     this.situation = actions.situation;
     this.behavior = actions.behavior;
@@ -672,6 +798,7 @@ export class GeneticAutoPlay {
       situation: this.situation,
       priority: this.priority,
       behavior: this.behavior,
+      enemyActionTimingMs: this.enemyActionTimingMs,
     });
   }
 }

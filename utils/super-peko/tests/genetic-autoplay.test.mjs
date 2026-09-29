@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   AUTOPLAY,
   BEHAVIORS,
+  COMMAND_SETS,
   ENEMY_SITUATIONS,
   SITUATIONS,
   createGenome,
@@ -12,6 +13,7 @@ import {
   mutate,
   nextGeneration,
   resolveBehavior,
+  resolveCommandSet,
   sampleTiming,
   senseGame,
   GeneticAutoPlay,
@@ -163,6 +165,23 @@ test("movement patterns evolve through run, jump, and rest phases", () => {
   assert.equal(resolveBehavior("retreatDashJump", 0.3).right, true);
 });
 
+test("command sets describe timed movement in milliseconds", () => {
+  assert.deepEqual(COMMAND_SETS.retreatDashJump.slice(0, 3), [
+    { command: "move", durationMs: 180, left: true },
+    { command: "move", durationMs: 500, right: true, attack: true },
+    { command: "move", durationMs: 260, right: true, jumpMs: 260, attack: true },
+  ]);
+  assert.deepEqual(
+    COMMAND_SETS.stompCombo.slice(0, 2).map(({ command }) => command),
+    ["checkEnemyPosition", "calculateActionTiming"],
+  );
+  assert.equal(resolveCommandSet(COMMAND_SETS.retreatDashJump, 0.1).left, true);
+  const jumpPhase = resolveCommandSet(COMMAND_SETS.retreatDashJump, 0.75);
+  assert.equal(jumpPhase.right, true);
+  assert.equal(jumpPhase.jump, true);
+  assert.equal(jumpPhase.action, true);
+});
+
 test("item collection steers toward a target and jumps for elevated items", () => {
   const sensors = { itemTarget: { distanceX: -20, distanceY: -50, kind: "gem" } };
   assert.deepEqual(resolveBehavior("collectItem", 0, sensors), {
@@ -312,7 +331,7 @@ test("every regular and boss enemy type has a distinct situation", () => {
   }
 });
 
-test("sensors find collectible items and unused item blocks", () => {
+test("item collection begins only after a concrete item is recognized", () => {
   const { game } = autoplayFixture();
   game.level.gems.push({ x: 90, y: 360, w: 20, h: 20, collected: false });
   let sensed = senseGame(game);
@@ -322,7 +341,19 @@ test("sensors find collectible items and unused item blocks", () => {
   game.level.gems[0].collected = true;
   game.level.blocks.push({ x: 120, y: 320, w: 48, h: 48, type: "item", used: false });
   sensed = senseGame(game);
-  assert.equal(sensed.itemTarget.kind, "item-block");
+  assert.equal(sensed.itemNearby, false);
+  assert.equal(sensed.itemTarget, null);
+  assert.equal(sensed.itemBlockAhead, true);
+  assert.equal(sensed.itemBlockTarget.x, 120);
+
+  game.level.blocks[0].used = true;
+  game.level.powerups.push({
+    x: 127, y: 286, w: 30, h: 30, active: true, kind: "power-cell",
+  });
+  sensed = senseGame(game);
+  assert.equal(sensed.itemBlockAhead, false);
+  assert.equal(sensed.itemNearby, true);
+  assert.equal(sensed.itemTarget.kind, "power-cell");
 });
 
 test("walls block enemy vision and prevent target-specific jumps", () => {
