@@ -3,6 +3,20 @@ import { freshLevel, LEVELS } from "./levels.js";
 import { createPlayer, powerPlayer, updatePlayer } from "./entities.js";
 import { clamp, moveAndCollide, overlaps } from "./physics.js";
 import { emit } from "./events.js";
+import { firebarSegments, updateLavaBubble } from "./stage-hazards.js";
+
+// The flag extends to the left of the pole in Renderer.goal(). Treat the whole
+// visible flag as the finish area so touching it always produces a clear.
+const GOAL_FLAG_OVERHANG = 24;
+
+export function reachedGoal(player, goal) {
+  const overhang = goal.kind === "switch" ? 0 : GOAL_FLAG_OVERHANG;
+  return overlaps(player, {
+    ...goal,
+    x: goal.x - overhang,
+    w: goal.w + overhang,
+  });
+}
 
 export class Game {
   constructor({ input, audio, renderer, save, onHud, onOverlay, onToast }) {
@@ -32,6 +46,7 @@ export class Game {
   loadLevel(index, checkpoint = false, playerState = null) {
     this.levelIndex = clamp(index, 0, LEVELS.length - 1);
     this.level = freshLevel(this.levelIndex);
+    checkpoint = checkpoint && this.level.checkpointEnabled;
     this.player = createPlayer(
       checkpoint ? this.level.checkpoint : this.level.spawn,
     );
@@ -102,6 +117,7 @@ export class Game {
     if (this.time <= 0) return this.loseLife("TIME UP");
 
     this.updatePlatforms(dt);
+    this.updateStageHazards(dt);
     this.updateBlocks(dt);
     const protectionBefore = Math.max(
       this.player.invulnerable,
@@ -119,17 +135,24 @@ export class Game {
     this.collect();
     this.resolveDanger();
 
-    if (!this.player.checkpoint && this.player.x >= this.level.checkpoint.x) {
+    if (
+      this.level.checkpointEnabled &&
+      !this.player.checkpoint &&
+      this.player.x >= this.level.checkpoint.x
+    ) {
       this.player.checkpoint = true;
       this.onToast("CHECKPOINT");
       emit("checkpoint", { level: this.level.id });
     }
     if (this.player.y > VIEW.height + 120) return this.loseLife("SIGNAL LOST");
-    if (
-      overlaps(this.player, this.level.goal) &&
-      (!this.level.boss || !this.level.boss.alive)
-    )
-      this.clearStage();
+    if (reachedGoal(this.player, this.level.goal)) {
+      if (this.level.goal.kind === "switch" && this.level.boss?.alive) {
+        this.audio.play("boss");
+        this.defeatBoss(this.level.boss, "switch");
+      }
+      if (!this.level.boss || !this.level.boss.alive)
+        this.clearStage();
+    }
 
     const target = this.player.x - VIEW.width * 0.36;
     this.camera +=
@@ -203,6 +226,10 @@ export class Game {
     }
   }
 
+  updateStageHazards(dt) {
+    for (const bubble of this.level.lavaBubbles) updateLavaBubble(bubble, dt);
+  }
+
   resolveBlockHit(block) {
     if (!block || !this.level.blocks.includes(block) || block.disabled) return;
     block.revealed = true;
@@ -227,6 +254,13 @@ export class Game {
       this.score += 50;
       this.audio.play("stomp");
       emit("blockbreak", { level: this.level.id });
+    } else if (block.type === "energy" && !block.used) {
+      block.used = true;
+      this.gems += 1;
+      this.score += 100;
+      this.audio.play("gem");
+      this.onToast("+100 HIDDEN ENERGY");
+      emit("itemcollect", { type: "hidden-energy", total: this.gems });
     } else if (block.type === "item" && !block.used) {
       block.used = true;
       this.level.powerups.push({
@@ -343,6 +377,10 @@ export class Game {
       boss.vy + (this.level.mode === "water" ? 450 : 1500) * dt,
     );
     moveAndCollide(boss, solids, boss.vx * dt, boss.vy * dt);
+    if (boss.y > VIEW.height + 100) {
+      this.audio.play("boss");
+      this.defeatBoss(boss, "fall");
+    }
   }
 
   updateTurrets(dt) {
@@ -490,6 +528,15 @@ export class Game {
   resolveDanger() {
     for (const hazard of this.level.hazards)
       if (overlaps(this.player, hazard)) return this.hit();
+    for (const bubble of this.level.lavaBubbles)
+      if (bubble.active && overlaps(this.player, bubble)) return this.hit();
+    for (const firebar of this.level.firebars)
+      if (
+        firebarSegments(firebar, this.elapsed).some((segment) =>
+          overlaps(this.player, segment),
+        )
+      )
+        return this.hit();
     for (const enemy of this.level.enemies) {
       if (!enemy.alive || !overlaps(this.player, enemy)) continue;
       if (this.player.starTimer > 0) {
@@ -528,14 +575,17 @@ export class Game {
         this.player.vy = -520;
         this.score += 500;
         this.audio.play(boss.hp ? "stomp" : "boss");
-        if (boss.hp <= 0) {
-          boss.alive = false;
-          this.rewards.enemies += 1;
-          this.onToast(`${boss.type.toUpperCase()} DOWN`);
-          emit("bossdefeat", { level: this.level.id, type: boss.type });
-        }
+        if (boss.hp <= 0) this.defeatBoss(boss, "stomp");
       } else this.hit();
     }
+  }
+
+  defeatBoss(boss, method) {
+    if (!boss.alive) return;
+    boss.alive = false;
+    this.rewards.enemies += 1;
+    this.onToast(`${boss.type.toUpperCase()} DOWN`);
+    emit("bossdefeat", { level: this.level.id, type: boss.type, method });
   }
 
   hit() {

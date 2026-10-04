@@ -26,7 +26,7 @@ export default {
       name: "COPPER CITADEL",
       seed: 149,
       mode: "fortress",
-      features: ["lava", "turrets"],
+      features: ["lava", "firebars", "lava-bubbles", "hidden"],
     },
   ],
 };

@@ -7,7 +7,7 @@ import w6 from "./levels/world-6.js";
 import w7 from "./levels/world-7.js";
 import w8 from "./levels/world-8.js";
 import { TURRET, VIEW } from "./config.js";
-import { stageBlueprint } from "./stage-blueprints.js";
+import { stageBlueprint, STAGE_BLOCK_LAYOUTS } from "./stage-blueprints.js";
 
 const worlds = [w1, w2, w3, w4, w5, w6, w7, w8];
 
@@ -90,7 +90,6 @@ function applyMeadowRunLayout(level) {
     stageBlock(4080, 288, "item", "power-cell"),
     stageBlock(4272, 240),
   ];
-
   level.gems = [
     [744, 238],
     [936, 238],
@@ -145,6 +144,45 @@ function applyMeadowRunLayout(level) {
   level.springs = [];
 }
 
+// The first fortress follows the 1-4 encounter documented at
+// https://jururu.net/mario35-1-4/: one early power-up, six hidden energy
+// blocks, rotating firebars, lava bubbles, and a boss. The names and artwork
+// remain native to Super Peko.
+function applyCopperCitadelLayout(level) {
+  const floorY = level.floorY;
+  level.blocks = [
+    stageBlock(624, floorY - 192, "item", "power-cell"),
+    ...[2016, 2064, 2112, 2160, 2208, 2256].map((x) =>
+      stageBlock(x, floorY - 144, "energy", null, true),
+    ),
+  ];
+  level.gems = [];
+  level.enemies = [];
+  level.springs = [];
+  level.platforms = [];
+  level.turrets = [];
+  level.firebars = [
+    { x: 720, y: floorY - 48, segments: 6, spacing: 18, speed: 1.8, angle: 0 },
+    { x: 1536, y: floorY - 96, segments: 6, spacing: 18, speed: -2, angle: 1.2 },
+    { x: 2784, y: floorY - 48, segments: 7, spacing: 18, speed: 2.1, angle: 2.4 },
+    { x: 3600, y: floorY - 96, segments: 6, spacing: 18, speed: -1.9, angle: 0.7 },
+  ];
+  level.lavaBubbles = level.routeGaps.map((gap, index) => ({
+    x: gap.x + gap.w / 2 - 14,
+    y: floorY + 36,
+    originY: floorY + 36,
+    apexY: floorY - 150,
+    w: 28,
+    h: 28,
+    vy: 0,
+    launchVelocity: -570,
+    gravity: 1050,
+    timer: 0.7 + index * 0.55,
+    period: 1.8 + (index % 2) * 0.35,
+    active: false,
+  }));
+}
+
 function makeStage(world, spec, stageIndex) {
   const rnd = random(spec.seed);
   const number = (world.world - 1) * 4 + stageIndex;
@@ -165,6 +203,8 @@ function makeStage(world, spec, stageIndex) {
     projectiles: [],
     powerups: [],
     portals: [],
+    firebars: [],
+    lavaBubbles: [],
   };
 
   // Build the main route from an explicit blueprint rather than scattering
@@ -267,23 +307,20 @@ function makeStage(world, spec, stageIndex) {
       });
   }
 
-  const blockCount = Math.max(4, Math.round(width / 1100));
-  for (let i = 0; i < blockCount; i += 1) {
-    const bx = 650 + i * ((width - 1300) / blockCount);
-    const hidden = spec.features.includes("hidden") && i === 1;
-    arrays.blocks.push({
-      x: bx,
-      y: floorY - 145 - (i % 2) * 48,
-      w: 44,
-      h: 44,
-      type: i % 2 ? "item" : "breakable",
-      itemKind: ["power-cell", "star-core", "pulse-module"][
-        (world.world + stageIndex + i) % 3
-      ],
-      used: false,
-      disabled: false,
-      hidden,
-      revealed: !hidden,
+  const itemKinds = ["power-cell", "star-core", "pulse-module"];
+  let itemIndex = world.world + stageIndex;
+  for (const run of STAGE_BLOCK_LAYOUTS[id]) {
+    const startX = Math.round((width * run.progress) / 48) * 48;
+    [...run.pattern].forEach((symbol, offset) => {
+      const hidden = symbol === "H" || symbol === "E";
+      const item = symbol === "?" || symbol === "H";
+      arrays.blocks.push(stageBlock(
+        startX + offset * 48,
+        floorY - run.row * 48,
+        symbol === "E" ? "energy" : item ? "item" : "breakable",
+        item ? itemKinds[itemIndex++ % itemKinds.length] : null,
+        hidden,
+      ));
     });
   }
 
@@ -380,6 +417,9 @@ function makeStage(world, spec, stageIndex) {
   }
 
   const fortress = stageIndex === 4;
+  const shortCourseTimer = stageIndex >= 3 ||
+    (world.world === 8 && stageIndex === 1);
+  const timeLimit = shortCourseTimer ? 300 : 400;
   const level = {
     id,
     number,
@@ -391,13 +431,20 @@ function makeStage(world, spec, stageIndex) {
     mode: spec.mode,
     features: spec.features,
     routeGaps: blueprint.gaps,
-    timeLimit: Math.max(190, 330 - world.world * 10),
+    timeLimit,
     width,
     floorY,
     spawn: { x: 120, y: floorY - 70 },
     checkpoint: { x: checkpointX, y: floorY - 70 },
     ...arrays,
-    goal: { x: width - 190, y: floorY - 132, w: 40, h: 132 },
+    goal: {
+      x: width - 190,
+      y: floorY - (fortress ? 54 : 132),
+      w: 40,
+      h: fortress ? 54 : 132,
+      kind: fortress ? "switch" : "flag",
+    },
+    checkpointEnabled: !fortress,
     boss: fortress
       ? {
           x: width - 470,
@@ -414,6 +461,7 @@ function makeStage(world, spec, stageIndex) {
       : null,
   };
   if (world.world === 1 && stageIndex === 1) applyMeadowRunLayout(level);
+  if (world.world === 1 && stageIndex === 4) applyCopperCitadelLayout(level);
   return level;
 }
 
