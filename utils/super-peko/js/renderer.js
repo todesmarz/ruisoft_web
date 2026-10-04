@@ -1,4 +1,5 @@
 import { VIEW, THEMES } from "./config.js";
+import { firebarSegments } from "./stage-hazards.js";
 
 export class Renderer {
   constructor(canvas) {
@@ -16,6 +17,10 @@ export class Renderer {
     ctx.save();
     ctx.translate(-game.camera, 0);
     level.hazards.forEach((item) => this.hazard(item, theme));
+    level.firebars.forEach((item) => this.firebar(item, game.elapsed));
+    level.lavaBubbles
+      .filter((item) => item.active)
+      .forEach((item) => this.lavaBubble(item));
     level.solids.forEach((item) => this.tile(item, theme));
     level.blocks.forEach((item) => this.block(item, theme));
     level.platforms.forEach((item) => this.platform(item, theme));
@@ -153,7 +158,9 @@ export class Renderer {
     gradient.addColorStop(1, item.used ? "#364558" : "#d76031");
     this.ctx.fillStyle = "#17283e";
     this.ctx.fillRect(item.x - 3, item.y - 3, item.w + 6, item.h + 8);
-    this.ctx.fillStyle = item.type === "item" ? gradient : theme.dirt;
+    this.ctx.fillStyle = ["item", "energy"].includes(item.type)
+      ? gradient
+      : theme.dirt;
     this.ctx.fillRect(item.x + 1, item.y + 1, item.w - 2, item.h - 2);
     this.ctx.strokeStyle = item.used ? "#a9b8c7" : "#fff0a6";
     this.ctx.lineWidth = 3;
@@ -168,7 +175,7 @@ export class Renderer {
       [item.w - 11, item.h - 11],
     ])
       this.ctx.fillRect(item.x + dx, item.y + dy, 4, 4);
-    if (item.type === "item" && !item.used) {
+    if (["item", "energy"].includes(item.type) && !item.used) {
       this.ctx.fillStyle = "rgba(255,255,255,.35)";
       this.ctx.fillRect(item.x + 15, item.y + 11, 17, 22);
       this.ctx.fillStyle = "#603438";
@@ -208,6 +215,26 @@ export class Renderer {
     this.ctx.fillStyle = theme.accent;
     for (let x = item.x; x < item.x + item.w; x += 28)
       this.ctx.fillRect(x, item.y + 8, 12, 9);
+  }
+
+  firebar(item, elapsed) {
+    for (const segment of firebarSegments(item, elapsed)) {
+      this.ctx.fillStyle = "#fff2a8";
+      this.ctx.fillRect(segment.x - 2, segment.y - 2, segment.w + 4, segment.h + 4);
+      this.ctx.fillStyle = "#ff5b45";
+      this.ctx.fillRect(segment.x, segment.y, segment.w, segment.h);
+      this.ctx.fillStyle = "#ffbd3f";
+      this.ctx.fillRect(segment.x + 4, segment.y + 3, 6, 6);
+    }
+  }
+
+  lavaBubble(item) {
+    this.ctx.fillStyle = "#fff2a8";
+    this.ctx.fillRect(item.x + 4, item.y, item.w - 8, item.h);
+    this.ctx.fillStyle = "#ff5b45";
+    this.ctx.fillRect(item.x, item.y + 7, item.w, item.h - 10);
+    this.ctx.fillStyle = "#ffbd3f";
+    this.ctx.fillRect(item.x + 7, item.y + 8, item.w - 14, 8);
   }
 
   portal(item, theme) {
@@ -318,27 +345,40 @@ export class Renderer {
       this.ctx.fillRect(item.x + 11, item.y + 9, item.w - 22, 8);
       return;
     }
+    // Each enemy has a distinct, upright silhouette. Avoid compressing every
+    // creature into the same short rectangle: type should be readable before
+    // the player is close enough to see its colour.
     this.ctx.fillStyle = "#18283c";
-    this.ctx.fillRect(item.x - 2, item.y + 7, item.w + 4, item.h - 3);
-    this.ctx.fillStyle =
-      item.type === "bouncer"
-        ? "#f28c52"
-        : item.type === "shelled"
-          ? "#43a884"
-          : "#ef5d60";
-    this.ctx.fillRect(item.x, item.y + 8, item.w, item.h - 10);
-    this.ctx.fillStyle = "#8f3246";
-    this.ctx.fillRect(item.x + 4, item.y + 2, item.w - 8, 12);
-    this.ctx.fillStyle = "#ffb37c";
-    this.ctx.fillRect(item.x + 8, item.y + 5, item.w - 16, 4);
+    if (item.type === "shelled") {
+      this.ctx.fillRect(item.x + 5, item.y + 1, item.w - 10, 16);
+      this.ctx.fillStyle = "#43a884";
+      this.ctx.fillRect(item.x + 1, item.y + 13, item.w - 2, 17);
+      this.ctx.fillStyle = "#b7f0b1";
+      this.ctx.fillRect(item.x + 8, item.y + 17, item.w - 16, 9);
+      this.ctx.fillStyle = "#20364c";
+      this.ctx.fillRect(item.x + 15, item.y + 15, 5, 13);
+    } else if (item.type === "bouncer") {
+      this.ctx.fillStyle = "#f28c52";
+      this.ctx.fillRect(item.x + 8, item.y, item.w - 16, 7);
+      this.ctx.fillRect(item.x + 3, item.y + 6, item.w - 6, 22);
+      this.ctx.fillStyle = "#ffe29a";
+      this.ctx.fillRect(item.x + 8, item.y + 10, item.w - 16, 9);
+      this.ctx.fillStyle = "#8f3246";
+      this.ctx.fillRect(item.x, item.y + 27, 8, 6);
+      this.ctx.fillRect(item.x + item.w - 8, item.y + 27, 8, 6);
+    } else {
+      this.ctx.fillStyle = "#ef5d60";
+      this.ctx.fillRect(item.x + 4, item.y + 3, item.w - 8, 27);
+      this.ctx.fillStyle = "#8f3246";
+      this.ctx.fillRect(item.x + 8, item.y, item.w - 16, 7);
+      this.ctx.fillRect(item.x, item.y + 25, item.w, 6);
+    }
     this.ctx.fillStyle = "#e9ffff";
-    this.ctx.fillRect(item.x + 6, item.y + 14, 9, 8);
-    this.ctx.fillRect(item.x + 21, item.y + 14, 9, 8);
+    this.ctx.fillRect(item.x + 8, item.y + 8, 7, 8);
+    this.ctx.fillRect(item.x + 21, item.y + 8, 7, 8);
     this.ctx.fillStyle = "#20364c";
-    this.ctx.fillRect(item.x + 9, item.y + 16, 4, 5);
-    this.ctx.fillRect(item.x + 24, item.y + 16, 4, 5);
-    this.ctx.fillStyle = "rgba(255,255,255,.4)";
-    this.ctx.fillRect(item.x + 5, item.y + 25, item.w - 10, 3);
+    this.ctx.fillRect(item.x + 10, item.y + 10, 3, 5);
+    this.ctx.fillRect(item.x + 23, item.y + 10, 3, 5);
     this.ctx.fillStyle = "#54273a";
     this.ctx.fillRect(item.x + (stride ? 3 : 8), item.y + item.h - 4, 10, 6);
     this.ctx.fillRect(item.x + (stride ? 23 : 18), item.y + item.h - 4, 10, 6);
@@ -360,6 +400,17 @@ export class Renderer {
   }
 
   goal(item, done) {
+    if (item.kind === "switch") {
+      this.ctx.fillStyle = "#17283e";
+      this.ctx.fillRect(item.x - 5, item.y + 28, item.w + 10, 26);
+      this.ctx.fillStyle = done ? "#566477" : "#ffd166";
+      this.ctx.fillRect(item.x, item.y + 32, item.w, 16);
+      this.ctx.fillStyle = done ? "#8190a1" : "#ff6b57";
+      this.ctx.fillRect(item.x + 14, item.y, 12, 35);
+      this.ctx.fillStyle = "#fff4a8";
+      this.ctx.fillRect(item.x + 8, item.y, 24, 9);
+      return;
+    }
     this.ctx.fillStyle = "rgba(12,31,46,.35)";
     this.ctx.fillRect(item.x + 19, item.y + 7, 10, item.h);
     this.ctx.fillStyle = "#e9ffff";

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { Game } from "../js/game.js";
+import { Game, reachedGoal } from "../js/game.js";
 
 globalThis.window = { dispatchEvent() {} };
 globalThis.CustomEvent = class CustomEvent {
@@ -15,7 +15,17 @@ function makeGame() {
   const sounds = [];
   let overlayAction;
   const input = {
+    left: false,
+    right: false,
+    jump: false,
+    action: false,
+    jumpPressed: false,
     actionPressed: false,
+    consumeJump() {
+      const pressed = this.jumpPressed;
+      this.jumpPressed = false;
+      return pressed;
+    },
     consumeAction() {
       const pressed = this.actionPressed;
       this.actionPressed = false;
@@ -105,6 +115,85 @@ test("power-up state carries over to the next stage", () => {
   assert.equal(game.player.ability, "pulse");
   assert.equal(game.player.starTimer, 4);
   assert.equal(game.player.invulnerable, 4);
+});
+
+test("regular stages clear when Peko touches the visible goal flag", () => {
+  const { game } = makeGame();
+  game.start(2);
+  game.player.x = game.level.goal.x - 24 - game.player.w + 1;
+  game.player.y = game.level.goal.y + 16;
+
+  assert.equal(reachedGoal(game.player, game.level.goal), true);
+  game.update(0);
+
+  assert.equal(game.state, "clear");
+  assert.equal(game.stageCleared, true);
+  assert.ok(game.save.completed.includes("1-3"));
+});
+
+test("stage 1-4 finish switch drops the boss and clears the fortress", () => {
+  const { game, sounds, messages } = makeGame();
+  game.start(3);
+  game.player.x = game.level.goal.x;
+  game.player.y = game.level.goal.y;
+
+  game.update(0);
+
+  assert.equal(game.level.boss.alive, false);
+  assert.equal(game.state, "clear");
+  assert.equal(game.stageCleared, true);
+  assert.equal(sounds.at(-2), "boss");
+  assert.match(messages.at(-1), /CHARGER DOWN/);
+});
+
+test("fortress stages restart from the entrance instead of a checkpoint", () => {
+  const { game } = makeGame();
+  game.start(3);
+  game.player.checkpoint = true;
+
+  game.loadLevel(3, true);
+
+  assert.equal(game.level.checkpointEnabled, false);
+  assert.equal(game.player.checkpoint, false);
+  assert.equal(game.player.x, game.level.spawn.x);
+});
+
+test("stage 1-4 hidden blocks award energy instead of spawning power-ups", () => {
+  const { game, messages, sounds } = makeGame();
+  game.start(3);
+  const block = game.level.blocks.find((candidate) => candidate.type === "energy");
+
+  game.resolveBlockHit(block);
+
+  assert.equal(block.revealed, true);
+  assert.equal(block.used, true);
+  assert.equal(game.gems, 1);
+  assert.equal(game.score, 100);
+  assert.equal(game.level.powerups.length, 0);
+  assert.equal(messages.at(-1), "+100 HIDDEN ENERGY");
+  assert.equal(sounds.at(-1), "gem");
+});
+
+test("stage 1-4 boss is defeated after falling into a pit", () => {
+  const { game } = makeGame();
+  game.start(3);
+  const boss = game.level.boss;
+  const solids = [
+    ...game.level.solids,
+    ...game.level.blocks,
+    ...game.level.platforms,
+  ];
+
+  for (let frame = 0; frame < 300 && boss.alive; frame += 1)
+    game.updateBoss(0.035, solids);
+
+  assert.equal(boss.alive, false);
+  assert.equal(game.rewards.enemies, 1);
+
+  game.player.x = game.level.goal.x;
+  game.player.y = game.level.goal.y + 16;
+  game.update(0);
+  assert.equal(game.state, "clear");
 });
 
 test("game over retries the stage where the player was defeated", () => {

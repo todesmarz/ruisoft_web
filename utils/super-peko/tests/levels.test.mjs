@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { LEVELS, WORLD_META, freshLevel } from "../js/levels.js";
 import { TURRET } from "../js/config.js";
-import { STAGE_BLUEPRINTS } from "../js/stage-blueprints.js";
+import { STAGE_BLUEPRINTS, STAGE_BLOCK_LAYOUTS } from "../js/stage-blueprints.js";
 
 function hasGroundAt(level, x, requiredWidth = 0) {
   return level.solids.some(
@@ -30,16 +30,34 @@ test("all 32 stages are generated from explicit map blueprints", () => {
   }
 });
 
+test("all 32 stages use authored block positions and types", () => {
+  assert.equal(Object.keys(STAGE_BLOCK_LAYOUTS).length, 32);
+  for (const level of LEVELS) {
+    const layout = STAGE_BLOCK_LAYOUTS[level.id];
+    assert.ok(layout?.length >= 2, `${level.id} needs block landmarks`);
+    assert.ok(layout.every(({ progress, row, pattern }) =>
+      progress > 0 && progress < 1 && row >= 3 && /^[B?HE]+$/.test(pattern)
+    ), `${level.id} has an invalid block landmark`);
+    if (level.id !== "1-1" && level.id !== "1-4") {
+      const expectedCount = layout.reduce((sum, run) => sum + run.pattern.length, 0);
+      assert.equal(level.blocks.length, expectedCount, `${level.id} block count`);
+      assert.ok(level.blocks.some((block) => block.type === "item"));
+      assert.ok(level.blocks.some((block) => block.type === "breakable"));
+    }
+  }
+});
+
 test("every stage has safe spawn, checkpoint, and goal ground", () => {
   for (const level of LEVELS) {
     assert.ok(
       hasGroundAt(level, level.spawn.x, 40),
       `${level.id} spawn must be safe`,
     );
-    assert.ok(
-      hasGroundAt(level, level.checkpoint.x, 80),
-      `${level.id} checkpoint must be safe`,
-    );
+    if (level.checkpointEnabled)
+      assert.ok(
+        hasGroundAt(level, level.checkpoint.x, 80),
+        `${level.id} checkpoint must be safe`,
+      );
     assert.ok(
       hasGroundAt(level, level.goal.x + 20, 60),
       `${level.id} goal must be safe`,
@@ -103,8 +121,10 @@ test("every stage after 1-1 is fully populated and keeps its stage identity", ()
       `${level.id} needs traversable terrain`,
     );
     assert.ok(level.blocks.length >= 4, `${level.id} needs block encounters`);
-    assert.ok(level.gems.length >= 12, `${level.id} needs a collectible route`);
-    assert.ok(level.enemies.length >= 6, `${level.id} needs enemy encounters`);
+    if (level.id !== "1-4") {
+      assert.ok(level.gems.length >= 12, `${level.id} needs a collectible route`);
+      assert.ok(level.enemies.length >= 6, `${level.id} needs enemy encounters`);
+    }
     assert.ok(
       level.features.length >= 2,
       `${level.id} needs distinct mechanics`,
@@ -136,11 +156,28 @@ test("stages contain all three classic item effects and enemy behaviors", () => 
 });
 
 test("fortresses provide eight distinct boss types", () => {
-  const bosses = LEVELS.filter((level) => level.boss).map(
-    (level) => level.boss.type,
-  );
+  const fortresses = LEVELS.filter((level) => level.boss);
+  const bosses = fortresses.map((level) => level.boss.type);
   assert.equal(bosses.length, 8);
   assert.equal(new Set(bosses).size, 8);
+  assert.ok(fortresses.every((level) => level.goal.kind === "switch"));
+  assert.ok(fortresses.every((level) => !level.checkpointEnabled));
+  assert.ok(fortresses.every((level) => level.timeLimit === 300));
+});
+
+test("stage 1-4 reproduces its power-up, hidden energy, and fire hazards", () => {
+  const level = LEVELS.find((candidate) => candidate.id === "1-4");
+  assert.equal(level.blocks.filter((block) => block.type === "item").length, 1);
+  assert.equal(
+    level.blocks.filter((block) => block.type === "energy" && block.hidden)
+      .length,
+    6,
+  );
+  assert.equal(level.firebars.length, 4);
+  assert.equal(level.lavaBubbles.length, level.routeGaps.length);
+  assert.equal(level.gems.length, 0);
+  assert.equal(level.turrets.length, 0);
+  assert.equal(level.enemies.length, 0);
 });
 
 test("freshLevel returns isolated mutable state", () => {
