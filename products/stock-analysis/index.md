@@ -51,6 +51,6 @@ description: 株価チャートのテクニカル指標を整理し、値動き�
 
 ### 株価分析を始める
 
-[Google Geminiで株価テクニカル分析を試す](https://share.gemini.google/z2xqX8HczxzL)
+[Google Geminiで株価テクニカル分析を試す](https://share.gemini.google/f65f2dcf8a49e597)
 
 ※リンク先はGoogle Geminiの外部サイトです。
